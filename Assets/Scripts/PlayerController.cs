@@ -1,5 +1,7 @@
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -32,7 +34,15 @@ public class PlayerController : MonoBehaviour
     {
         // 1. Read input and map it to the ground plane (XZ)
         Vector2 input = moveAction.ReadValue<Vector2>();
-        Vector3 move = new Vector3(input.x, 0f, input.y);
+        Vector3 move;
+        if (SceneManager.GetActiveScene().name == "PlayerMoveOnlyToSides")
+        {
+            move = new Vector3(input.x, 0f, 0f);
+        }
+        else
+        {
+            move = new Vector3(input.x, 0f, input.y);
+        }
 
         // 2. Calculate the next position
         Vector3 newPos = rb.position + move * moveSpeed * Time.fixedDeltaTime;
