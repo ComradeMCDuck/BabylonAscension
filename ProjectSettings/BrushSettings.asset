@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &1
+MonoBehaviour:
+  m_ObjectHideFlags: 53
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24ee501f2681146b18454dd1e9d2faed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CsgBrush.Editor::CsgBrush.Editor.BrushSettings
+  preset: 3
+  unitsPerMeter: 1
+  unitLabel: m
+  gridSizes:
+  - 0.125
+  - 0.25
+  - 0.5
+  - 1
+  - 2
+  - 4
+  gridIndex: 2
+  defaultBoxSize: {x: 2, y: 2, z: 2}
+  rotationSnapDegrees: 15
+  newOperation: 0
+  newModules: []
+  newSides: 16
+  newTessellation: 2
+  newStepHeight: 0
+  newHollow: 0
+  newInnerRadius: 0
+  newStepThickness: 0
+  newCurveAngle: 90
+  newStepsPer360: 16
+  newCounterClockwise: 0
+  newSlopedFloor: 0
+  newSlopedCeiling: 0
+  newWallThickness: 0
+  newArchAngle: 180
+  newDoorWidth: 0
+  newDoorHeight: 0
+  newWindowWidth: 0
+  newWindowHeight: 0
+  newWindowSill: 0
+  extrudeDistance: -0.5
+  extrudeIndividual: 0
+  defaultModelStaticFlags: 87
+  defaultMaterial: {fileID: 2100000, guid: b0b92c31e47e90645ac7ed7fa12f7702, type: 2}
+  showGenerated: 0
+  showCuts: 0
+  snapToGrid: 1

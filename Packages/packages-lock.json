@@ -266,6 +266,13 @@
       },
       "url": "https://packages.unity.com"
     },
+    "digital.dream.csgbrush": {
+      "version": "https://github.com/jaroslavstehlik/csg-brush.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "bc586118c22d0b518befef2ad2b3d0fca97c17d9"
+    },
     "digital.dream.gamedevforbeginners": {
       "version": "https://github.com/jaroslavstehlik/GameDevForBeginners.git",
       "depth": 0,
