@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdb76347b8be099498ed2c252b74ae42, type: 3}
+  m_Name: MeleeEnemyData
+  m_EditorClassIdentifier: Assembly-CSharp::EntityData
+  maxHealth: 100
+  detectionRange: 10
+  moveSpeed: 4
+  lockZAxis: 1
+  attackDamage: 1
+  attackRange: 2
+  attackCooldown: 3
+  attackSpeed: 5
+  attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
