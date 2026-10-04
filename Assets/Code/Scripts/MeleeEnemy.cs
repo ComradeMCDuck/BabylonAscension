@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class MeleeEnemy : MonoBehaviour
@@ -11,9 +12,14 @@ public class MeleeEnemy : MonoBehaviour
 
     [SerializeField] private EntityData enemyData;
 
+    [SerializeField] private GameObject attackOrigin; // The point from which the attack originates (e.g., a weapon or hand)
+    private GameObject attackProjectile; // The visualisation of the attack (e.g., a particle effect, animation or gameObject)
+    private Vector3 lastKnownPlayerPosition;
+
     private EnemyState currentState = EnemyState.Idle;
     private Transform playerTransform;
     private Rigidbody rb;
+    private float nextAttackTime = 0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -46,6 +52,7 @@ public class MeleeEnemy : MonoBehaviour
 
         Vector3 velocity = rb.linearVelocity;
 
+        // Update the enemy's velocity based on the current state
         switch (currentState)
         {
             case EnemyState.Idle:
@@ -57,9 +64,42 @@ public class MeleeEnemy : MonoBehaviour
                 break;
             case EnemyState.Attacking:
                 velocity = Vector3.zero;
-                // Implement attack logic here
+                TryAttackPlayer();
                 break;
         }
         rb.linearVelocity = velocity;
+    }
+
+    // try and attack the player if in range
+    private void TryAttackPlayer()
+    {
+        // Check if the attack cooldown has passed
+        if (Time.time < nextAttackTime) return;
+        nextAttackTime = Time.time + enemyData.attackCooldown;
+
+        var target = playerTransform.GetComponentInParent<IDamageable>();
+        if (target != null) Attack(); //target.TakeDamage(enemyData.attackDamage);
+        else
+        {
+            Debug.LogWarning("Player does not implement IDamageable interface.");
+        }
+    }
+
+    private void Attack()
+    {
+        lastKnownPlayerPosition = playerTransform.position;
+        attackProjectile = Instantiate(enemyData.attackEffectPrefab, attackOrigin.transform.position, Quaternion.identity);
+        StartCoroutine(attackProjectile.GetComponent<Projectile>().Shoot(lastKnownPlayerPosition, enemyData.attackSpeed));
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (enemyData == null) return;
+        // Draw the detection range in yellow
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, enemyData.detectionRange);
+        // Draw the attack range in red
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, enemyData.attackRange);
     }
 }

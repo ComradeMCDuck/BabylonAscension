@@ -12,9 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb76347b8be099498ed2c252b74ae42, type: 3}
   m_Name: EnemyData
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
+  maxHealth: 100
   detectionRange: 10
   moveSpeed: 4
   lockZAxis: 1
   attackDamage: 1
   attackRange: 2
   attackCooldown: 5
+  attackSpeed: 5
+  attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
