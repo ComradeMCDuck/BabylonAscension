@@ -14,8 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
   maxHealth: 100
   detectionRange: 5
-  moveSpeed: 4
+  moveSpeed: 5
+  jumpSpeed: 5
   lockZAxis: 1
   attackDamage: 1
   attackRange: 2
   attackCooldown: 5
+  attackSpeed: 1
+  attackEffectPrefab: {fileID: 0}

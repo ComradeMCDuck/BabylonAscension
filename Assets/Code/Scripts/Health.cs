@@ -7,12 +7,12 @@ public interface IDamageable
 
 public class Health : MonoBehaviour, IDamageable
 {
-    [SerializeField] private EntityData playerData;
+    [SerializeField] private EntityData entityData;
     private float currentHealth;
 
     void Awake()
     {
-        currentHealth = playerData.maxHealth;
+        currentHealth = entityData.maxHealth;
     }
     
     public void TakeDamage(float damage)

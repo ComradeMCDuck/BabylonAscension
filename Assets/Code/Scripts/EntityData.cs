@@ -9,6 +9,7 @@ public class EntityData : ScriptableObject
     [Header("Movement")]
     public float detectionRange = 5f;
     public float moveSpeed = 4f;
+    public float jumpSpeed = 1.0f;
     public bool lockZAxis = true;
 
     [Header("Attack")]

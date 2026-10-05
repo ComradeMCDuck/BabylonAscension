@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class MeleeEnemy : MonoBehaviour
+public class EnemyBehavior : MonoBehaviour
 {
     private enum EnemyState
     {
@@ -78,7 +78,7 @@ public class MeleeEnemy : MonoBehaviour
         if (Time.time < nextAttackTime) return;
         nextAttackTime = Time.time + enemyData.attackCooldown;
 
-        var target = playerTransform.GetComponentInParent<IDamageable>();
+        var target = playerTransform.GetComponentInChildren<IDamageable>();
         if (target != null) Attack(); //target.TakeDamage(enemyData.attackDamage);
         else
         {
