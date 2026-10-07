@@ -16,6 +16,9 @@ MonoBehaviour:
   detectionRange: 5
   moveSpeed: 5
   jumpSpeed: 5
+  dashSpeed: 20
+  dashDuration: 0.1
+  nextDashCooldown: 0.5
   lockZAxis: 1
   attackDamage: 1
   attackRange: 2

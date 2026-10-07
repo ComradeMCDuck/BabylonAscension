@@ -27,7 +27,7 @@ Material:
     m_Floats:
     - _Curve: -0.08
     - _Swirl: 0
-    - _Zoom: 1
+    - _Zoom: 0.85
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1

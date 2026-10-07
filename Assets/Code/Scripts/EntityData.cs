@@ -10,6 +10,9 @@ public class EntityData : ScriptableObject
     public float detectionRange = 5f;
     public float moveSpeed = 4f;
     public float jumpSpeed = 1.0f;
+    public float dashSpeed = 10f;
+    public float dashDuration = 0.2f;
+    public float nextDashCooldown = 1f;
     public bool lockZAxis = true;
 
     [Header("Attack")]
