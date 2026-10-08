@@ -13,22 +13,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckRadius = 0.2f;
 
     [Header("Jump feel")]
-    [SerializeField] private float coyoteTime = 0.1f;       // can still jump just after leaving a ledge
-    [SerializeField] private float jumpBufferTime = 0.1f;   // jump pressed just before landing still counts
+    [SerializeField] private float coyoteTime = 0.1f; // can still jump just after leaving a ledge
+    [SerializeField] private float jumpBufferTime = 0.1f; // jump pressed just before landing should still count
 
     [Header("Ledge grab")]
     [SerializeField] private Vector2 ledgeClimbOffset = new Vector2(0.5f, 1.2f); // forward, up
     [SerializeField] private float ledgeRegrabCooldown = 0.25f;
     private float nextLedgeGrabTime;
 
-    
-
     private InputAction moveAction;
     private InputAction jumpAction;
     private InputAction dashAction;
 
-    private Rigidbody rb;
-    private Collider col;
+    private Rigidbody playerRigidbody;
+    private Collider playerCollider;
     private SpriteRenderer spriteRenderer;
 
     private Vector2 moveInput;
@@ -39,8 +37,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         playerVariables = GetComponentInChildren<PlayerVariables>();
-        rb = GetComponent<Rigidbody>();
-        col = GetComponent<Collider>();
+        playerRigidbody = GetComponent<Rigidbody>();
+        playerCollider = GetComponent<Collider>();
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
         moveAction = InputSystem.actions.FindAction("Move");
@@ -48,8 +46,8 @@ public class PlayerController : MonoBehaviour
         dashAction = InputSystem.actions.FindAction("Sprint");
 
         if (playerVariables == null) Debug.LogWarning("Can't find PlayerVariables in " + gameObject);
-        if (rb == null) Debug.LogWarning("Can't find Rigidbody in " + gameObject);
-        if (col == null) Debug.LogWarning("Can't find Collider in " + gameObject);
+        if (playerRigidbody == null) Debug.LogWarning("Can't find Rigidbody in " + gameObject);
+        if (playerCollider == null) Debug.LogWarning("Can't find Collider in " + gameObject);
         if (spriteRenderer == null) Debug.LogWarning("Can't find SpriteRenderer in children of " + gameObject);
         if (moveAction == null) Debug.LogWarning("Can't find 'Move' in InputActions");
         if (jumpAction == null) Debug.LogWarning("Can't find 'Jump' in InputActions");
@@ -65,12 +63,12 @@ public class PlayerController : MonoBehaviour
         if (dashAction.WasReleasedThisFrame()) playerVariables.DashRequested = false;
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         CheckGround();
         HandleTimers();
 
+        // Calculate the angle of the ledge based on the upper and lower raycast points
         Vector3 ledgeAngle = playerVariables.UpperPointOfRaycast - playerVariables.LowerPointOfRaycast;
         float angle = Mathf.Atan2(ledgeAngle.y, ledgeAngle.x) * Mathf.Rad2Deg;
 
@@ -84,57 +82,80 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            rb.useGravity = true;
+            playerRigidbody.useGravity = true;
             MoveHorizontally();
             HandleJump();
             ApplyGravityModifiers();
-            if (Mathf.Abs(rb.linearVelocity.x) > 0f) HandleDash();
+            if (Mathf.Abs(playerRigidbody.linearVelocity.x) > 0f) HandleDash();
         }
 
         FlipSprite();
     }
-
+    #region code summary
+    /// <summary>
+    /// If the player is in a position to grab a ledge, this method handles the ledge grabbing mechanics. 
+    /// It stops the player's movement, disables gravity, and checks if the player has requested a jump. 
+    /// If a jump is requested, it moves the player to the ledge climb position and re-enables gravity after a cooldown period.
+    /// </summary>
+    #endregion
     private void HandleLedgeGrabbing()
     {
-        rb.linearVelocity = Vector3.zero;
-        rb.useGravity = false;
+        playerRigidbody.linearVelocity = Vector3.zero;
+        playerRigidbody.useGravity = false;
 
         if (jumpBufferCounter > 0f)
         {
             jumpBufferCounter = 0f; // reset it, so it can't also trigger a jump
 
             float dir = playerVariables.FlipX ? -1f : 1f;
-            rb.position += new Vector3(dir * ledgeClimbOffset.x, ledgeClimbOffset.y, 0f);
+            playerRigidbody.position += new Vector3(dir * ledgeClimbOffset.x, ledgeClimbOffset.y, 0f);
 
-            rb.useGravity = true;
+            playerRigidbody.useGravity = true;
             nextLedgeGrabTime = Time.time + ledgeRegrabCooldown;
         }
     }
-
+    #region code summary
+    /// <summary>
+    /// Checks if the player is grounded by performing a sphere check at the player's feet.
+    /// </summary>
+#endregion
     private void CheckGround()
     {
-        Bounds b = col.bounds;
-        Vector3 feet = new Vector3(b.center.x, b.min.y, b.center.z);
+        Bounds bound = playerCollider.bounds;
+        Vector3 feet = new Vector3(bound.center.x, bound.min.y, bound.center.z);
         playerVariables.IsGrounded = Physics.CheckSphere(feet, groundCheckRadius, groundLayer, QueryTriggerInteraction.Ignore);
     }
-
+    #region code summary
+    /// <summary>
+    /// Handles the coyote time and jump buffer timers, allowing for more forgiving jump mechanics.
+    /// </summary>
+#endregion
     private void HandleTimers()
     {
         coyoteCounter = playerVariables.IsGrounded ? coyoteTime : coyoteCounter - Time.fixedDeltaTime;
         jumpBufferCounter -= Time.fixedDeltaTime;
     }
-
+    #region code summary
+    /// <summary>
+    /// Moves the player horizontally based on their input and the defined move speed. 
+    /// The vertical velocity is preserved, and the z-axis velocity is set to zero to ensure movement is constrained to the x-axis.
+    /// </summary>
+#endregion
     private void MoveHorizontally()
     {
-        Vector3 velocity = rb.linearVelocity;
+        Vector3 velocity = playerRigidbody.linearVelocity;
         velocity.x = moveInput.x * playerData.moveSpeed;
-        velocity.z = 0f; // 2.5D: no depth movement
-        rb.linearVelocity = velocity; // Y is untouched, so gravity still works
+        velocity.z = 0f;
+        playerRigidbody.linearVelocity = velocity;
     }
-
+    #region code summary
+    /// <summary>
+    /// Handles the player's jump input, allowing them to jump if they are within the coyote time window or if they have buffered a jump input.
+    /// </summary>
+#endregion
     private void HandleJump()
     {
-        Vector3 velocity = rb.linearVelocity;
+        Vector3 velocity = playerRigidbody.linearVelocity;
 
         if (jumpBufferCounter > 0f && coyoteCounter > 0f)
         {
@@ -143,28 +164,46 @@ public class PlayerController : MonoBehaviour
             coyoteCounter = 0f; // prevents double jumping
         }
 
-        rb.linearVelocity = velocity;
+        playerRigidbody.linearVelocity = velocity;
     }
-
+    #region code summary
+    /// <summary>
+    /// Applies gravity modifiers to the player's vertical velocity based on whether they are rising or falling.
+    /// </summary>
+#endregion
     private void ApplyGravityModifiers()
     {
-        Vector3 velocity = rb.linearVelocity;
+        Vector3 velocity = playerRigidbody.linearVelocity;
         float multiplier = velocity.y < 0f ? playerData.fallMultiplier : playerData.riseMultiplier;
 
         velocity.y += Physics.gravity.y * (multiplier - 1f) * Time.fixedDeltaTime;
         velocity.y = Mathf.Max(velocity.y, -playerData.maxFallSpeed);
-        rb.linearVelocity = velocity;
+        playerRigidbody.linearVelocity = velocity;
     }
-
+    #region code summary
+    /// <summary>
+    /// Checks if the player has requested a dash and initiates the dash if possible. 
+    /// The dash can only be performed if the cooldown period has passed since the last dash. 
+    /// If the player is currently dashing, the dash request is ignored. 
+    /// The direction of the dash is determined by the player's input or facing direction.
+    /// </summary>
+#endregion
     private void HandleDash()
     {
         if (!playerVariables.DashRequested) return;
         playerVariables.DashRequested = false;
 
-        if (Time.time < nextDashTime) return; // dash cooldown not finished
+        if (Time.time < nextDashTime) return;
         StartCoroutine(DashCoroutine());
     }
-
+    #region code summary
+    /// <summary>
+    /// This coroutine handles the dash mechanics. 
+    /// It sets the player's dashing state, calculates the direction of the dash based on input or facing direction, and applies a high-speed movement for a short duration. 
+    /// After the dash duration ends, it resets the dashing state.
+    /// </summary>
+    /// <returns></returns>
+#endregion
     private IEnumerator DashCoroutine()
     {
         playerVariables.IsDashing = true;
@@ -177,18 +216,28 @@ public class PlayerController : MonoBehaviour
 
         while (Time.time < endTime)
         {
-            rb.linearVelocity = new Vector3(direction * playerData.dashSpeed, 0f, 0f); // y = 0 keeps it level
-            yield return new WaitForFixedUpdate(); // stay in sync with physics
+            playerRigidbody.linearVelocity = new Vector3(direction * playerData.dashSpeed, 0f, 0f);
+            yield return new WaitForFixedUpdate();
         }
 
-        playerVariables.IsDashing = false; // normal movement takes over on the next physics step
+        playerVariables.IsDashing = false;
     }
-
+    #region code summary
+    /// <summary>
+    /// Flips the player's sprite based on their horizontal movement input.
+    /// </summary>
+#endregion
     private void FlipSprite()
     {
         if (moveInput.x > 0.01f) SetFacing(false);
         else if (moveInput.x < -0.01f) SetFacing(true);
     }
+    #region code summary
+    /// <summary>
+    /// Sets the player's facing direction and updates the sprite's scale accordingly.
+    /// </summary>
+    /// <param name="facingLeft">If true, the player will face left; otherwise, they will face right.</param>
+#endregion
     private void SetFacing(bool facingLeft)
     {
         playerVariables.FlipX = facingLeft;

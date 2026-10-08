@@ -71,10 +71,12 @@ public class EnemyBehavior : MonoBehaviour
         rb.linearVelocity = velocity;
     }
 
-    // try and attack the player if in range
+    /// <summary>
+    /// Enemy attempts to attack the player if the attack cooldown has passed. 
+    /// If the player implements the IDamageable interface, the enemy will call the Attack method to initiate the attack.
+    /// </summary>
     private void TryAttackPlayer()
     {
-        // Check if the attack cooldown has passed
         if (Time.time < nextAttackTime) return;
         nextAttackTime = Time.time + enemyData.attackCooldown;
 
@@ -85,7 +87,10 @@ public class EnemyBehavior : MonoBehaviour
             Debug.LogWarning("Player does not implement IDamageable interface.");
         }
     }
-
+    
+    /// <summary>
+    /// Initiates the enemy's attack by instantiating the attack effect and launching it towards the player's last known position.
+    /// </summary>
     private void Attack()
     {
         lastKnownPlayerPosition = playerTransform.position;
