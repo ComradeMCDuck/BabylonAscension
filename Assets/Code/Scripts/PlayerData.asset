@@ -15,7 +15,7 @@ MonoBehaviour:
   maxHealth: 100
   detectionRange: 5
   moveSpeed: 5
-  jumpSpeed: 5
+  jumpSpeed: 7
   dashSpeed: 20
   dashDuration: 0.1
   nextDashCooldown: 0.5

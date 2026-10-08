@@ -1,8 +1,6 @@
 using System.Collections;
-using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -17,8 +15,7 @@ public class PlayerController : MonoBehaviour
     [Header("Jump feel")]
     [SerializeField] private float coyoteTime = 0.1f;       // can still jump just after leaving a ledge
     [SerializeField] private float jumpBufferTime = 0.1f;   // jump pressed just before landing still counts
-    [SerializeField, Range(0f, 1f)] private float jumpCutMultiplier = 0.5f; // shorter jump if released early
-    
+
     [Header("Ledge grab")]
     [SerializeField] private Vector2 ledgeClimbOffset = new Vector2(0.5f, 1.2f); // forward, up
     [SerializeField] private float ledgeRegrabCooldown = 0.25f;
@@ -59,16 +56,11 @@ public class PlayerController : MonoBehaviour
     {
         moveInput = moveAction.ReadValue<Vector2>();
 
-        if (jumpAction.WasPressedThisFrame())
-            jumpBufferCounter = jumpBufferTime;
+        if (jumpAction.WasPressedThisFrame()) jumpBufferCounter = jumpBufferTime;
 
-        if (jumpAction.WasReleasedThisFrame())
-            playerVariables.JumpCutRequested = true;
+        if (dashAction.WasPressedThisFrame()) playerVariables.DashRequested = true;
 
-        if (dashAction.WasPressedThisFrame())
-        {
-            playerVariables.DashRequested = true;
-        }
+        if (dashAction.WasReleasedThisFrame()) playerVariables.DashRequested = false;
     }
 
     // Update is called once per frame
@@ -77,11 +69,14 @@ public class PlayerController : MonoBehaviour
         CheckGround();
         HandleTimers();
 
+        Vector3 ledgeAngle = playerVariables.UpperPointOfRaycast - playerVariables.LowerPointOfRaycast;
+        float angle = Mathf.Atan2(ledgeAngle.y, ledgeAngle.x) * Mathf.Rad2Deg;
+
         if (playerVariables.IsDashing)
         {
             playerVariables.DashRequested = false;
         }
-        else if (Time.time >= nextLedgeGrabTime && playerVariables.FacingWall && playerVariables.FoundSpaceAboveWall)
+        else if (Time.time >= nextLedgeGrabTime && playerVariables.FacingWall && playerVariables.FoundSpaceAboveWall && Mathf.Abs(angle) > 89f && Mathf.Abs(angle) < 91f)
         {
             HandleLedgeGrabbing();
         }
@@ -90,7 +85,7 @@ public class PlayerController : MonoBehaviour
             rb.useGravity = true;
             MoveHorizontally();
             HandleJump();
-            HandleDash();
+            if (Mathf.Abs(rb.linearVelocity.x) > 0f) HandleDash();
         }
 
         FlipSprite();
@@ -104,7 +99,6 @@ public class PlayerController : MonoBehaviour
         if (jumpBufferCounter > 0f)
         {
             jumpBufferCounter = 0f; // reset it, so it can't also trigger a jump
-            playerVariables.JumpCutRequested = false; // releasing the button shouldn't cut anything
 
             float dir = playerVariables.FlipX ? -1f : 1f;
             rb.position += new Vector3(dir * ledgeClimbOffset.x, ledgeClimbOffset.y, 0f);
@@ -144,12 +138,6 @@ public class PlayerController : MonoBehaviour
             velocity.y = playerData.jumpSpeed;
             jumpBufferCounter = 0f;
             coyoteCounter = 0f; // prevents double jumping
-            playerVariables.JumpCutRequested = false;
-        }
-        else if (playerVariables.JumpCutRequested)
-        {
-            if (velocity.y > 0f) velocity.y *= jumpCutMultiplier; // released early: cut the jump short
-            playerVariables.JumpCutRequested = false;
         }
 
         rb.linearVelocity = velocity;
