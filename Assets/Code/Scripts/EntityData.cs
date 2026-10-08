@@ -21,4 +21,9 @@ public class EntityData : ScriptableObject
     public float attackCooldown = 5f;
     public float attackSpeed = 1f;
     public GameObject attackEffectPrefab;
+
+    [Header("Gravity")]
+    public float fallMultiplier = 2f; // > 1 = faster fall, < 1 = slower fall
+    public float riseMultiplier = 1f; // applies while moving upward
+    public float maxFallSpeed = 20f; // terminal velocity
 }

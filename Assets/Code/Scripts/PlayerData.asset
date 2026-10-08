@@ -15,7 +15,7 @@ MonoBehaviour:
   maxHealth: 100
   detectionRange: 5
   moveSpeed: 5
-  jumpSpeed: 7
+  jumpSpeed: 12
   dashSpeed: 20
   dashDuration: 0.1
   nextDashCooldown: 0.5
@@ -25,3 +25,6 @@ MonoBehaviour:
   attackCooldown: 5
   attackSpeed: 1
   attackEffectPrefab: {fileID: 0}
+  fallMultiplier: 3
+  riseMultiplier: 3
+  maxFallSpeed: 30

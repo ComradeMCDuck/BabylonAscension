@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float ledgeRegrabCooldown = 0.25f;
     private float nextLedgeGrabTime;
 
+    
+
     private InputAction moveAction;
     private InputAction jumpAction;
     private InputAction dashAction;
@@ -85,6 +87,7 @@ public class PlayerController : MonoBehaviour
             rb.useGravity = true;
             MoveHorizontally();
             HandleJump();
+            ApplyGravityModifiers();
             if (Mathf.Abs(rb.linearVelocity.x) > 0f) HandleDash();
         }
 
@@ -140,6 +143,16 @@ public class PlayerController : MonoBehaviour
             coyoteCounter = 0f; // prevents double jumping
         }
 
+        rb.linearVelocity = velocity;
+    }
+
+    private void ApplyGravityModifiers()
+    {
+        Vector3 velocity = rb.linearVelocity;
+        float multiplier = velocity.y < 0f ? playerData.fallMultiplier : playerData.riseMultiplier;
+
+        velocity.y += Physics.gravity.y * (multiplier - 1f) * Time.fixedDeltaTime;
+        velocity.y = Mathf.Max(velocity.y, -playerData.maxFallSpeed);
         rb.linearVelocity = velocity;
     }
 

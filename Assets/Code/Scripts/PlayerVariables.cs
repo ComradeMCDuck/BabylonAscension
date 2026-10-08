@@ -11,6 +11,7 @@ public class PlayerVariables : MonoBehaviour
     [SerializeField] private bool flipX;
     [SerializeField] private Vector3 upperPointOfRaycast;
     [SerializeField] private Vector3 lowerPointOfRaycast;
+    
 
     public bool IsGrounded { get => isGrounded; set => isGrounded = value; }
     public bool IsDashing { get => isDashing; set => isDashing = value; }
@@ -21,4 +22,5 @@ public class PlayerVariables : MonoBehaviour
     public bool FlipX { get => flipX; set => flipX = value; }
     public Vector3 UpperPointOfRaycast { get => upperPointOfRaycast; set => upperPointOfRaycast = value; }
     public Vector3 LowerPointOfRaycast { get => lowerPointOfRaycast; set => lowerPointOfRaycast = value; }
+
 }
