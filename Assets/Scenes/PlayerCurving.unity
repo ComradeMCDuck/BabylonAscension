@@ -5867,7 +5867,7 @@ MonoBehaviour:
   boxColliders: 15
   meshColliders: 1
   triggerVolumes: 0
-  buildMilliseconds: 0.0171
+  buildMilliseconds: 0.0275
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
@@ -6723,14 +6723,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5215192759371403518, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5646767070449382382, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
-      propertyPath: m_Mass
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 5646767070449382382, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
-      propertyPath: m_LinearDamping
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

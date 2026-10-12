@@ -78,6 +78,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (Time.time >= nextLedgeGrabTime && playerVariables.FacingWall && playerVariables.FoundSpaceAboveWall && Mathf.Abs(angle) > 89f && Mathf.Abs(angle) < 91f)
         {
+            Debug.Log(angle);
             HandleLedgeGrabbing();
         }
         else

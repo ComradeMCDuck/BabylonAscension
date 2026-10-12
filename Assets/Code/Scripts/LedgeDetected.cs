@@ -3,6 +3,7 @@ using UnityEngine;
 public class LedgeDetected : MonoBehaviour
 {
     [SerializeField] private LayerMask layerMask;
+    [SerializeField] private float detectionDistance = 0.5f;
 
     private PlayerVariables playerVariables;
     private bool isUpper;
@@ -25,7 +26,7 @@ public class LedgeDetected : MonoBehaviour
     private void FixedUpdate()
     {
         Vector3 direction = playerVariables.FlipX ? Vector3.left : Vector3.right;
-        if (!Physics.Raycast(transform.position, direction, out RaycastHit hit, Mathf.Infinity, layerMask)) return;
+        if (!Physics.Raycast(transform.position, direction, out RaycastHit hit, detectionDistance, layerMask)) return;
 
         Debug.DrawRay(transform.position, direction * hit.distance, Color.yellow);
         if (isUpper) playerVariables.UpperPointOfRaycast = hit.point;
