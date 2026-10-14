@@ -101,6 +101,7 @@ GameObject:
   - component: {fileID: 6675077669277327910}
   - component: {fileID: 1981439960397605565}
   - component: {fileID: 2177014335127680306}
+  - component: {fileID: 7568976479256569130}
   m_Layer: 10
   m_Name: Enemy
   m_TagString: Untagged
@@ -165,6 +166,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemy
   enemyData: {fileID: 11400000, guid: 0ab34f18482fee84b8a6e157bb8f8273, type: 2}
+  attackOrigin: {fileID: 0}
+--- !u!114 &7568976479256569130
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e74bef617939334d9577fee3f6e457e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
 --- !u!1 &6316302410177459154
 GameObject:
   m_ObjectHideFlags: 0

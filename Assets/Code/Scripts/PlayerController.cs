@@ -19,6 +19,19 @@ public class PlayerController : MonoBehaviour
     [Header("Ledge grab")]
     [SerializeField] private Vector2 ledgeClimbOffset = new Vector2(0.5f, 1.2f); // forward, up
     [SerializeField] private float ledgeRegrabCooldown = 0.25f;
+
+
+    [Header("Momentum and recoil")]
+    [SerializeField] private float groundAcceleration = 60f;
+    [SerializeField] private float groundDeceleration = 70f;
+    [SerializeField] private float airAcceleration = 25f;
+    [SerializeField] private float airDeceleration = 2f;
+
+    [Tooltip("Maximum combined horizontal and vertical speed.")]
+    [SerializeField] private float maxPlanarSpeed = 18f;
+
+
+    private float recoilControlTimer;
     private float nextLedgeGrabTime;
 
     private InputAction moveAction;
@@ -136,24 +149,45 @@ public class PlayerController : MonoBehaviour
         coyoteCounter = playerVariables.IsGrounded ? coyoteTime : coyoteCounter - Time.fixedDeltaTime;
         jumpBufferCounter -= Time.fixedDeltaTime;
     }
-    #region code summary
-    /// <summary>
-    /// Moves the player horizontally based on their input and the defined move speed. 
-    /// The vertical velocity is preserved, and the z-axis velocity is set to zero to ensure movement is constrained to the x-axis.
-    /// </summary>
-#endregion
+
     private void MoveHorizontally()
     {
-        Vector3 velocity = playerRigidbody.linearVelocity;
-        velocity.x = moveInput.x * playerData.moveSpeed;
+        Vector3 velocity = rb.linearVelocity;
+
+        float targetSpeed = moveInput.x * playerData.moveSpeed;
+
+        if (Mathf.Abs(moveInput.x) > 0.01f)
+        {
+            // Accelerate toward the desired movement speed.
+            float acceleration = playerVariables.IsGrounded
+                ? groundAcceleration
+                : airAcceleration;
+
+            velocity.x = Mathf.MoveTowards(
+                velocity.x,
+                targetSpeed,
+                acceleration * Time.fixedDeltaTime
+            );
+        }
+        else
+        {
+            // Preserve recoil momentum in the air.
+            // On the ground, stop more quickly.
+            float deceleration = playerVariables.IsGrounded
+                ? groundDeceleration
+                : airDeceleration;
+
+            velocity.x = Mathf.MoveTowards(
+                velocity.x,
+                0f,
+                deceleration * Time.fixedDeltaTime
+            );
+        }
+
         velocity.z = 0f;
-        playerRigidbody.linearVelocity = velocity;
+        rb.linearVelocity = velocity;
     }
-    #region code summary
-    /// <summary>
-    /// Handles the player's jump input, allowing them to jump if they are within the coyote time window or if they have buffered a jump input.
-    /// </summary>
-#endregion
+
     private void HandleJump()
     {
         Vector3 velocity = playerRigidbody.linearVelocity;
@@ -230,8 +264,14 @@ public class PlayerController : MonoBehaviour
 #endregion
     private void FlipSprite()
     {
-        if (moveInput.x > 0.01f) SetFacing(false);
-        else if (moveInput.x < -0.01f) SetFacing(true);
+        // BowCombat owns the facing direction when attached.
+        if (GetComponent<BowCombat>() != null)
+            return;
+
+        if (moveInput.x > 0.01f)
+            SetFacing(false);
+        else if (moveInput.x < -0.01f)
+            SetFacing(true);
     }
     #region code summary
     /// <summary>
@@ -247,4 +287,27 @@ public class PlayerController : MonoBehaviour
         scale.x = Mathf.Abs(scale.x) * (facingLeft ? -1f : 1f);
         spriteVisual.localScale = scale;
     }
+
+
+    public void ApplyBowRecoil(Vector3 impulse)
+    {
+        if (rb == null) return;
+
+        rb.AddForce(impulse, ForceMode.Impulse);
+
+        // Limit total speed in the gameplay plane (X/Y).
+        Vector3 velocity = rb.linearVelocity;
+        Vector2 planarVelocity = new Vector2(velocity.x, velocity.y);
+
+        if (planarVelocity.magnitude > maxPlanarSpeed)
+        {
+            planarVelocity = planarVelocity.normalized * maxPlanarSpeed;
+
+            velocity.x = planarVelocity.x;
+            velocity.y = planarVelocity.y;
+
+            rb.linearVelocity = velocity;
+        }
+    }
+
 }
