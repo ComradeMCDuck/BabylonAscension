@@ -16,11 +16,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float coyoteTime = 0.1f; // can still jump just after leaving a ledge
     [SerializeField] private float jumpBufferTime = 0.1f; // jump pressed just before landing should still count
 
-    [Header("Ledge grab")]
-    [SerializeField] private Vector2 ledgeClimbOffset = new Vector2(0.5f, 1.2f); // forward, up
-    [SerializeField] private float ledgeRegrabCooldown = 0.25f;
-
-
     [Header("Momentum and recoil")]
     [SerializeField] private float groundAcceleration = 60f;
     [SerializeField] private float groundDeceleration = 70f;
@@ -29,10 +24,6 @@ public class PlayerController : MonoBehaviour
 
     [Tooltip("Maximum combined horizontal and vertical speed.")]
     [SerializeField] private float maxPlanarSpeed = 18f;
-
-
-    private float recoilControlTimer;
-    private float nextLedgeGrabTime;
 
     private InputAction moveAction;
     private InputAction jumpAction;
@@ -81,18 +72,9 @@ public class PlayerController : MonoBehaviour
         CheckGround();
         HandleTimers();
 
-        // Calculate the angle of the ledge based on the upper and lower raycast points
-        Vector3 ledgeAngle = playerVariables.UpperPointOfRaycast - playerVariables.LowerPointOfRaycast;
-        float angle = Mathf.Atan2(ledgeAngle.y, ledgeAngle.x) * Mathf.Rad2Deg;
-
         if (playerVariables.IsDashing)
         {
             playerVariables.DashRequested = false;
-        }
-        else if (Time.time >= nextLedgeGrabTime && playerVariables.FacingWall && playerVariables.FoundSpaceAboveWall && Mathf.Abs(angle) > 89f && Mathf.Abs(angle) < 91f)
-        {
-            Debug.Log(angle);
-            HandleLedgeGrabbing();
         }
         else
         {
@@ -105,34 +87,6 @@ public class PlayerController : MonoBehaviour
 
         FlipSprite();
     }
-    #region code summary
-    /// <summary>
-    /// If the player is in a position to grab a ledge, this method handles the ledge grabbing mechanics. 
-    /// It stops the player's movement, disables gravity, and checks if the player has requested a jump. 
-    /// If a jump is requested, it moves the player to the ledge climb position and re-enables gravity after a cooldown period.
-    /// </summary>
-    #endregion
-    private void HandleLedgeGrabbing()
-    {
-        playerRigidbody.linearVelocity = Vector3.zero;
-        playerRigidbody.useGravity = false;
-
-        if (jumpBufferCounter > 0f)
-        {
-            jumpBufferCounter = 0f; // reset it, so it can't also trigger a jump
-
-            float dir = playerVariables.FlipX ? -1f : 1f;
-            playerRigidbody.position += new Vector3(dir * ledgeClimbOffset.x, ledgeClimbOffset.y, 0f);
-
-            playerRigidbody.useGravity = true;
-            nextLedgeGrabTime = Time.time + ledgeRegrabCooldown;
-        }
-    }
-    #region code summary
-    /// <summary>
-    /// Checks if the player is grounded by performing a sphere check at the player's feet.
-    /// </summary>
-#endregion
     private void CheckGround()
     {
         Bounds bound = playerCollider.bounds;
@@ -152,7 +106,7 @@ public class PlayerController : MonoBehaviour
 
     private void MoveHorizontally()
     {
-        Vector3 velocity = rb.linearVelocity;
+        Vector3 velocity = playerRigidbody.linearVelocity;
 
         float targetSpeed = moveInput.x * playerData.moveSpeed;
 
@@ -185,7 +139,7 @@ public class PlayerController : MonoBehaviour
         }
 
         velocity.z = 0f;
-        rb.linearVelocity = velocity;
+        playerRigidbody.linearVelocity = velocity;
     }
 
     private void HandleJump()
@@ -291,12 +245,12 @@ public class PlayerController : MonoBehaviour
 
     public void ApplyBowRecoil(Vector3 impulse)
     {
-        if (rb == null) return;
+        if (playerRigidbody == null) return;
 
-        rb.AddForce(impulse, ForceMode.Impulse);
+        playerRigidbody.AddForce(impulse, ForceMode.Impulse);
 
         // Limit total speed in the gameplay plane (X/Y).
-        Vector3 velocity = rb.linearVelocity;
+        Vector3 velocity = playerRigidbody.linearVelocity;
         Vector2 planarVelocity = new Vector2(velocity.x, velocity.y);
 
         if (planarVelocity.magnitude > maxPlanarSpeed)
@@ -306,7 +260,7 @@ public class PlayerController : MonoBehaviour
             velocity.x = planarVelocity.x;
             velocity.y = planarVelocity.y;
 
-            rb.linearVelocity = velocity;
+            playerRigidbody.linearVelocity = velocity;
         }
     }
 

@@ -1647,6 +1647,10 @@ PrefabInstance:
       propertyPath: enemyData
       value: 
       objectReference: {fileID: 11400000, guid: 12464f303cd899f48ae06dc5d5174599, type: 2}
+    - target: {fileID: 3747405914932898914, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: enemyData
+      value: 
+      objectReference: {fileID: 11400000, guid: 12464f303cd899f48ae06dc5d5174599, type: 2}
     - target: {fileID: 5381662566538865667, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
       propertyPath: m_Name
       value: MeleeEnemy (1)
@@ -5256,6 +5260,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -2325959678832883612, guid: df7ace0ec5433224da2edf4f9893bceb, type: 3}
+      propertyPath: enemyData
+      value: 
+      objectReference: {fileID: 11400000, guid: 78530024cc693db439d9884a81363c94, type: 2}
     - target: {fileID: 5381662566538865667, guid: df7ace0ec5433224da2edf4f9893bceb, type: 3}
       propertyPath: m_Name
       value: ShooterEnemy
@@ -5928,7 +5936,7 @@ MonoBehaviour:
   boxColliders: 15
   meshColliders: 1
   triggerVolumes: 0
-  buildMilliseconds: 0.433
+  buildMilliseconds: 0.0219
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
@@ -6586,6 +6594,10 @@ PrefabInstance:
       propertyPath: enemyData
       value: 
       objectReference: {fileID: 11400000, guid: 12464f303cd899f48ae06dc5d5174599, type: 2}
+    - target: {fileID: 3747405914932898914, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: enemyData
+      value: 
+      objectReference: {fileID: 11400000, guid: 12464f303cd899f48ae06dc5d5174599, type: 2}
     - target: {fileID: 5381662566538865667, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
       propertyPath: m_Name
       value: MeleeEnemy
@@ -6815,7 +6827,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 5944511894012685786, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
+    - {fileID: 2947794936082778837, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
+    - {fileID: 4324132276490222755, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
