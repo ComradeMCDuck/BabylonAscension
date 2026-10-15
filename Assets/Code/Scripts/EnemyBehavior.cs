@@ -95,7 +95,7 @@ public class EnemyBehavior : MonoBehaviour
     {
         lastKnownPlayerPosition = playerTransform.position;
         attackProjectile = Instantiate(enemyData.attackEffectPrefab, attackOrigin.transform.position, Quaternion.identity);
-        StartCoroutine(attackProjectile.GetComponent<Projectile>().Shoot(lastKnownPlayerPosition, enemyData.attackSpeed));
+        attackProjectile.GetComponent<Projectile>().Shoot(lastKnownPlayerPosition, enemyData.attackSpeed);
     }
 
     void OnDrawGizmosSelected()

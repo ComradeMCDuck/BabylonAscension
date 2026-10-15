@@ -3,31 +3,46 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void OnCollisionEnter(Collision collision)
+    [SerializeField] private LayerMask hitLayers;   // Environment + Player
+
+    private Rigidbody rb;
+    private Vector3 target;
+    private float speed;
+    private bool launched;
+
+    void Awake() => rb = GetComponent<Rigidbody>();
+
+    void FixedUpdate()
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            // Assuming the player has a PlayerHealth component to manage health
-            var playerHealth = collision.gameObject.GetComponent<IDamageable>();
-            if (playerHealth != null)
-            {
-                Debug.Log("Player hit! Dealing damage.");
-                //playerHealth.TakeDamage(10); // Deal damage to the player
-            }
-        }
-        Destroy(gameObject); // Destroy the object after hitting the player
+        if (!launched) return;
+
+        Vector3 next = Vector3.MoveTowards(rb.position, target, speed * Time.fixedDeltaTime);
+        rb.MovePosition(next);
+
+        if ((next - target).sqrMagnitude < 0.0025f) Destroy(gameObject);
     }
 
-    public IEnumerator Shoot(Vector3 targetPosition, float attackSpeed)
+    void OnTriggerEnter(Collider other)
     {
-        // Move toward the saved position until we reach it
-        Vector3 targetMiddlePosition = targetPosition + new Vector3(0f, 1f, 0f);
-        while (this != null && Vector3.Distance(transform.position, targetMiddlePosition) > 0.05f)
+        Debug.Log($"Projectile hit: {other.gameObject.name} (Layer: {other.gameObject.layer})");
+        if ((hitLayers.value & (1 << other.gameObject.layer)) == 0) return;
+
+        if (other.CompareTag("Player"))
         {
-            transform.position = Vector3.MoveTowards(transform.position, targetMiddlePosition, attackSpeed * Time.deltaTime);
-            yield return null; // wait one frame, then continue the loop
+            var damageable = other.GetComponentInParent<IDamageable>();
+            if (damageable != null)
+            {
+                Debug.Log("Player hit! Dealing damage.");
+                // damageable.TakeDamage(10);
+            }
         }
-        if (this != null) Destroy(gameObject); // Destroy the object after reaching the target position and if it still exists
+        Destroy(gameObject);
+    }
+
+    public void Shoot(Vector3 targetPosition, float attackSpeed)
+    {
+        target = targetPosition + Vector3.up;
+        speed = attackSpeed;
+        launched = true;
     }
 }

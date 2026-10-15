@@ -197,7 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a7e8d78dc565f54ba8b6dfeaf5be94b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeEnemy
-  enemyData: {fileID: 11400000, guid: 0ab34f18482fee84b8a6e157bb8f8273, type: 2}
+  enemyData: {fileID: 11400000, guid: 12464f303cd899f48ae06dc5d5174599, type: 2}
   attackOrigin: {fileID: 4821803315582965824}
 --- !u!114 &3747405914932898914
 MonoBehaviour:
@@ -211,6 +211,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e74bef617939334d9577fee3f6e457e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  enemyData: {fileID: 11400000, guid: 12464f303cd899f48ae06dc5d5174599, type: 2}
+  currentHealth: 0
 --- !u!1 &6316302410177459154
 GameObject:
   m_ObjectHideFlags: 0

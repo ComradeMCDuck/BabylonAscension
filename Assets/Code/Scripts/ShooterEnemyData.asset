@@ -13,11 +13,18 @@ MonoBehaviour:
   m_Name: ShooterEnemyData
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
   maxHealth: 100
-  detectionRange: 10
+  detectionRange: 15
   moveSpeed: 4
+  jumpSpeed: 1
+  dashSpeed: 10
+  dashDuration: 0.2
+  nextDashCooldown: 1
   lockZAxis: 1
   attackDamage: 1
-  attackRange: 8
+  attackRange: 13
   attackCooldown: 2
-  attackSpeed: 5
+  attackSpeed: 12
   attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
+  fallMultiplier: 2
+  riseMultiplier: 1
+  maxFallSpeed: 20
