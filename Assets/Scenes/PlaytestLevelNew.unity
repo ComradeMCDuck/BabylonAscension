@@ -6113,6 +6113,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114486199799211510, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+      propertyPath: m_Dash.Module
+      value: 
+      objectReference: {fileID: 11400000, guid: 5e87a1b7bfec1074c96e231912817d18, type: 2}
+    - target: {fileID: 114486199799211510, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+      propertyPath: m_Jump.AirJumpAllowed
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114486199799211510, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+      propertyPath: m_Dash.WillDashPaddingTime
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 114486199799211510, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+      propertyPath: m_WallInteraction.CanWallJump
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114486199799211510, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+      propertyPath: m_WallInteraction.CanGrabLedge
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114486199799211510, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+      propertyPath: m_WallInteraction.CanWallSlide
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 114911783089831038, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
       propertyPath: m_CollisionLayer.m_Bits
       value: 64
@@ -6998,7 +7022,7 @@ MonoBehaviour:
   boxColliders: 19
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0256
+  buildMilliseconds: 0.0209
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
