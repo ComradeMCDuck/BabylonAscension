@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.ta-david-yu.2d-platformer-hunter": "https://github.com/ta-david-yu/2D-Platformer-Hunter.git",
     "com.unity.2d.animation": "16.0.1",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "2.0.14",

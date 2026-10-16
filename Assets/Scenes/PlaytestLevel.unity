@@ -7367,7 +7367,7 @@ MonoBehaviour:
   boxColliders: 29
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0284
+  buildMilliseconds: 0.0333
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
@@ -8233,6 +8233,10 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 1654493242139664174, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
+      propertyPath: playerRb
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 1654493242139664174, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
       propertyPath: aimCamera
       value: 
       objectReference: {fileID: 330585545}
@@ -8246,7 +8250,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1654493242139664174, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
       propertyPath: fireCooldown
-      value: 0.05
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1654493242139664174, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
+      propertyPath: maxArrowSpeed
+      value: 48
       objectReference: {fileID: 0}
     - target: {fileID: 5215192759371403518, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -8299,6 +8307,22 @@ PrefabInstance:
     - target: {fileID: 5646767070449382382, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
       propertyPath: m_LinearDamping
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6468886704043650859, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
+      propertyPath: m_Height
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7314297308591435719, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7314297308591435719, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7314297308591435719, guid: 8cac6128bd2d4644983a4d8151c28aa5, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2.8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:

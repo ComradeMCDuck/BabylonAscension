@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.ta-david-yu.2d-platformer-hunter": {
+      "version": "file:com.ta-david-yu.2d-platformer-hunter",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.2d.animation": {
       "version": "16.0.1",
       "depth": 0,

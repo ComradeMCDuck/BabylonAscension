@@ -3,6 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "EntityData", menuName = "Scriptable Objects/EntityData")]
 public class EntityData : ScriptableObject
 {
+    public int entityID;
+
     [Header("Health")]
     public float maxHealth = 100f;
 

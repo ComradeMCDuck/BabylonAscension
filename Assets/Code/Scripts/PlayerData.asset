@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
   maxHealth: 100
   detectionRange: 5
-  moveSpeed: 5
+  moveSpeed: 7.5
   jumpSpeed: 15
-  dashSpeed: 20
+  dashSpeed: 15
   dashDuration: 0.1
   nextDashCooldown: 0.5
   lockZAxis: 1

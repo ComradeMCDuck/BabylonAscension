@@ -3,11 +3,15 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    [SerializeField] private LayerMask hitLayers;   // Environment + Player
+    [SerializeField] private LayerMask hitLayers;
 
     private Rigidbody rb;
     private Vector3 target;
+    private Vector3 direction;
+    private Vector3 origin;
     private float speed;
+    private float range;
+    private bool keepFlying;
     private bool launched;
 
     void Awake() => rb = GetComponent<Rigidbody>();
@@ -16,15 +20,22 @@ public class Projectile : MonoBehaviour
     {
         if (!launched) return;
 
+        if (keepFlying || Vector3.Distance(rb.position, origin) >= range)
+        {
+            // Straight line past the target, only a hit or the lifetime ends it
+            rb.MovePosition(rb.position + direction * speed * Time.fixedDeltaTime);
+            return;
+        }
+
         Vector3 next = Vector3.MoveTowards(rb.position, target, speed * Time.fixedDeltaTime);
         rb.MovePosition(next);
 
-        if ((next - target).sqrMagnitude < 0.0025f) Destroy(gameObject);
+        if ((next - target).sqrMagnitude < 0.0025f || Vector3.Distance(next, origin) >= range)
+            Destroy(gameObject);
     }
 
     void OnTriggerEnter(Collider other)
     {
-        Debug.Log($"Projectile hit: {other.gameObject.name} (Layer: {other.gameObject.layer})");
         if ((hitLayers.value & (1 << other.gameObject.layer)) == 0) return;
 
         if (other.CompareTag("Player"))
@@ -32,17 +43,20 @@ public class Projectile : MonoBehaviour
             var damageable = other.GetComponentInParent<IDamageable>();
             if (damageable != null)
             {
-                Debug.Log("Player hit! Dealing damage.");
                 // damageable.TakeDamage(10);
             }
         }
         Destroy(gameObject);
     }
 
-    public void Shoot(Vector3 targetPosition, float attackSpeed)
+    public void Shoot(Vector3 targetPosition, EntityData entity)
     {
         target = targetPosition + Vector3.up;
-        speed = attackSpeed;
+        speed = entity.attackSpeed;
+        range = entity.attackRange;
+        keepFlying = entity.entityID == 2;
+        origin = rb.position;
+        direction = (target - origin).normalized;   // fixed once, at launch
         launched = true;
     }
 }

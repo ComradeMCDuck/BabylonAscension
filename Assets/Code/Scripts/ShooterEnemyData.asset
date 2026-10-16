@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb76347b8be099498ed2c252b74ae42, type: 3}
   m_Name: ShooterEnemyData
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
-  maxHealth: 100
+  entityID: 2
+  maxHealth: 50
   detectionRange: 15
   moveSpeed: 4
   jumpSpeed: 1
@@ -21,7 +22,7 @@ MonoBehaviour:
   nextDashCooldown: 1
   lockZAxis: 1
   attackDamage: 1
-  attackRange: 13
+  attackRange: 10
   attackCooldown: 2
   attackSpeed: 12
   attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
