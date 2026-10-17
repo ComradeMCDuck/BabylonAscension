@@ -2304,11 +2304,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08a5c8df9973e2d45b87bc6cf8817e66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  aimCamera: {fileID: 0}
-  spriteVisual: {fileID: 0}
+  aimCamera: {fileID: 330585545}
+  spriteVisual: {fileID: 1489723448}
   bowPivot: {fileID: 995564540}
   arrowSpawn: {fileID: 16077778}
-  bodyRenderer: {fileID: 0}
+  bodyRenderer: {fileID: 1489723449}
   bowRenderer: {fileID: 1876703881}
   playerRb: {fileID: 0}
   controller: {fileID: 0}
@@ -3787,6 +3787,16 @@ PrefabInstance:
       addedObject: {fileID: 995564540}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+--- !u!4 &1489723448 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4254494959962940, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+  m_PrefabInstance: {fileID: 1489723447}
+  m_PrefabAsset: {fileID: 0}
+--- !u!212 &1489723449 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 212301338442792472, guid: a1ca6599874631c4984bd194e69d7bb0, type: 3}
+  m_PrefabInstance: {fileID: 1489723447}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1497086530
 GameObject:
   m_ObjectHideFlags: 0
@@ -4664,7 +4674,7 @@ MonoBehaviour:
   boxColliders: 19
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0273
+  buildMilliseconds: 0.0215
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
