@@ -51,7 +51,7 @@ public class Projectile : MonoBehaviour
 
     public void Shoot(Vector3 targetPosition, EntityData entity)
     {
-        target = targetPosition + Vector3.up;
+        target = targetPosition;
         speed = entity.attackSpeed;
         range = entity.attackRange;
         keepFlying = entity.entityID == 2;

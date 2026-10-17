@@ -93,12 +93,25 @@ namespace DYP
 
             private float m_DashTimer;
             private float m_PrevDashTimer;
+            private float m_LastDashTime = -Mathf.Infinity;
+            public float LastDashTime { get { return m_LastDashTime; } }
+
+            public bool CanUse(float time)
+            {
+                if (Module == null)
+                {
+                    return false;
+                }
+
+                return time - m_LastDashTime >= Module.DashCooldown;
+            }
 
             public void Start(int dashDir, float timeStep)
             {
                 m_DashDir = dashDir;
                 m_PrevDashTimer = 0.0f;
                 m_DashTimer = timeStep;
+                m_LastDashTime = Time.time;
             }
 
             public void _Update(float timeStep)
@@ -1403,6 +1416,11 @@ namespace DYP
             }
 
             if (IsState(MotorState.Dashing))
+            {
+                return;
+            }
+
+            if (!m_Dash.CanUse(Time.time))
             {
                 return;
             }

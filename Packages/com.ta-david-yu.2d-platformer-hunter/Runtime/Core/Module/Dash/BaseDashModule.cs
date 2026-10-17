@@ -12,6 +12,10 @@ namespace DYP
         protected float m_DashTime = 0.15f;
         public float DashTime { get { return m_DashTime; } }
 
+        [SerializeField]
+        protected float m_DashCooldown = 0.35f;
+        public virtual float DashCooldown { get { return m_DashCooldown; } }
+
         public abstract bool UseCollision { get; }
         public abstract bool UseGravity { get; }
         public abstract bool ChangeFacing { get; }

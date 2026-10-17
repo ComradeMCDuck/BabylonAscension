@@ -1,3 +1,6 @@
 ﻿{
-	"name": "com.ta-david-yu.2d-platformer-hunter"
+    "name": "com.ta-david-yu.2d-platformer-hunter",
+    "references": [
+        "Unity.InputSystem"
+    ]
 }
