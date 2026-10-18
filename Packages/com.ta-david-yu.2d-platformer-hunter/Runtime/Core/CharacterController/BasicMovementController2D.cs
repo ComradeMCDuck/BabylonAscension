@@ -83,6 +83,28 @@ namespace DYP
         }
 
         [System.Serializable]
+        class Recoil
+        {
+            [Tooltip("Acceleration toward the input speed while recoiling on the ground with movement input.")]
+            public float GroundAcceleration = 60f;
+            [Tooltip("Deceleration while recoiling on the ground without movement input.")]
+            public float GroundDeceleration = 70f;
+            [Tooltip("Acceleration toward the input speed while recoiling in the air with movement input.")]
+            public float AirAcceleration = 25f;
+            [Tooltip("Deceleration while recoiling in the air without movement input. Low values preserve momentum.")]
+            public float AirDeceleration = 2f;
+            [Tooltip("Maximum combined horizontal and vertical speed after an impulse is applied.")]
+            public float MaxPlanarSpeed = 18f;
+            [Tooltip("Cancel falling speed before an upward impulse, so shooting downward always launches the character up.")]
+            public bool CancelFallingOnUpwardImpulse = true;
+
+            [HideInInspector]
+            public bool HorizontalActive = false;
+            [HideInInspector]
+            public bool VerticalActive = false;
+        }
+
+        [System.Serializable]
         class Dash
         {
             public BaseDashModule Module;
@@ -222,6 +244,9 @@ namespace DYP
 
         [SerializeField]
         private WallInteraction m_WallInteraction;
+
+        [SerializeField]
+        private Recoil m_Recoil = new Recoil();
 
         private MotorState m_MotorState;
 
@@ -444,6 +469,45 @@ namespace DYP
             throw new NotImplementedException();
         }
         #endregion
+
+        /// <summary>
+        /// Instantly adds velocity to the character (e.g. bow recoil, knockback).
+        /// Horizontal momentum then decays using the Recoil settings instead of
+        /// snapping back to the input speed.
+        /// </summary>
+        public void AddImpulse(Vector2 impulse)
+        {
+            if (IsState(MotorState.OnLadder) || IsState(MotorState.Frozen))
+            {
+                return;
+            }
+
+            if (m_Recoil.CancelFallingOnUpwardImpulse && impulse.y > 0.0f && m_Velocity.y < 0.0f)
+            {
+                m_Velocity.y = 0;
+            }
+
+            Vector2 planarVelocity = new Vector2(m_Velocity.x, m_Velocity.y) + impulse;
+
+            if (planarVelocity.magnitude > m_Recoil.MaxPlanarSpeed)
+            {
+                planarVelocity = planarVelocity.normalized * m_Recoil.MaxPlanarSpeed;
+            }
+
+            m_Velocity.x = planarVelocity.x;
+            m_Velocity.y = planarVelocity.y;
+            m_VelocityXSmoothing = 0;
+
+            if (impulse.x != 0.0f)
+            {
+                m_Recoil.HorizontalActive = true;
+            }
+
+            if (impulse.y > 0.0f)
+            {
+                m_Recoil.VerticalActive = true;
+            }
+        }
 
         public void SetFrozen(bool freeze)
         {
@@ -935,8 +999,41 @@ namespace DYP
                 // setup velocity.x based on input
                 float targetVecX = input.x * m_MovementSettings.Speed;
 
+                // stop recoil momentum when hitting a wall in the moving direction
+                if (m_Recoil.HorizontalActive)
+                {
+                    if ((m_Velocity.x > 0.0f && m_Motor.Collisions.Right) || (m_Velocity.x < 0.0f && m_Motor.Collisions.Left))
+                    {
+                        m_Velocity.x = 0;
+                        m_Recoil.HorizontalActive = false;
+                    }
+                }
+
+                // recoil momentum: accelerate / decelerate toward the input speed instead of snapping to it
+                if (m_Recoil.HorizontalActive)
+                {
+                    bool hasInput = rawInput.x != 0;
+                    float accel;
+
+                    if (IsOnGround())
+                    {
+                        accel = hasInput ? m_Recoil.GroundAcceleration : m_Recoil.GroundDeceleration;
+                    }
+                    else
+                    {
+                        accel = hasInput ? m_Recoil.AirAcceleration : m_Recoil.AirDeceleration;
+                    }
+
+                    m_Velocity.x = Mathf.MoveTowards(m_Velocity.x, targetVecX, accel * timeStep);
+                    m_VelocityXSmoothing = 0;
+
+                    if (Mathf.Approximately(m_Velocity.x, targetVecX))
+                    {
+                        m_Recoil.HorizontalActive = false;
+                    }
+                }
                 // smooth x direction motion
-                if (IsOnGround())
+                else if (IsOnGround())
                 {
                     m_Velocity.x = targetVecX;
                     m_VelocityXSmoothing = targetVecX;
@@ -1099,8 +1196,14 @@ namespace DYP
                     startJump(rawInput, wallDirX);
                 }
 
-                // variable jump height based on user input
-                if (m_Jump.HasVariableJumpHeight)
+                // upward recoil ends once the character stops rising
+                if (m_Recoil.VerticalActive && m_Velocity.y <= 0.0f)
+                {
+                    m_Recoil.VerticalActive = false;
+                }
+
+                // variable jump height based on user input (skipped while rising from recoil)
+                if (m_Jump.HasVariableJumpHeight && !m_Recoil.VerticalActive)
                 {
                     if (!m_InputBuffer.IsJumpHeld && rawInput.y >= 0)
                     {
@@ -1311,6 +1414,9 @@ namespace DYP
             {
                 consumeJumpPressed();
 
+                // a real jump restores variable jump height
+                m_Recoil.VerticalActive = false;
+
                 changeState(MotorState.Jumping);
 
                 OnJump.Invoke();
@@ -1457,6 +1563,8 @@ namespace DYP
             if (!IsOnGround() && DashModule.UseGravity)
                 m_Velocity.y = 0;
 
+            m_Recoil.HorizontalActive = false;
+
             m_Dash.Start(dashDir, timeStep);
 
             OnDash.Invoke(dashDir);
@@ -1540,6 +1648,9 @@ namespace DYP
         {
             m_Velocity.x = 0;
             m_Velocity.y = 0;
+
+            m_Recoil.HorizontalActive = false;
+            m_Recoil.VerticalActive = false;
 
             changeState(MotorState.OnLadder);
 

@@ -1,4 +1,5 @@
 
+using DYP;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,8 +12,9 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private Transform arrowSpawn;
     [SerializeField] private SpriteRenderer bodyRenderer;
     [SerializeField] private SpriteRenderer bowRenderer;
-    [SerializeField] private Rigidbody playerRb;
-    [SerializeField] private PlayerController controller;
+    [Tooltip("Kinematic 2D controller. Recoil is applied through it when assigned.")]
+    [SerializeField] private BasicMovementController2D movementController;
+    [Tooltip("Legacy physics controller, used only if no BasicMovementController2D is found.")]
     [SerializeField] private GameObject arrowPrefab;
 
     [Header("Bow Animation")]
@@ -20,6 +22,7 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private Sprite[] bowFrames = new Sprite[6];
 
     [Header("Charge")]
+    [Tooltip("Seconds of holding needed to reach full charge.")]
     [SerializeField] private float maxChargeTime = 1.2f;
     [SerializeField] private float minDamage = 5f;
     [SerializeField] private float maxDamage = 30f;
@@ -29,6 +32,7 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private float maxKnockback = 12f;
 
     [Header("Player Recoil")]
+    [Tooltip("Velocity added to the player opposite the shot. Capped by the controller's Recoil > Max Planar Speed.")]
     [SerializeField] private float minRecoil = 3f;
     [SerializeField] private float maxRecoil = 12f;
 
@@ -42,7 +46,6 @@ public class BowCombat : MonoBehaviour
     private float nextShotTime;
 
 
-    private Rigidbody rb;
     private float chargeTimer;
     private bool isCharging;
     private bool facingLeft;
@@ -55,9 +58,8 @@ public class BowCombat : MonoBehaviour
 
     private void Awake()
     {
-        rb = playerRb != null
-            ? playerRb
-            : GetComponent<Rigidbody>();
+        if (movementController == null)
+            movementController = GetComponentInParent<BasicMovementController2D>();
 
         if (aimCamera == null)
             aimCamera = Camera.main;
@@ -67,9 +69,6 @@ public class BowCombat : MonoBehaviour
 
         if (bowRenderer == null && bowPivot != null)
             bowRenderer = bowPivot.GetComponentInChildren<SpriteRenderer>();
-
-        if (rb == null)
-            Debug.LogError("BowCombat needs a player Rigidbody.", this);
 
         if (aimCamera == null)
             Debug.LogError("BowCombat needs an aim camera.", this);
@@ -215,15 +214,10 @@ public class BowCombat : MonoBehaviour
         // Push the player opposite the shot direction.
         // Works both on the ground and in midair.
 
-        if (controller != null)
+        if (movementController != null)
         {
-            controller.ApplyBowRecoil(-direction * recoil);
+            movementController.AddImpulse(-(Vector2)direction * recoil);
         }
-        else if (rb != null)
-        {
-            rb.AddForce(-direction * recoil, ForceMode.Impulse);
-        }
-
     }
 
     private void UpdateBowAnimation()
