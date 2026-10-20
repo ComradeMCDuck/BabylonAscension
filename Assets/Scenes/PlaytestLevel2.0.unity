@@ -6215,7 +6215,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8824978788996705367, guid: 4e02000dfd38452469726c943b859026, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1851303206}
   m_SourcePrefab: {fileID: 100100000, guid: 4e02000dfd38452469726c943b859026, type: 3}
 --- !u!1 &1370813605
 GameObject:
@@ -8575,7 +8578,7 @@ MonoBehaviour:
   boxColliders: 19
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.036
+  buildMilliseconds: 0.0303
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
@@ -8896,6 +8899,25 @@ MonoBehaviour:
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
   FollowOffset: {x: 0, y: 2, z: -14}
+--- !u!1 &1851303197 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8824978788996705367, guid: 4e02000dfd38452469726c943b859026, type: 3}
+  m_PrefabInstance: {fileID: 1342955848}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1851303206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851303197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eade38bd42662504f92839e98f3bbe6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHurtbox3D
+  hurtboxLayer: Player
+  depth: 1
 --- !u!1001 &1865708726
 PrefabInstance:
   m_ObjectHideFlags: 0

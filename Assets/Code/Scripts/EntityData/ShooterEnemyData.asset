@@ -21,7 +21,7 @@ MonoBehaviour:
   dashDuration: 0.2
   nextDashCooldown: 1
   lockZAxis: 1
-  attackDamage: 1
+  attackDamage: 20
   attackRange: 10
   attackCooldown: 2
   attackSpeed: 12
