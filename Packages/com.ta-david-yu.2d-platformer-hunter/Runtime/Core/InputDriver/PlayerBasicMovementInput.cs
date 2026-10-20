@@ -20,9 +20,17 @@ namespace DYP
         [SerializeField]
         private InputActionReference dashActionReference;
 
+        [SerializeField]
+        private InputActionReference firstArrowActionReference;
+
+        [SerializeField]
+        private InputActionReference secondArrowActionReference;
+
         private InputAction m_MoveAction;
         private InputAction m_JumpAction;
         private InputAction m_DashAction;
+        private InputAction m_FirstArrowAction;
+        private InputAction m_SecondArrowAction;
 
         private void OnEnable()
         {
@@ -40,6 +48,9 @@ namespace DYP
             m_MoveAction = moveActionReference != null ? moveActionReference.action : GetAction("Move");
             m_JumpAction = jumpActionReference != null ? jumpActionReference.action : GetAction("Jump");
             m_DashAction = dashActionReference != null ? dashActionReference.action : GetAction("Sprint");
+            // "Previous" is bound to key 1 and "Next" to key 2 in InputSystem_Actions.
+            m_FirstArrowAction = firstArrowActionReference != null ? firstArrowActionReference.action : GetAction("Previous");
+            m_SecondArrowAction = secondArrowActionReference != null ? secondArrowActionReference.action : GetAction("Next");
         }
 
         private InputAction GetAction(string actionName)
@@ -58,6 +69,8 @@ namespace DYP
             if (m_MoveAction != null) m_MoveAction.Enable();
             if (m_JumpAction != null) m_JumpAction.Enable();
             if (m_DashAction != null) m_DashAction.Enable();
+            if (m_FirstArrowAction != null) m_FirstArrowAction.Enable();
+            if (m_SecondArrowAction != null) m_SecondArrowAction.Enable();
         }
 
         private void DisableActions()
@@ -65,6 +78,8 @@ namespace DYP
             if (m_MoveAction != null) m_MoveAction.Disable();
             if (m_JumpAction != null) m_JumpAction.Disable();
             if (m_DashAction != null) m_DashAction.Disable();
+            if (m_FirstArrowAction != null) m_FirstArrowAction.Disable();
+            if (m_SecondArrowAction != null) m_SecondArrowAction.Disable();
         }
 
         // Update is called once per frame
@@ -98,6 +113,15 @@ namespace DYP
             m_Controller.HoldDash(holdingDash);
 
             m_Controller.ReleaseJump(releaseJump);
+
+            if (m_FirstArrowAction != null && m_FirstArrowAction.triggered)
+            {
+                m_Controller.SelectArrow(0);
+            }
+            else if (m_SecondArrowAction != null && m_SecondArrowAction.triggered)
+            {
+                m_Controller.SelectArrow(1);
+            }
         }
     }
 }

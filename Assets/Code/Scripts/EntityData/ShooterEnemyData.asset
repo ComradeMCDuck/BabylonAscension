@@ -10,21 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cdb76347b8be099498ed2c252b74ae42, type: 3}
-  m_Name: MeleeEnemyData
+  m_Name: ShooterEnemyData
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
-  entityID: 1
-  maxHealth: 100
-  detectionRange: 10
+  entityID: 2
+  maxHealth: 50
+  detectionRange: 15
   moveSpeed: 4
   jumpSpeed: 1
   dashSpeed: 10
   dashDuration: 0.2
   nextDashCooldown: 1
   lockZAxis: 1
-  attackDamage: 1
-  attackRange: 2
-  attackCooldown: 3
-  attackSpeed: 5
+  attackDamage: 20
+  attackRange: 10
+  attackCooldown: 2
+  attackSpeed: 12
   attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
   fallMultiplier: 2
   riseMultiplier: 1
