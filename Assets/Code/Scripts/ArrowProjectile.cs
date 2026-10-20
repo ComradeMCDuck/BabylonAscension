@@ -8,11 +8,16 @@ public class ArrowProjectile : MonoBehaviour
     [Header("Lifetime")]
     [SerializeField] private float lifetime = 5f;
 
+    [Header("Arrow Data")]
+    [SerializeField] private ArrowData arrowData;
+
     private Rigidbody rb;
     private float damage;
     private float knockback;
     private GameObject owner;
     private bool launched;
+
+    public ArrowData Data => arrowData;
 
     private void Awake()
     {
@@ -21,14 +26,21 @@ public class ArrowProjectile : MonoBehaviour
 
     public void Launch(
         Vector3 direction,
-        float speed,
-        float damageAmount,
-        float knockbackAmount,
+        float charge,
         GameObject shooter)
     {
+        if (arrowData == null)
+        {
+            Debug.LogError("ArrowProjectile needs an ArrowData asset assigned.", this);
+            Destroy(gameObject);
+            return;
+        }
+
+        damage = Mathf.Lerp(arrowData.minDamage, arrowData.maxDamage, charge);
+        float speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed, charge);
+        knockback = Mathf.Lerp(arrowData.minKnockback, arrowData.maxKnockback, charge);
+
         owner = shooter;
-        damage = damageAmount;
-        knockback = knockbackAmount;
 
         direction.z = 0f;
         direction.Normalize();

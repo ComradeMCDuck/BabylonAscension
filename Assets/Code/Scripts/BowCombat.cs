@@ -14,8 +14,11 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private SpriteRenderer bowRenderer;
     [Tooltip("Kinematic 2D controller. Recoil is applied through it when assigned.")]
     [SerializeField] private BasicMovementController2D movementController;
-    [Tooltip("Legacy physics controller, used only if no BasicMovementController2D is found.")]
-    [SerializeField] private GameObject arrowPrefab;
+
+    [Header("Arrows")]
+    [Tooltip("Element 0 is selected with key 1, element 1 with key 2. Each prefab carries its own ArrowData.")]
+    [SerializeField] private GameObject[] arrowPrefab;
+    [SerializeField] private int selectedArrowIndex = 0;
 
     [Header("Bow Animation")]
     [Tooltip("Frame 0 = idle, frames 1-5 = drawing.")]
@@ -24,12 +27,6 @@ public class BowCombat : MonoBehaviour
     [Header("Charge")]
     [Tooltip("Seconds of holding needed to reach full charge.")]
     [SerializeField] private float maxChargeTime = 1.2f;
-    [SerializeField] private float minDamage = 5f;
-    [SerializeField] private float maxDamage = 30f;
-    [SerializeField] private float minArrowSpeed = 12f;
-    [SerializeField] private float maxArrowSpeed = 24f;
-    [SerializeField] private float minKnockback = 2f;
-    [SerializeField] private float maxKnockback = 12f;
 
     [Header("Player Recoil")]
     [Tooltip("Velocity added to the player opposite the shot. Capped by the controller's Recoil > Max Planar Speed.")]
@@ -51,6 +48,7 @@ public class BowCombat : MonoBehaviour
     private bool facingLeft;
 
     public bool IsCharging => isCharging;
+    public int SelectedArrowIndex => selectedArrowIndex;
     public float Charge01 =>
         maxChargeTime <= 0f
             ? 1f
@@ -73,10 +71,37 @@ public class BowCombat : MonoBehaviour
         if (aimCamera == null)
             Debug.LogError("BowCombat needs an aim camera.", this);
 
-        if (arrowPrefab == null)
+        if (arrowPrefab == null || arrowPrefab.Length == 0)
             Debug.LogError("Assign an arrow prefab to BowCombat.", this);
 
+        SelectArrow(selectedArrowIndex);
         SetBowFrame(0);
+    }
+
+    private void OnEnable()
+    {
+        if (movementController != null)
+            movementController.OnArrowSelected += SelectArrow;
+    }
+
+    private void OnDisable()
+    {
+        if (movementController != null)
+            movementController.OnArrowSelected -= SelectArrow;
+    }
+
+    public void SelectArrow(int index)
+    {
+        if (arrowPrefab == null || arrowPrefab.Length == 0)
+            return;
+
+        if (index < 0 || index >= arrowPrefab.Length || arrowPrefab[index] == null)
+        {
+            Debug.LogWarning($"No arrow prefab assigned at index {index}.", this);
+            return;
+        }
+
+        selectedArrowIndex = index;
     }
 
     private void Update()
@@ -169,6 +194,15 @@ public class BowCombat : MonoBehaviour
         float charge = Charge01;
         isCharging = false;
 
+        if (arrowPrefab == null ||
+            selectedArrowIndex < 0 ||
+            selectedArrowIndex >= arrowPrefab.Length ||
+            arrowPrefab[selectedArrowIndex] == null)
+        {
+            SetBowFrame(0);
+            return;
+        }
+
         nextShotTime = Time.time + fireCooldown;
 
         SetBowFrame(0);
@@ -179,7 +213,7 @@ public class BowCombat : MonoBehaviour
             arrowSpawn.position + direction * spawnOffset;
 
         GameObject arrowObject = Instantiate(
-            arrowPrefab,
+            arrowPrefab[selectedArrowIndex],
             spawnPosition,
             Quaternion.LookRotation(Vector3.forward, Vector3.up)
         );
@@ -198,16 +232,12 @@ public class BowCombat : MonoBehaviour
             return;
         }
 
-        float damage = Mathf.Lerp(minDamage, maxDamage, charge);
-        float speed = Mathf.Lerp(minArrowSpeed, maxArrowSpeed, charge);
-        float knockback = Mathf.Lerp(minKnockback, maxKnockback, charge);
+        
         float recoil = Mathf.Lerp(minRecoil, maxRecoil, charge);
 
         arrow.Launch(
             direction,
-            speed,
-            damage,
-            knockback,
+            charge,
             gameObject
         );
 

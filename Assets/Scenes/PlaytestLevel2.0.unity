@@ -5461,6 +5461,18 @@ PrefabInstance:
       propertyPath: spriteVisual
       value: 
       objectReference: {fileID: 1778996719}
+    - target: {fileID: 4402861944666598241, guid: 4e02000dfd38452469726c943b859026, type: 3}
+      propertyPath: arrowPrefab.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4402861944666598241, guid: 4e02000dfd38452469726c943b859026, type: 3}
+      propertyPath: 'arrowPrefab.Array.data[0]'
+      value: 
+      objectReference: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
+    - target: {fileID: 4402861944666598241, guid: 4e02000dfd38452469726c943b859026, type: 3}
+      propertyPath: 'arrowPrefab.Array.data[1]'
+      value: 
+      objectReference: {fileID: 6124286472832785063, guid: 3e9adc6afd7d7d44492c5c88b42bdd6f, type: 3}
     - target: {fileID: 5143643343682009756, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_Jump.AirJumpAllowed
       value: 0
@@ -7735,7 +7747,7 @@ MonoBehaviour:
   boxColliders: 19
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0155
+  buildMilliseconds: 0.3168
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9

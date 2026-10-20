@@ -327,6 +327,8 @@ namespace DYP
         public event System.Action<MotorState> OnResetJumpCounter = delegate { };
         public event System.Action<int> OnFacingFlip = delegate { };
 
+        public event System.Action<int> OnArrowSelected = delegate { };  // int represent arrow index (0 = first arrow)
+
         public event System.Action<int> OnAction = delegate { };
         public event System.Action<float> OnActionStay = delegate { };
         public event System.Action OnActionEnd = delegate { };
@@ -447,6 +449,11 @@ namespace DYP
         public void ReleaseJump(bool value)
         {
             m_InputBuffer.IsJumpReleased = value;
+        }
+
+        public void SelectArrow(int index)
+        {
+            OnArrowSelected.Invoke(index);
         }
 
         public void PressDash(bool value)

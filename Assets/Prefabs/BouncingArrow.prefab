@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 6883939548921996409}
   - component: {fileID: 726714553259332054}
   m_Layer: 0
-  m_Name: Arrow
+  m_Name: BouncingArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -48,6 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   lifetime: 5
+  arrowData: {fileID: 11400000, guid: 4dea1a8a334105c49aeba472ee9aa614, type: 2}
 --- !u!212 &6866620899458589148
 SpriteRenderer:
   serializedVersion: 3
@@ -98,7 +99,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -765150924802650856, guid: 8c40719d16dd4634aa7b16f767838ba1, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0.030221581, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
