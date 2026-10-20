@@ -235,16 +235,10 @@ public class BowCombat : MonoBehaviour
         
         float recoil = Mathf.Lerp(minRecoil, maxRecoil, charge);
 
-        // Use the player root as the owner so the arrow ignores
-        // every player collider, including the 3D hurtbox.
-        GameObject shooter = movementController != null
-            ? movementController.gameObject
-            : gameObject;
-
         arrow.Launch(
             direction,
             charge,
-            shooter
+            gameObject
         );
 
         // Push the player opposite the shot direction.

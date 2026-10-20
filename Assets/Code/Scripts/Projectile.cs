@@ -11,7 +11,6 @@ public class Projectile : MonoBehaviour
     private Vector3 origin;
     private float speed;
     private float range;
-    private float damage;
     private bool keepFlying;
     private bool launched;
 
@@ -41,14 +40,11 @@ public class Projectile : MonoBehaviour
 
         if (other.CompareTag("Player"))
         {
-            // Health sits on a child of the player root, so search the whole player.
             var damageable = other.GetComponentInParent<IDamageable>();
-            if (damageable == null)
-                damageable = other.transform.root.GetComponentInChildren<IDamageable>();
-
             if (damageable != null)
-                Debug.Log($"Projectile hit {other.name} and dealt {damage} damage.");
-                damageable.TakeDamage(damage);
+            {
+                // damageable.TakeDamage(10);
+            }
         }
         Destroy(gameObject);
     }
@@ -58,7 +54,6 @@ public class Projectile : MonoBehaviour
         target = targetPosition;
         speed = entity.attackSpeed;
         range = entity.attackRange;
-        damage = entity.attackDamage;
         keepFlying = entity.entityID == 2;
         origin = rb.position;
         direction = (target - origin).normalized;   // fixed once, at launch

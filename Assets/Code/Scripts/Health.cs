@@ -18,10 +18,8 @@ public class Health : MonoBehaviour, IDamageable
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
-        Debug.Log($"{gameObject.name} took {damage} damage. Current health: {currentHealth}/{entityData.maxHealth}");
         if (currentHealth <= 0)
         {
-            Debug.Log($"{gameObject.name} has been destroyed.");
             Destroy(gameObject);
         }
     }
