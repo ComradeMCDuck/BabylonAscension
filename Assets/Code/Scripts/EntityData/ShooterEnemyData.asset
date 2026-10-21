@@ -29,3 +29,11 @@ MonoBehaviour:
   fallMultiplier: 2
   riseMultiplier: 1
   maxFallSpeed: 20
+  speed: 4
+  patrolSpeedMultiplier: 0.5
+  patrolWaitTime: 1.5
+  loseSightTime: 2
+  attackWindup: 0.3
+  projectileRange: 10
+  projectileKeepsFlying: 1
+  projectileLifetime: 5

@@ -1,0 +1,47 @@
+I need to implement arrow selection when the player presses 1 or 2 according to these criteria:
+When the player presses 1, the first arrow prefab will be choosen in BowCombat which, when the player shoots, will be launched and also the arrow will have different arrow data in the ArrowProjectile.sc depending on the arrow
+these scripts might have to be changed: BasicMovementController2D.sc; PlayerBasicMovementInput.sc; BowCombat.sc; ArrowProjectile.sc
+----------------------------------------
+ok, the arrow selection works well.
+Now I need to implement the bounce variable in the ArrowProjectile.sc.
+The desired outcome is:
+When the arrow hits an object with layer "Environment", the arrow bounces like "balls in the pool table".
+Example: when the arrow hits the ground with 30 degrees relative to the ground, the arrow then bounces to 150 degrees relative to the ground.
+After that, a variable of the bounces will be reduced by 1. when there is 0 in bounces, the projectile gets destroyed when hitting "Environment". when the arrow hits an enemy, the arrow deals damage.
+------------------------------------
+the enemies so far shoot projectiles that have 3D collider, so they dont interact with the player. i need you to tell be how to fix this or implement a fix
+--------------------------------
+I am trying to set up a ladder in the MetricZoo scene from the 2D platformer package, but I am having problems setting it up.
+There are scripts Ladder.sc; LadderZoneSetter.sc; Area2D.sc and maybe other ladder scripts that I cant find that are used for the ladder.
+Object called Ladder in MetricZoo is the one that should be working as a ladder.
+BasicMovementController2D.sc has ladder interaction setting.
+BabylonAscension\Packages\com.ta-david-yu.2d-platformer-hunter\Samples\PlaygroundSamples\Scenes has scenes that use ladders for reference.
+Please only change the MetricZoo scene so that it has a set up ladder and dont change any scripts without my knowledge
+-----------------------------------------
+I am trying to set up a ladder in the MetricZoo scene from the 2D platformer package, but I am having problems setting it up.
+There are scripts Ladder.sc; LadderZoneSetter.sc; Area2D.sc and maybe other ladder scripts that I cant find that are used for the ladder.
+Object called Ladder in MetricZoo is the one that should be working as a ladder.
+BasicMovementController2D.sc has ladder interaction setting.
+BabylonAscension\Packages\com.ta-david-yu.2d-platformer-hunter\Samples\PlaygroundSamples\Scenes has scenes that use ladders for reference.
+Please only change the MetricZoo scene so that it has a set up ladder and dont change any scripts without my knowledge
+----------------------------
+I am trying to make reference to EntityData in the controller, but the inspector tells me
+
+Packages\com.ta-david-yu.2d-platformer-hunter\Runtime\Core\CharacterController\BasicMovementController2D.cs(19,26): error CS0246: The type or namespace name 'EntityData' could not be found (are you missing a using directive or an assembly reference?)
+------------------------------------
+I want to implement debug menu, where the user can change variables in the game.
+What will the player do / see: they press TAB button and a canvas panel shows up on the left side of the screen. When they press TAB, the panel closes
+So far I need it to be just opening and closing the panel. no implementation of the debuging.
+--------------------------------------
+could you create a template of the debug menu?
+This means, that for example, there is a Player Data section.
+Unther this, all the relevant variables will be shown like this:
+On the left side, there is the name of the variable. On the right side, there is a text window where current variable is and it can be rewritten.
+So far, dont implement it in a way, that it would change any variables in other scripts. just visual representation
+------------------------------------
+I see the variable squares, but I dont see numbers or what is written in the vindows
+--------------------------------------
+ok, now the variables show in the panel.
+Now we can start with making the variables that you put in the windows change data in EntityData and the data is then used in BasicMovementController2D.sc.
+Add the variables in BasicMovementController2D.sc to PlayerData, but only Movement Settings, On Ladder Settings, Jump, Wall interaction and Recoil. Other things like Dash and Custom action will be left alone.
+Make also sure that the variables that are used in the windows wont result in error or crash. If the player puts in a wrong input, the variable wont be changed.

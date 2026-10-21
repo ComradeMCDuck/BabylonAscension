@@ -15,6 +15,7 @@ public class EntityData : ScriptableObject
     public float maxHealth = 100f;
 
     [Header("Movement")]
+    [Tooltip("Enemies: radius of the line-of-sight circle.")]
     public float detectionRange = 5f;
     public float moveSpeed = 4f;
     public float jumpSpeed = 1.0f;
@@ -25,10 +26,33 @@ public class EntityData : ScriptableObject
 
     [Header("Attack")]
     public float attackDamage = 1f;
+    [Tooltip("Enemies: gap between the enemy's and the player's colliders at which the enemy attacks.")]
     public float attackRange = 2f;
     public float attackCooldown = 5f;
+    [Tooltip("Enemies: projectile speed.")]
     public float attackSpeed = 1f;
     public GameObject attackEffectPrefab;
+
+    [Header("Enemy AI")]
+    [Tooltip("Patrol speed as a fraction of 'speed' (Controller - Movement Settings). Chasing uses the full speed.")]
+    [Range(0f, 1f)] public float patrolSpeedMultiplier = 0.4f;
+    [Tooltip("Seconds the enemy waits at a patrol point before turning around.")]
+    [Min(0f)] public float patrolWaitTime = 1f;
+    [Tooltip("Seconds the enemy keeps chasing the player's last known position after losing sight of them.")]
+    [Min(0f)] public float loseSightTime = 2f;
+    [Tooltip("If true, the enemy jumps onto platforms, over walls and across gaps while chasing. Jump height comes from 'Controller - Jump'.")]
+    public bool canJump = true;
+    [Tooltip("How close (horizontally) a wall, gap or platform edge must be before the enemy jumps.")]
+    [Min(0f)] public float jumpCheckDistance = 1f;
+    [Tooltip("Minimum seconds between two enemy jumps.")]
+    [Min(0f)] public float jumpCooldown = 0.5f;
+    [Tooltip("Delay between starting an attack and the projectile spawning. Gives the player time to react.")]
+    [Min(0f)] public float attackWindup = 0.2f;
+    [Tooltip("How far the projectile travels from where it spawns before it is destroyed. Ignored when projectileKeepsFlying is on.")]
+    [Min(0f)] public float projectileRange = 2f;
+    [Tooltip("If true, the projectile keeps flying past projectileRange until it hits something (shooters). If false, it stops at projectileRange (melee).")]
+    public bool projectileKeepsFlying = false;
+    [Min(0.1f)] public float projectileLifetime = 5f;
 
     [Header("Gravity")]
     public float fallMultiplier = 2f; // > 1 = faster fall, < 1 = slower fall

@@ -23,9 +23,52 @@ MonoBehaviour:
   lockZAxis: 1
   attackDamage: 20
   attackRange: 2
-  attackCooldown: 3
-  attackSpeed: 5
+  attackCooldown: 1
+  attackSpeed: 10
   attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
+  patrolSpeedMultiplier: 0.35
+  patrolWaitTime: 1
+  loseSightTime: 1.5
+  canJump: 1
+  jumpCheckDistance: 1
+  jumpCooldown: 0.5
+  attackWindup: 0.15
+  projectileRange: 4.5
+  projectileKeepsFlying: 0
+  projectileLifetime: 1
   fallMultiplier: 2
   riseMultiplier: 1
   maxFallSpeed: 20
+  speed: 7
+  accelerationTimeAirborne: 0.1
+  accelerationTimeGrounded: 0.1
+  snapToRestrictedArea: 0
+  exitLadderOnGround: 1
+  onLadderSpeed: 4
+  lockFacingToRight: 1
+  hasVariableJumpHeight: 1
+  airJumpAllowed: 1
+  maxJumpHeight: 3.5
+  minJumpHeight: 1
+  timeToApex: 0.4
+  onLadderJumpForce: 0.4
+  fallingJumpPaddingTime: 0.09
+  willJumpPaddingTime: 0.15
+  canWallSlide: 1
+  wallStickTime: 0.15
+  wallSlideSpeedLoss: 0.05
+  wallSlidingSpeedMax: 2
+  canWallClimb: 0
+  wallClimbSpeed: 2
+  canWallJump: 1
+  wallClimbForce: {x: 12, y: 16}
+  wallOffForce: {x: 8, y: 15}
+  wallLeapForce: {x: 18, y: 17}
+  canGrabLedge: 0
+  ledgeDetectionOffset: 0.1
+  recoilGroundAcceleration: 60
+  recoilGroundDeceleration: 70
+  recoilAirAcceleration: 25
+  recoilAirDeceleration: 2
+  recoilMaxPlanarSpeed: 18
+  cancelFallingOnUpwardImpulse: 1

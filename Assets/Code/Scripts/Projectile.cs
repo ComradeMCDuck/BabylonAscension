@@ -1,44 +1,73 @@
-using System.Collections;
 using UnityEngine;
 
+/// <summary>
+/// 2D enemy projectile (just a sprite, no Rigidbody or Collider needed).
+/// It moves itself and sweeps a circle along its path every physics step, so it can't tunnel
+/// through thin colliders and also hits the player's kinematic Rigidbody2D, which normal
+/// kinematic-vs-kinematic trigger callbacks would miss.
+/// </summary>
 public class Projectile : MonoBehaviour
 {
+    [Tooltip("Layers the projectile stops on: the player's layer and the environment.")]
     [SerializeField] private LayerMask hitLayers;
+    [SerializeField] private float radius = 0.2f;
+    [Tooltip("Rotate the sprite so its local X axis points along the flight direction.")]
+    [SerializeField] private bool alignToDirection = true;
 
-    private Rigidbody rb;
-    private Vector3 target;
-    private Vector3 direction;
-    private Vector3 origin;
+    private GameObject owner;
+    private Vector2 direction;
     private float speed;
-    private float range;
     private float damage;
+    private float remainingRange;
     private bool keepFlying;
     private bool launched;
 
-    void Awake() => rb = GetComponent<Rigidbody>();
+    private void Reset()
+    {
+        hitLayers = LayerMask.GetMask("Player", "Triggers", "Environment");
+    }
 
-    void FixedUpdate()
+    public void Launch(Vector2 targetPosition, EntityData data, GameObject shooter)
+    {
+        owner = shooter;
+        speed = data.attackSpeed;
+        damage = data.attackDamage;
+        remainingRange = data.projectileRange;
+        keepFlying = data.projectileKeepsFlying;
+
+        // Direction is fixed once, at launch.
+        direction = targetPosition - (Vector2)transform.position;
+        direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
+        if (alignToDirection) transform.right = direction;
+
+        launched = true;
+        Destroy(gameObject, data.projectileLifetime);
+    }
+
+    private void FixedUpdate()
     {
         if (!launched) return;
 
-        if (keepFlying || Vector3.Distance(rb.position, origin) >= range)
+        Vector2 position = transform.position;
+        float step = speed * Time.fixedDeltaTime;
+        if (!keepFlying) step = Mathf.Min(step, remainingRange);
+
+        RaycastHit2D hit = Physics2D.CircleCast(position, radius, direction, step, hitLayers);
+        if (hit.collider != null && !IsOwner(hit.collider))
         {
-            // Straight line past the target, only a hit or the lifetime ends it
-            rb.MovePosition(rb.position + direction * speed * Time.fixedDeltaTime);
+            OnHit(hit.collider);
             return;
         }
 
-        Vector3 next = Vector3.MoveTowards(rb.position, target, speed * Time.fixedDeltaTime);
-        rb.MovePosition(next);
+        Vector2 next = position + direction * step;
+        transform.position = new Vector3(next.x, next.y, transform.position.z);
 
-        if ((next - target).sqrMagnitude < 0.0025f || Vector3.Distance(next, origin) >= range)
-            Destroy(gameObject);
+        remainingRange -= step;
+        if (!keepFlying && remainingRange <= 0f) Destroy(gameObject);
     }
 
-    void OnTriggerEnter(Collider other)
+    private void OnHit(Collider2D other)
     {
-        if ((hitLayers.value & (1 << other.gameObject.layer)) == 0) return;
-
         if (other.CompareTag("Player"))
         {
             // Health sits on a child of the player root, so search the whole player.
@@ -47,21 +76,23 @@ public class Projectile : MonoBehaviour
                 damageable = other.transform.root.GetComponentInChildren<IDamageable>();
 
             if (damageable != null)
+            {
                 Debug.Log($"Projectile hit {other.name} and dealt {damage} damage.");
                 damageable.TakeDamage(damage);
+            }
         }
+
         Destroy(gameObject);
     }
 
-    public void Shoot(Vector3 targetPosition, EntityData entity)
+    private bool IsOwner(Collider2D other)
     {
-        target = targetPosition;
-        speed = entity.attackSpeed;
-        range = entity.attackRange;
-        damage = entity.attackDamage;
-        keepFlying = entity.entityID == 2;
-        origin = rb.position;
-        direction = (target - origin).normalized;   // fixed once, at launch
-        launched = true;
+        return owner != null && other.transform.IsChildOf(owner.transform);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, radius);
     }
 }

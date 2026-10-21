@@ -1,22 +1,33 @@
 
+using DYP;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(Collider))]
+/// <summary>
+/// 2D arrow (just a sprite, no Rigidbody or Collider needed).
+/// It moves itself and sweeps a circle along its path every physics step, so it can't tunnel
+/// through thin colliders and also hits enemies with kinematic Rigidbody2Ds.
+/// </summary>
 public class ArrowProjectile : MonoBehaviour
 {
+    // Distance kept from a surface after bouncing, so the next sweep doesn't start inside it.
+    private const float BounceSkin = 0.01f;
+
     [Header("Lifetime")]
     [SerializeField] private float lifetime = 5f;
 
     [Header("Arrow Data")]
     [SerializeField] private ArrowData arrowData;
 
-    [Header("Bouncing")]
+    [Header("Collision")]
+    [Tooltip("Layers the arrow can hit: enemies and the environment. Defaults to \"Enemy\" and \"Environment\" if left empty.")]
+    [SerializeField] private LayerMask hitLayers;
     [Tooltip("Layers the arrow bounces off. Defaults to \"Environment\" if left empty.")]
     [SerializeField] private LayerMask environmentLayers;
+    [Tooltip("Radius of the circle swept along the arrow's path.")]
+    [SerializeField] private float radius = 0.1f;
 
-    private Rigidbody rb;
-    private Collider arrowCollider;
+    private Vector2 direction;
+    private float speed;
     private float damage;
     private float knockback;
     private int remainingBounces;
@@ -28,8 +39,8 @@ public class ArrowProjectile : MonoBehaviour
 
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        arrowCollider = GetComponent<Collider>();
+        if (hitLayers.value == 0)
+            hitLayers = LayerMask.GetMask("Enemy", "Environment");
 
         if (environmentLayers.value == 0)
             environmentLayers = LayerMask.GetMask("Environment");
@@ -48,7 +59,7 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         damage = Mathf.Lerp(arrowData.minDamage, arrowData.maxDamage, charge);
-        float speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed, charge);
+        speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed, charge);
         knockback = Mathf.Lerp(arrowData.minKnockback, arrowData.maxKnockback, charge);
 
         // Copy the count so the shared ArrowData asset is never modified.
@@ -56,40 +67,42 @@ public class ArrowProjectile : MonoBehaviour
 
         owner = shooter;
 
-        direction.z = 0f;
-        direction.Normalize();
-
-        rb.useGravity = false;
-        rb.isKinematic = false;
-        rb.linearVelocity = direction * speed;
+        this.direction = ((Vector2)direction).normalized;
 
         // Make the arrow's local X axis follow its travel direction.
-        transform.right = direction;
+        transform.right = this.direction;
 
         launched = true;
         Destroy(gameObject, lifetime);
     }
 
-
-    private void OnTriggerEnter(Collider other)
+    private void FixedUpdate()
     {
         if (!launched)
             return;
 
-        // Ignore the shooter and its children.
-        if (owner != null &&
-            (other.gameObject == owner ||
-             other.transform.IsChildOf(owner.transform)))
+        Vector2 position = transform.position;
+        float step = speed * Time.fixedDeltaTime;
+
+        RaycastHit2D hit = Physics2D.CircleCast(position, radius, direction, step, hitLayers);
+
+        if (hit.collider == null || IsOwner(hit.collider))
         {
+            MoveTo(position + direction * step);
             return;
         }
 
-        if (IsEnvironment(other))
+        if (IsEnvironment(hit.collider))
         {
-            HandleEnvironmentHit(other);
+            HandleEnvironmentHit(hit);
             return;
         }
 
+        HandleTargetHit(hit.collider);
+    }
+
+    private void HandleTargetHit(Collider2D other)
+    {
         IArrowDamageable target =
             other.GetComponentInParent<IArrowDamageable>();
 
@@ -97,49 +110,33 @@ public class ArrowProjectile : MonoBehaviour
         {
             target.TakeArrowDamage(damage);
 
-            Rigidbody targetRb = other.attachedRigidbody;
+            // Enemies move with the same 2D controller as the player, so knockback goes through it.
+            BasicMovementController2D targetMovement =
+                other.GetComponentInParent<BasicMovementController2D>();
 
-            if (targetRb != null)
-            {
-                Vector3 direction = rb.linearVelocity.normalized;
-
-                targetRb.AddForce(
-                    direction * knockback,
-                    ForceMode.Impulse
-                );
-            }
+            if (targetMovement != null)
+                targetMovement.AddImpulse(direction * knockback);
         }
 
         Destroy(gameObject);
     }
 
+    private bool IsOwner(Collider2D other)
+    {
+        // Ignore the shooter and its children.
+        return owner != null &&
+            (other.gameObject == owner ||
+             other.transform.IsChildOf(owner.transform));
+    }
+
     // Returns true if the collider is on a layer that the arrow should bounce off of.
-    private bool IsEnvironment(Collider other)
+    private bool IsEnvironment(Collider2D other)
     {
         return (environmentLayers.value & (1 << other.gameObject.layer)) != 0;
     }
 
-    private void HandleEnvironmentHit(Collider surface)
+    private void HandleEnvironmentHit(RaycastHit2D hit)
     {
-        Vector3 velocity = rb.linearVelocity;
-        velocity.z = 0f;
-
-        float speed = velocity.magnitude;
-
-        if (speed < 0.0001f)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        Vector3 direction = velocity / speed;
-        Vector3 normal = GetSurfaceNormal(surface, direction);
-
-        // Already moving away from this surface (e.g. touching the next
-        // tile right after a bounce): ignore it instead of bouncing twice.
-        if (Vector3.Dot(direction, normal) >= 0f)
-            return;
-
         if (remainingBounces <= 0)
         {
             Destroy(gameObject);
@@ -150,42 +147,21 @@ public class ArrowProjectile : MonoBehaviour
 
         // Mirror the direction around the surface normal, like a pool ball:
         // Example: hitting the ground at 30 degrees leaves it at 150 degrees.
-        Vector3 reflected = Vector3.Reflect(direction, normal);
-        reflected.z = 0f;
-        reflected.Normalize();
+        direction = Vector2.Reflect(direction, hit.normal).normalized;
+        transform.right = direction;
 
-        rb.linearVelocity = reflected * speed;
-        transform.right = reflected;
+        // Stop just off the surface; the rest of the flight continues next step.
+        MoveTo(hit.centroid + hit.normal * BounceSkin);
     }
 
-    private Vector3 GetSurfaceNormal(Collider surface, Vector3 direction)
+    private void MoveTo(Vector2 position)
     {
-        // Start the ray behind the arrow so it begins outside the surface.
-        float backDistance =
-            arrowCollider.bounds.extents.magnitude +
-            rb.linearVelocity.magnitude * Time.fixedDeltaTime;
-
-        Vector3 origin = transform.position - direction * backDistance;
-        Ray ray = new Ray(origin, direction);
-
-        Vector3 normal;
-
-        if (surface.Raycast(ray, out RaycastHit hit, backDistance * 3f))
-        {
-            normal = hit.normal;
-        }
-        else
-        {
-            // Grazing hits can miss the ray; use the closest point instead.
-            normal = origin - surface.ClosestPoint(origin);
-        }
-
-        normal.z = 0f;
-
-        if (normal.sqrMagnitude < 0.0001f)
-            return -direction;
-
-        return normal.normalized;
+        transform.position = new Vector3(position.x, position.y, transform.position.z);
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, radius);
+    }
 }
