@@ -338,7 +338,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: com.ta-david-yu.2d-platformer-hunter::DYP.BasicMovementController2D
   m_Motor: {fileID: 2709530703883293876}
-  m_EntityData: {fileID: 0}
+  m_EntityData: {fileID: 11400000, guid: 78530024cc693db439d9884a81363c94, type: 2}
   m_MovementSettings:
     Speed: 8
     AccelerationTimeAirborne: 0.1
