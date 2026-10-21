@@ -554,6 +554,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Motor: {fileID: 1712470358665181117}
+  m_EntityData: {fileID: 11400000, guid: b799efc2fe1ca5f499ba8c7469f85560, type: 2}
   m_MovementSettings:
     Speed: 8
     AccelerationTimeAirborne: 0.1

@@ -1,6 +1,7 @@
 ﻿{
     "name": "com.ta-david-yu.2d-platformer-hunter",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "BabylonAscension.EntityData"
     ]
 }

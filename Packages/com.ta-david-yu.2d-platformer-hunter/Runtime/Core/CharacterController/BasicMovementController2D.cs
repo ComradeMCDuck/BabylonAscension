@@ -233,6 +233,10 @@ namespace DYP
         private InputBuffer m_InputBuffer = new InputBuffer();
 
         [Header("Settings")]
+        [Tooltip("Optional. When assigned, Movement, On Ladder, Jump, Wall Interaction and Recoil settings are taken from this asset.")]
+        [SerializeField]
+        private EntityData m_EntityData;
+
         [SerializeField]
         private MovementSettings m_MovementSettings;
 
@@ -346,6 +350,14 @@ namespace DYP
         private void Start()
         {
             Init();
+        }
+
+        private void OnDestroy()
+        {
+            if (m_EntityData != null)
+            {
+                m_EntityData.Changed -= onEntityDataChanged;
+            }
         }
 
         private void FixedUpdate()
@@ -740,13 +752,81 @@ namespace DYP
             // h = g * t^2 * 0.5
             // g = h / (t^2*0.5)
 
-            m_Gravity = -m_Jump.MaxHeight / (m_Jump.TimeToApex * m_Jump.TimeToApex * 0.5f);
-            m_MaxJumpSpeed = Mathf.Abs(m_Gravity) * m_Jump.TimeToApex;
-            m_MinJumpSpeed = Mathf.Sqrt(2 * Mathf.Abs(m_Gravity) * m_Jump.MinHeight);
+            if (m_EntityData != null)
+            {
+                applyEntityData();
+
+                m_EntityData.Changed -= onEntityDataChanged;
+                m_EntityData.Changed += onEntityDataChanged;
+            }
+
+            calculateJumpValues();
             m_AirJumpCounter = 0;
 
             m_Motor.OnMotorCollisionEnter2D += onMotorCollisionEnter2D;
             m_Motor.OnMotorCollisionStay2D += onMotorCollisionStay2D;
+        }
+
+        private void calculateJumpValues()
+        {
+            m_Gravity = -m_Jump.MaxHeight / (m_Jump.TimeToApex * m_Jump.TimeToApex * 0.5f);
+            m_MaxJumpSpeed = Mathf.Abs(m_Gravity) * m_Jump.TimeToApex;
+            m_MinJumpSpeed = Mathf.Sqrt(2 * Mathf.Abs(m_Gravity) * m_Jump.MinHeight);
+        }
+
+        private void onEntityDataChanged()
+        {
+            applyEntityData();
+            calculateJumpValues();
+        }
+
+        /// <summary>
+        /// Copies the settings from the EntityData asset into this controller.
+        /// </summary>
+        private void applyEntityData()
+        {
+            if (m_EntityData == null)
+            {
+                return;
+            }
+
+            m_MovementSettings.Speed = m_EntityData.speed;
+            m_MovementSettings.AccelerationTimeAirborne = m_EntityData.accelerationTimeAirborne;
+            m_MovementSettings.AccelerationTimeGrounded = m_EntityData.accelerationTimeGrounded;
+
+            m_OnLadderSettings.SnapToRestrictedArea = m_EntityData.snapToRestrictedArea;
+            m_OnLadderSettings.ExitLadderOnGround = m_EntityData.exitLadderOnGround;
+            m_OnLadderSettings.OnLadderSpeed = m_EntityData.onLadderSpeed;
+            m_OnLadderSettings.LockFacingToRight = m_EntityData.lockFacingToRight;
+
+            m_Jump.HasVariableJumpHeight = m_EntityData.hasVariableJumpHeight;
+            m_Jump.AirJumpAllowed = m_EntityData.airJumpAllowed;
+            m_Jump.MaxHeight = m_EntityData.maxJumpHeight;
+            m_Jump.MinHeight = m_EntityData.minJumpHeight;
+            m_Jump.TimeToApex = Mathf.Max(m_EntityData.timeToApex, 0.01f);
+            m_Jump.OnLadderJumpForce = m_EntityData.onLadderJumpForce;
+            m_Jump.FallingJumpPaddingTime = m_EntityData.fallingJumpPaddingTime;
+            m_Jump.WillJumpPaddingTime = m_EntityData.willJumpPaddingTime;
+
+            m_WallInteraction.CanWallSlide = m_EntityData.canWallSlide;
+            m_WallInteraction.WallStickTime = m_EntityData.wallStickTime;
+            m_WallInteraction.WallSlideSpeedLoss = m_EntityData.wallSlideSpeedLoss;
+            m_WallInteraction.WallSlidingSpeedMax = m_EntityData.wallSlidingSpeedMax;
+            m_WallInteraction.CanWallClimb = m_EntityData.canWallClimb;
+            m_WallInteraction.WallClimbSpeed = m_EntityData.wallClimbSpeed;
+            m_WallInteraction.CanWallJump = m_EntityData.canWallJump;
+            m_WallInteraction.ClimbForce = m_EntityData.wallClimbForce;
+            m_WallInteraction.OffForce = m_EntityData.wallOffForce;
+            m_WallInteraction.LeapForce = m_EntityData.wallLeapForce;
+            m_WallInteraction.CanGrabLedge = m_EntityData.canGrabLedge;
+            m_WallInteraction.LedgeDetectionOffset = m_EntityData.ledgeDetectionOffset;
+
+            m_Recoil.GroundAcceleration = m_EntityData.recoilGroundAcceleration;
+            m_Recoil.GroundDeceleration = m_EntityData.recoilGroundDeceleration;
+            m_Recoil.AirAcceleration = m_EntityData.recoilAirAcceleration;
+            m_Recoil.AirDeceleration = m_EntityData.recoilAirDeceleration;
+            m_Recoil.MaxPlanarSpeed = m_EntityData.recoilMaxPlanarSpeed;
+            m_Recoil.CancelFallingOnUpwardImpulse = m_EntityData.cancelFallingOnUpwardImpulse;
         }
 
         public void _Update(float timeStep)
