@@ -7,10 +7,8 @@ public class BowCombat : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Camera aimCamera;
-    [SerializeField] private Transform spriteVisual;
     [SerializeField] private Transform bowPivot;
     [SerializeField] private Transform arrowSpawn;
-    [SerializeField] private SpriteRenderer bodyRenderer;
     [SerializeField] private SpriteRenderer bowRenderer;
     [Tooltip("Kinematic 2D controller. Recoil is applied through it when assigned.")]
     [SerializeField] private BasicMovementController2D movementController;
@@ -45,7 +43,6 @@ public class BowCombat : MonoBehaviour
 
     private float chargeTimer;
     private bool isCharging;
-    private bool facingLeft;
 
     public bool IsCharging => isCharging;
     public int SelectedArrowIndex => selectedArrowIndex;
@@ -61,9 +58,6 @@ public class BowCombat : MonoBehaviour
 
         if (aimCamera == null)
             aimCamera = Camera.main;
-
-        if (bodyRenderer == null && spriteVisual != null)
-            bodyRenderer = spriteVisual.GetComponentInChildren<SpriteRenderer>();
 
         if (bowRenderer == null && bowPivot != null)
             bowRenderer = bowPivot.GetComponentInChildren<SpriteRenderer>();
@@ -156,21 +150,6 @@ public class BowCombat : MonoBehaviour
         ) * Mathf.Rad2Deg;
 
         bowPivot.rotation = Quaternion.Euler(0f, 0f, angle);
-
-        // Flip only the body visual. BowPivot is a separate sibling.
-        facingLeft = aimDirection.x < 0f;
-
-        if (spriteVisual != null)
-        {
-            Vector3 scale = spriteVisual.localScale;
-            scale.x = Mathf.Abs(scale.x) * (facingLeft ? -1f : 1f);
-            spriteVisual.localScale = scale;
-        }
-
-        // Keep the body's SpriteRenderer in sync with the
-        // existing PlayerController's facing state.
-        if (bodyRenderer != null)
-            bodyRenderer.flipX = false;
     }
 
 

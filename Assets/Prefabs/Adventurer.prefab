@@ -47,10 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   aimCamera: {fileID: 0}
-  spriteVisual: {fileID: 1245336768785642657}
   bowPivot: {fileID: 8889766612805912733}
   arrowSpawn: {fileID: 3965774374420034426}
-  bodyRenderer: {fileID: 0}
   bowRenderer: {fileID: 7292817614088652803}
   movementController: {fileID: 0}
   arrowPrefab:
@@ -409,6 +407,7 @@ GameObject:
   - component: {fileID: 7487572580236149384}
   - component: {fileID: 785066282450330949}
   - component: {fileID: 6391775073961633728}
+  - component: {fileID: 8089714174100080038}
   m_Layer: 8
   m_Name: Adventurer
   m_TagString: Player
@@ -506,7 +505,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.35, y: 2.27}
+  m_Size: {x: 1, y: 2.27}
   m_EdgeRadius: 0
 --- !u!114 &6949021075820648454
 MonoBehaviour:
@@ -659,3 +658,18 @@ MonoBehaviour:
   - {fileID: 8889766612805912733}
   - {fileID: 7362350623775227887}
   snapDistance: 3
+--- !u!114 &8089714174100080038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8824978788996705367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a5bd315bcda91b40bdbf7a424b347a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFacing
+  aimCamera: {fileID: 0}
+  spriteVisual: {fileID: 1245336768785642657}
+  movementController: {fileID: 0}

@@ -284,6 +284,12 @@ namespace DYP
             }
         }
 
+        /// <summary>
+        /// Facing set by an external source (e.g. mouse aim). 1: right, -1: left, 0: none.
+        /// When non-zero, dashes without horizontal movement input go this way.
+        /// </summary>
+        public int AimFacingDirection { get; set; } = 0;
+
         [SerializeField]
         private Dash m_Dash = new Dash();
 
@@ -1626,7 +1632,9 @@ namespace DYP
                 }
             }
 
-            int dashDir = (rawInputX != 0) ? rawInputX : FacingDirection;
+            // Movement input wins; without it, dash towards the aim facing.
+            int dashDir = (rawInputX != 0) ? rawInputX
+                : (AimFacingDirection != 0) ? AimFacingDirection : FacingDirection;
             if (!DashModule.CanDashToSlidingWall)
             {
                 // Skip the dash if cannot dash towards the current sliding wall
