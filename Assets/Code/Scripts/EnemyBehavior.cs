@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DYP;
 using UnityEngine;
 
@@ -32,6 +33,17 @@ public class EnemyBehavior : MonoBehaviour
     private const float GapDepth = 1f;
     // Walls steeper than this (normal mostly horizontal) are jumped over; gentler slopes are walked up.
     private const float WallNormalThreshold = 0.7f;
+    // Jump/fall prediction: seconds per simulated step and how many steps before giving up.
+    private const float SimTimeStep = 0.04f;
+    private const int MaxSimSteps = 100;
+    // Small gap kept between the simulated body and the ground, so the prediction doesn't start inside a collider.
+    private const float SkinWidth = 0.05f;
+    // A planned route is recalculated after this many seconds even if nothing changed, in case the enemy got stuck.
+    private const float RouteLifetime = 3f;
+    // Being airborne for less than this (e.g. walking over the seam between two platforms) doesn't count as a failed jump.
+    private const float MinAirTimeForFailure = 0.15f;
+    // Extra walking cost given to jumps, so the enemy prefers just walking off an edge when both work.
+    private const float JumpCost = 0.25f;
 
     [SerializeField] private EntityData enemyData;
 
@@ -45,6 +57,16 @@ public class EnemyBehavior : MonoBehaviour
     [SerializeField] private LayerMask sightBlockingLayers;
     [Tooltip("Where the sight rays start, relative to the enemy's position.")]
     [SerializeField] private Vector2 eyeOffset = new Vector2(0f, 0.5f);
+
+    [Header("Path Following")]
+    [Tooltip("How many platforms the player touched (while in sight) the enemy remembers.")]
+    [SerializeField, Min(1)] private int maxTrailLength = 10;
+    [Tooltip("Seconds a remembered platform is kept after the player was last seen on it.")]
+    [SerializeField, Min(0f)] private float trailMemoryTime = 10f;
+    [Tooltip("How far (on X) the enemy looks for other platforms in the direction it last saw the player.")]
+    [SerializeField, Min(0f)] private float platformSearchRange = 8f;
+    [Tooltip("The enemy never plans a drop deeper than this.")]
+    [SerializeField, Min(0f)] private float maxDropHeight = 8f;
 
     [Header("Visuals")]
     [SerializeField] private SpriteRenderer spriteRenderer;
@@ -67,6 +89,51 @@ public class EnemyBehavior : MonoBehaviour
     private Vector2 lastKnownPlayerPosition;
     private float lastSeenTime = float.NegativeInfinity;
     private int facingDirection = 1;
+
+    /// <summary>A platform the player was seen standing on.</summary>
+    private struct PlatformMark
+    {
+        public Collider2D Platform;
+        public Vector2 Point;
+        public float LastSeenTime;
+    }
+
+    /// <summary>
+    /// One move from the platform the enemy stands on: walk to TakeoffX, then jump (or just keep walking
+    /// off the edge) in Direction. Target is the platform the move is predicted to land on.
+    /// </summary>
+    private struct Route
+    {
+        public Collider2D From;
+        public Collider2D Target;
+        public float TakeoffX;
+        public int Direction;
+        public bool Jump;
+        public Vector2 Landing;
+        public float Cost;
+    }
+
+    private static readonly Comparison<Route> ByCost = (a, b) => a.Cost.CompareTo(b.Cost);
+
+    // Oldest platform first; the last entry is where the player was last seen standing.
+    private readonly List<PlatformMark> playerTrail = new List<PlatformMark>();
+    // Platforms the enemy jumped at and fell back from, skipped until the trail changes.
+    private readonly HashSet<Collider2D> failedTargets = new HashSet<Collider2D>();
+    // Platforms left on a guessed route, so the enemy doesn't bounce back and forth between two guesses.
+    private readonly HashSet<Collider2D> deadEnds = new HashSet<Collider2D>();
+    private readonly List<Route> candidates = new List<Route>();
+    private readonly Collider2D[] overlapBuffer = new Collider2D[16];
+    private readonly Collider2D[] simOverlapBuffer = new Collider2D[1];
+    private readonly RaycastHit2D[] castBuffer = new RaycastHit2D[8];
+    private ContactFilter2D groundFilter;
+    private Collider2D currentGround;
+    private Route route;
+    private bool hasRoute;
+    private float routeExpireTime;
+    private int trailVersion;
+    private int routeTrailVersion;
+    private bool airborneOnRoute;
+    private float airborneStartTime;
 
     public EnemyState CurrentState => currentState;
     public int FacingDirection => facingDirection;
@@ -96,6 +163,9 @@ public class EnemyBehavior : MonoBehaviour
         // Jump checks use the same layers the motor collides with, so "ground" means the same thing to both.
         var motor = GetComponent<CharacterMotor2D>();
         groundMask = motor != null && motor.Raycaster != null ? motor.Raycaster.CollisionLayer.value : sightBlockingLayers.value;
+        // Path prediction ignores triggers (ladder zones etc.) and the enemy's own layer, since it can't stand on either.
+        groundFilter = new ContactFilter2D { useTriggers = false };
+        groundFilter.SetLayerMask(groundMask & ~(1 << gameObject.layer));
 
         if (enemyData == null) Debug.LogError($"{name}: No EntityData assigned to EnemyBehavior.", this);
         if (attack == null) Debug.LogWarning($"{name}: No EnemyAttack component found, the enemy will not attack.", this);
@@ -130,13 +200,18 @@ public class EnemyBehavior : MonoBehaviour
     {
         if (enemyData == null) return;
 
+        currentGround = movement.IsOnGround() ? GetGroundBelow(selfCollider.bounds, out _) : null;
+
         // Player missing or destroyed: just keep patrolling.
         bool canSeePlayer = playerCollider != null && CanSeePlayer();
         if (canSeePlayer)
         {
             lastKnownPlayerPosition = playerCollider.bounds.center;
             lastSeenTime = Time.time;
+            RememberPlayerPlatform();
         }
+
+        ForgetOldPlatforms();
 
         UpdateState(canSeePlayer);
 
@@ -183,6 +258,7 @@ public class EnemyBehavior : MonoBehaviour
         if (newState == currentState) return;
 
         currentState = newState;
+        if (newState == EnemyState.Patrol) ResetPathing();
         StateChanged?.Invoke(newState);
     }
 
@@ -214,14 +290,438 @@ public class EnemyBehavior : MonoBehaviour
     }
 
     /// <summary>
-    /// Runs toward where the player was last seen, jumping onto the player's platform,
-    /// over walls and across gaps on the way.
+    /// Follows the platforms the player was seen on. When the enemy is already on the player's platform
+    /// (or knows of no other), it runs straight at the last known position instead.
     /// </summary>
     private void Chase()
     {
-        bool canJumpNow = enemyData.canJump && movement.IsOnGround();
+        if (currentGround == null)
+        {
+            ChaseInAir();
+            return;
+        }
 
-        if (canJumpNow && TryClimbToPlayer()) return;
+        if (airborneOnRoute)
+        {
+            // Landed back where the jump started: the target can't be reached from here, so try something else.
+            airborneOnRoute = false;
+            if (hasRoute && currentGround == route.From && Time.time - airborneStartTime >= MinAirTimeForFailure)
+                failedTargets.Add(route.Target);
+            hasRoute = false;
+        }
+
+        ConsumeTrail(currentGround);
+
+        if (playerTrail.Count == 0)
+        {
+            ChaseDirectly();
+            return;
+        }
+
+        if (!hasRoute || route.From != currentGround || routeTrailVersion != trailVersion || Time.time >= routeExpireTime)
+            PlanRoute();
+
+        if (hasRoute) FollowRoute();
+        else ChaseDirectly();
+    }
+
+    /// <summary>
+    /// Keeps steering in the direction of the current route, so the enemy follows the predicted arc.
+    /// </summary>
+    private void ChaseInAir()
+    {
+        if (hasRoute)
+        {
+            if (!airborneOnRoute)
+            {
+                airborneOnRoute = true;
+                airborneStartTime = Time.time;
+            }
+            Move(route.Direction, 1f);
+            return;
+        }
+
+        float deltaX = lastKnownPlayerPosition.x - transform.position.x;
+        Move(Mathf.Abs(deltaX) <= ArriveDistance ? 0f : Mathf.Sign(deltaX), 1f);
+    }
+
+    /// <summary>
+    /// Picks the next move, trying in order:
+    /// 1. copy the player's path: reach one of the platforms the player touched, oldest first;
+    /// 2. any other reachable platform in the direction the player was last seen;
+    /// 3. predict where every possible jump or drop from here would land and take the one ending closest to the player.
+    /// </summary>
+    private void PlanRoute()
+    {
+        hasRoute = false;
+
+        for (int i = 0; i < playerTrail.Count; i++)
+        {
+            Collider2D platform = playerTrail[i].Platform;
+            if (failedTargets.Contains(platform)) continue;
+            if (TryFindRoute(platform, out route))
+            {
+                CommitRoute();
+                return;
+            }
+        }
+
+        if (TryFindRouteTowardPlayer(out route))
+        {
+            CommitRoute();
+            return;
+        }
+
+        if (TryPredictRoute(out route))
+        {
+            // A guess: don't come back to this platform as another guess, or the enemy could ping-pong forever.
+            deadEnds.Add(currentGround);
+            CommitRoute();
+        }
+    }
+
+    private void CommitRoute()
+    {
+        hasRoute = true;
+        routeTrailVersion = trailVersion;
+        routeExpireTime = Time.time + RouteLifetime;
+    }
+
+    private void FollowRoute()
+    {
+        if (!route.Jump)
+        {
+            // Walking off the edge: the drop starts at the edge in the route's direction.
+            Move(route.Direction, 1f);
+            return;
+        }
+
+        float toTakeoff = route.TakeoffX - transform.position.x;
+        // Wide enough that a full-speed step can't skip over the takeoff point.
+        float tolerance = enemyData.speed * Time.fixedDeltaTime + SkinWidth;
+
+        if (Mathf.Abs(toTakeoff) > tolerance)
+        {
+            Move(Mathf.Sign(toTakeoff), 1f);
+            return;
+        }
+
+        // Wait at the takeoff point while the jump is on cooldown instead of running past it.
+        if (Jump()) Move(route.Direction, 1f);
+        else Move(0f, 0f);
+    }
+
+    /// <summary>
+    /// Finds the cheapest move from the current platform that is predicted to land on the target.
+    /// </summary>
+    private bool TryFindRoute(Collider2D target, out Route best)
+    {
+        best = default;
+        if (target == null || target == currentGround) return false;
+
+        Bounds t = target.bounds;
+        float feet = Feet;
+        if (t.max.y - feet > MaxJumpReach + SkinWidth || feet - t.max.y > maxDropHeight) return false;
+
+        candidates.Clear();
+        AddCandidates(1, target);
+        AddCandidates(-1, target);
+        candidates.Sort(ByCost);
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            Route candidate = candidates[i];
+            if (!Simulate(candidate, out Collider2D landedOn, out candidate.Landing) || landedOn != target) continue;
+
+            candidate.Target = target;
+            best = candidate;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Looks for reachable platforms between the enemy and the player's last known position (and a bit past it),
+    /// and picks the one whose landing spot is closest to the player.
+    /// </summary>
+    private bool TryFindRouteTowardPlayer(out Route best)
+    {
+        best = default;
+
+        Bounds self = selfCollider.bounds;
+        float deltaX = lastKnownPlayerPosition.x - self.center.x;
+        int direction = Mathf.Abs(deltaX) > ArriveDistance ? (deltaX > 0f ? 1 : -1) : facingDirection;
+
+        float top = Feet + MaxJumpReach + 0.5f;
+        float bottom = Feet - maxDropHeight;
+        var center = new Vector2(self.center.x + direction * platformSearchRange * 0.5f, (top + bottom) * 0.5f);
+        var size = new Vector2(platformSearchRange, top - bottom);
+
+        int count = Physics2D.OverlapBox(center, size, 0f, groundFilter, overlapBuffer);
+        float bestDistance = float.PositiveInfinity;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D platform = overlapBuffer[i];
+            if (platform == selfCollider || platform == currentGround) continue;
+            if (failedTargets.Contains(platform) || deadEnds.Contains(platform)) continue;
+            if (!TryFindRoute(platform, out Route candidate)) continue;
+
+            float distance = Vector2.Distance(candidate.Landing, lastKnownPlayerPosition);
+            if (distance >= bestDistance) continue;
+
+            bestDistance = distance;
+            best = candidate;
+        }
+
+        return bestDistance < float.PositiveInfinity;
+    }
+
+    /// <summary>
+    /// Simulates every jump and drop available from here, in both directions, and keeps the one that lands
+    /// closest to the player's last known position, even if that means going the "wrong" way for now.
+    /// </summary>
+    private bool TryPredictRoute(out Route best)
+    {
+        best = default;
+
+        candidates.Clear();
+        AddCandidates(1, null);
+        AddCandidates(-1, null);
+
+        float bestDistance = float.PositiveInfinity;
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            Route candidate = candidates[i];
+            if (!Simulate(candidate, out Collider2D landedOn, out candidate.Landing)) continue;
+            if (landedOn == currentGround || failedTargets.Contains(landedOn) || deadEnds.Contains(landedOn)) continue;
+
+            float distance = Vector2.Distance(candidate.Landing, lastKnownPlayerPosition) + candidate.Cost * 0.1f;
+            if (distance >= bestDistance) continue;
+
+            candidate.Target = landedOn;
+            bestDistance = distance;
+            best = candidate;
+        }
+
+        return bestDistance < float.PositiveInfinity;
+    }
+
+    /// <summary>
+    /// Adds the moves worth testing in one direction: jumps from where the enemy stands, from the platform's edge
+    /// and halfway there, a run-up jump at the target (also used to get out from under it), and walking off the edge.
+    /// </summary>
+    private void AddCandidates(int direction, Collider2D target)
+    {
+        Bounds ground = currentGround.bounds;
+        Bounds self = selfCollider.bounds;
+        float x = self.center.x;
+        // Takeoffs keep the enemy's center over the ground, so it is still standing when it jumps.
+        float minX = ground.min.x + SkinWidth * 2f;
+        float maxX = ground.max.x - SkinWidth * 2f;
+        float edgeX = direction > 0 ? maxX : minX;
+
+        if (enemyData.canJump)
+        {
+            AddCandidate(x, direction, true, minX, maxX);
+            AddCandidate(edgeX, direction, true, minX, maxX);
+            AddCandidate((x + edgeX) * 0.5f, direction, true, minX, maxX);
+
+            if (target != null)
+            {
+                // Platforms are solid, so the enemy can't jump up through them: it takes off beside the target
+                // (walking out from under it first if needed) and jumps toward it.
+                Bounds t = target.bounds;
+                float nearEdge = direction > 0 ? t.min.x : t.max.x;
+                AddCandidate(nearEdge - direction * (self.extents.x + EdgeMargin), direction, true, minX, maxX);
+                AddCandidate(nearEdge - direction * (self.extents.x + enemyData.jumpCheckDistance), direction, true, minX, maxX);
+            }
+        }
+
+        AddCandidate(edgeX, direction, false, minX, maxX);
+    }
+
+    private void AddCandidate(float takeoffX, int direction, bool jump, float minX, float maxX)
+    {
+        takeoffX = Mathf.Clamp(takeoffX, minX, maxX);
+        candidates.Add(new Route
+        {
+            From = currentGround,
+            TakeoffX = takeoffX,
+            Direction = direction,
+            Jump = jump,
+            Cost = Mathf.Abs(takeoffX - selfCollider.bounds.center.x) + (jump ? JumpCost : 0f)
+        });
+    }
+
+    /// <summary>
+    /// Predicts where a move ends up by sweeping the enemy's collider along the arc its own jump settings produce
+    /// (the same gravity and jump speed the movement controller uses). Ceilings stop the rise, walls stop the
+    /// sideways motion, so a jump without enough headroom correctly comes out as "lands somewhere else".
+    /// Only single ground jumps are simulated: the enemy can't double jump or wall jump like the player.
+    /// </summary>
+    private bool Simulate(Route move, out Collider2D landedOn, out Vector2 landing)
+    {
+        landedOn = null;
+        landing = default;
+
+        Bounds self = selfCollider.bounds;
+        Bounds ground = move.From.bounds;
+        Vector2 size = (Vector2)self.size - Vector2.one * (SkinWidth * 2f);
+        Vector2 position;
+        Vector2 velocity;
+
+        if (move.Jump)
+        {
+            position = new Vector2(move.TakeoffX, self.center.y + SkinWidth);
+            velocity = new Vector2(move.Direction * enemyData.speed, JumpSpeed);
+        }
+        else
+        {
+            // Start just past the edge, where the enemy starts to fall.
+            float edge = move.Direction > 0 ? ground.max.x : ground.min.x;
+            position = new Vector2(edge + move.Direction * self.extents.x, self.center.y + SkinWidth);
+            velocity = new Vector2(move.Direction * enemyData.speed, 0f);
+        }
+
+        // No room to stand there (low ceiling, a wall right past the edge...).
+        if (Physics2D.OverlapBox(position, size, 0f, groundFilter, simOverlapBuffer) > 0) return false;
+
+        float gravity = Gravity;
+        float lowestY = self.center.y - maxDropHeight;
+
+        for (int i = 0; i < MaxSimSteps; i++)
+        {
+            velocity.y -= gravity * SimTimeStep;
+            Vector2 step = velocity * SimTimeStep;
+            float distance = step.magnitude;
+            if (distance < Mathf.Epsilon) continue;
+
+            if (Physics2D.BoxCast(position, size, 0f, step / distance, groundFilter, castBuffer, distance) > 0)
+            {
+                RaycastHit2D hit = castBuffer[0];
+                if (hit.normal.y >= WallNormalThreshold)
+                {
+                    landedOn = hit.collider;
+                    landing = hit.centroid;
+                    return true;
+                }
+
+                position = hit.centroid + hit.normal * 0.01f;
+                if (hit.normal.y <= -WallNormalThreshold) velocity.y = Mathf.Min(velocity.y, 0f);
+                else velocity.x = 0f;
+                continue;
+            }
+
+            position += step;
+            if (position.y < lowestY) return false;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Records the platform the player stands on, if it differs from the last one remembered.
+    /// </summary>
+    private void RememberPlayerPlatform()
+    {
+        Collider2D platform = GetGroundBelow(playerCollider.bounds, out Vector2 point);
+        if (platform == null) return;
+
+        int last = playerTrail.Count - 1;
+        if (last >= 0 && playerTrail[last].Platform == platform)
+        {
+            PlatformMark mark = playerTrail[last];
+            mark.LastSeenTime = Time.time;
+            playerTrail[last] = mark;
+            return;
+        }
+
+        // Already standing on the player's platform, nothing to follow.
+        if (last < 0 && platform == currentGround) return;
+
+        playerTrail.Add(new PlatformMark { Platform = platform, Point = point, LastSeenTime = Time.time });
+        if (playerTrail.Count > maxTrailLength) playerTrail.RemoveAt(0);
+        OnTrailChanged();
+    }
+
+    private void ForgetOldPlatforms()
+    {
+        int removed = 0;
+        while (removed < playerTrail.Count)
+        {
+            PlatformMark mark = playerTrail[removed];
+            if (mark.Platform != null && Time.time - mark.LastSeenTime <= trailMemoryTime) break;
+            removed++;
+        }
+
+        if (removed == 0) return;
+        playerTrail.RemoveRange(0, removed);
+        OnTrailChanged();
+    }
+
+    /// <summary>
+    /// Reaching a remembered platform means everything the player did before it is done.
+    /// Uses the last occurrence, so if the player looped back here the loop is skipped.
+    /// </summary>
+    private void ConsumeTrail(Collider2D ground)
+    {
+        for (int i = playerTrail.Count - 1; i >= 0; i--)
+        {
+            if (playerTrail[i].Platform != ground) continue;
+
+            playerTrail.RemoveRange(0, i + 1);
+            OnTrailChanged();
+            return;
+        }
+    }
+
+    private void OnTrailChanged()
+    {
+        trailVersion++;
+        failedTargets.Clear();
+        deadEnds.Clear();
+    }
+
+    private void ResetPathing()
+    {
+        playerTrail.Clear();
+        failedTargets.Clear();
+        deadEnds.Clear();
+        hasRoute = false;
+        airborneOnRoute = false;
+    }
+
+    /// <summary>
+    /// The ground collider right under the given bounds, checked at the center and both bottom corners
+    /// so standing near an edge still counts. Uses the collider's bounds as the platform's edges elsewhere,
+    /// so this works best with box-shaped platforms.
+    /// </summary>
+    private Collider2D GetGroundBelow(Bounds bounds, out Vector2 point)
+    {
+        float y = bounds.min.y + SkinWidth;
+        float inset = bounds.extents.x * 0.9f;
+
+        for (int i = 0; i < 3; i++)
+        {
+            float x = bounds.center.x + (i == 0 ? 0f : i == 1 ? -inset : inset);
+            if (Physics2D.Raycast(new Vector2(x, y), Vector2.down, groundFilter, castBuffer, 0.3f) == 0) continue;
+
+            point = castBuffer[0].point;
+            return castBuffer[0].collider;
+        }
+
+        point = default;
+        return null;
+    }
+
+    /// <summary>
+    /// Runs toward where the player was last seen, jumping over walls and across gaps on the way.
+    /// </summary>
+    private void ChaseDirectly()
+    {
+        bool canJumpNow = enemyData.canJump && movement.IsOnGround();
 
         float deltaX = lastKnownPlayerPosition.x - transform.position.x;
 
@@ -239,60 +739,6 @@ public class EnemyBehavior : MonoBehaviour
 
         if (canJumpNow && (IsJumpableWallAhead(direction) || (!playerIsBelow && IsGapAhead(direction))))
             Jump();
-    }
-
-    /// <summary>
-    /// If the player stands on a platform above the enemy that a jump can reach, the enemy walks out from
-    /// under it and jumps onto it from the side (platforms are solid, so it can't jump up through them).
-    /// Returns false when there is nothing to climb, so the normal chase runs instead.
-    /// </summary>
-    private bool TryClimbToPlayer()
-    {
-        if (!TryGetPlayerPlatform(out Bounds platform)) return false;
-
-        Bounds self = selfCollider.bounds;
-        float x = self.center.x;
-        bool overlapsPlatform = self.max.x > platform.min.x && self.min.x < platform.max.x;
-
-        if (overlapsPlatform)
-        {
-            // Under the platform: walk out past the nearer edge.
-            if (self.max.y > platform.min.y + 0.05f) return false;
-
-            float leftExit = platform.min.x - self.extents.x - EdgeMargin;
-            float rightExit = platform.max.x + self.extents.x + EdgeMargin;
-            float exitX = x - leftExit < rightExit - x ? leftExit : rightExit;
-            Move(Mathf.Sign(exitX - x), 1f);
-            return true;
-        }
-
-        // Beside the platform: run at it and jump once its edge is close enough.
-        int direction = x < platform.center.x ? 1 : -1;
-        float distanceToEdge = direction > 0 ? platform.min.x - self.max.x : self.min.x - platform.max.x;
-        Move(direction, 1f);
-
-        if (distanceToEdge <= enemyData.jumpCheckDistance) Jump();
-        return true;
-    }
-
-    /// <summary>
-    /// Finds the ground the player is standing on, if it is higher than the enemy's feet but low enough to jump onto.
-    /// Uses the collider's bounds as the platform's edges, so it works best with box-shaped platforms.
-    /// </summary>
-    private bool TryGetPlayerPlatform(out Bounds platform)
-    {
-        platform = default;
-        if (playerCollider == null) return false;
-
-        Bounds player = playerCollider.bounds;
-        RaycastHit2D hit = Physics2D.Raycast(new Vector2(player.center.x, player.min.y + 0.05f), Vector2.down, 0.3f, groundMask);
-        if (hit.collider == null) return false;
-
-        float height = hit.point.y - Feet;
-        if (height <= StepHeight || height > MaxJumpReach) return false;
-
-        platform = hit.collider.bounds;
-        return true;
     }
 
     /// <summary>
@@ -323,17 +769,34 @@ public class EnemyBehavior : MonoBehaviour
         return Physics2D.Raycast(probe, Vector2.down, GapDepth, groundMask).collider == null;
     }
 
-    private void Jump()
+    /// <summary>
+    /// Presses jump unless it is on cooldown. Returns whether the jump was pressed.
+    /// </summary>
+    private bool Jump()
     {
-        if (Time.time < nextJumpTime) return;
+        if (Time.time < nextJumpTime) return false;
 
         nextJumpTime = Time.time + enemyData.jumpCooldown;
         movement.PressJump(true);
+        return true;
     }
 
     private float Feet => selfCollider.bounds.min.y;
 
     private float MaxJumpReach => enemyData.maxJumpHeight * JumpReachFactor;
+
+    // Same formula as BasicMovementController2D: gravity that reaches maxJumpHeight in timeToApex.
+    private float Gravity
+    {
+        get
+        {
+            float timeToApex = Mathf.Max(enemyData.timeToApex, 0.01f);
+            return 2f * enemyData.maxJumpHeight / (timeToApex * timeToApex);
+        }
+    }
+
+    // Launch speed that peaks at MaxJumpReach rather than the full height, so predictions stay on the safe side.
+    private float JumpSpeed => Mathf.Sqrt(2f * Gravity * MaxJumpReach);
 
     private void AttackPlayer()
     {
@@ -414,6 +877,25 @@ public class EnemyBehavior : MonoBehaviour
         {
             Gizmos.color = currentState == EnemyState.Patrol ? Color.grey : Color.green;
             Gizmos.DrawLine(eye, playerCollider.bounds.center);
+        }
+
+        if (!Application.isPlaying) return;
+
+        // Remembered player path (magenta) and the current planned move: takeoff point to predicted landing (orange).
+        Gizmos.color = Color.magenta;
+        for (int i = 0; i < playerTrail.Count; i++)
+        {
+            Gizmos.DrawWireSphere(playerTrail[i].Point, 0.12f);
+            if (i > 0) Gizmos.DrawLine(playerTrail[i - 1].Point, playerTrail[i].Point);
+        }
+
+        if (hasRoute && selfCollider != null)
+        {
+            Gizmos.color = new Color(1f, 0.5f, 0f);
+            var takeoff = new Vector2(route.Jump ? route.TakeoffX : selfCollider.bounds.center.x, Feet);
+            Gizmos.DrawWireSphere(takeoff, 0.1f);
+            Gizmos.DrawLine(takeoff, route.Landing);
+            Gizmos.DrawWireSphere(route.Landing, 0.15f);
         }
     }
 }

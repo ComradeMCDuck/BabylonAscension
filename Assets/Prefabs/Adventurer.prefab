@@ -408,6 +408,7 @@ GameObject:
   - component: {fileID: 5143643343682009756}
   - component: {fileID: 7487572580236149384}
   - component: {fileID: 785066282450330949}
+  - component: {fileID: 6391775073961633728}
   m_Layer: 8
   m_Name: Adventurer
   m_TagString: Player
@@ -641,3 +642,20 @@ MonoBehaviour:
   dashActionReference: {fileID: 0}
   firstArrowActionReference: {fileID: 0}
   secondArrowActionReference: {fileID: 0}
+--- !u!114 &6391775073961633728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8824978788996705367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 137699a92ae474f4ab67c4d1cabd7e2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MotionInterpolator
+  smoothedChildren:
+  - {fileID: 7664295490018543239}
+  - {fileID: 8889766612805912733}
+  - {fileID: 7362350623775227887}
+  snapDistance: 3

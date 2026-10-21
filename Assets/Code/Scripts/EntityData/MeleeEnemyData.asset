@@ -48,19 +48,19 @@ MonoBehaviour:
   lockFacingToRight: 1
   hasVariableJumpHeight: 1
   airJumpAllowed: 1
-  maxJumpHeight: 3.5
+  maxJumpHeight: 7
   minJumpHeight: 1
   timeToApex: 0.4
   onLadderJumpForce: 0.4
   fallingJumpPaddingTime: 0.09
   willJumpPaddingTime: 0.15
-  canWallSlide: 1
+  canWallSlide: 0
   wallStickTime: 0.15
   wallSlideSpeedLoss: 0.05
   wallSlidingSpeedMax: 2
   canWallClimb: 0
   wallClimbSpeed: 2
-  canWallJump: 1
+  canWallJump: 0
   wallClimbForce: {x: 12, y: 16}
   wallOffForce: {x: 8, y: 15}
   wallLeapForce: {x: 18, y: 17}

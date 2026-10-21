@@ -92,37 +92,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!1 &4821803315582965824
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6178610772692680962}
-  m_Layer: 10
-  m_Name: AttackOrigin
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6178610772692680962
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4821803315582965824}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6675077669277327910}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4981493354335761464
 GameObject:
   m_ObjectHideFlags: 0
@@ -186,6 +155,7 @@ GameObject:
   - component: {fileID: 8347343785819296506}
   - component: {fileID: 3733485465196266763}
   - component: {fileID: 6925391719762479403}
+  - component: {fileID: 9067177735715094021}
   m_Layer: 10
   m_Name: MeleeEnemy
   m_TagString: Untagged
@@ -206,7 +176,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6178610772692680962}
   - {fileID: 4178450587493203958}
   - {fileID: 7242214645805434001}
   m_Father: {fileID: 0}
@@ -303,6 +272,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   eyeOffset: {x: 0, y: 0.5}
+  maxTrailLength: 10
+  trailMemoryTime: 10
+  platformSearchRange: 8
+  maxDropHeight: 8
   spriteRenderer: {fileID: 0}
   spriteFacesRight: 1
 --- !u!114 &3747405914932898914
@@ -426,3 +399,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileAttack
   spawnOffset: {x: 0.5, y: 0}
+--- !u!114 &9067177735715094021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 137699a92ae474f4ab67c4d1cabd7e2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MotionInterpolator
+  smoothedChildren:
+  - {fileID: 4178450587493203958}
+  snapDistance: 3

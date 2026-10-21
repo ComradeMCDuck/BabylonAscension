@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb76347b8be099498ed2c252b74ae42, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
+  entityID: 0
   maxHealth: 100
   detectionRange: 5
   moveSpeed: 7.5
@@ -25,6 +26,16 @@ MonoBehaviour:
   attackCooldown: 5
   attackSpeed: 1
   attackEffectPrefab: {fileID: 0}
+  patrolSpeedMultiplier: 0.4
+  patrolWaitTime: 1
+  loseSightTime: 2
+  canJump: 1
+  jumpCheckDistance: 1
+  jumpCooldown: 0.5
+  attackWindup: 0.2
+  projectileRange: 2
+  projectileKeepsFlying: 0
+  projectileLifetime: 5
   fallMultiplier: 3
   riseMultiplier: 3
   maxFallSpeed: 30
@@ -43,13 +54,13 @@ MonoBehaviour:
   onLadderJumpForce: 0.4
   fallingJumpPaddingTime: 0.09
   willJumpPaddingTime: 0.15
-  canWallSlide: 0
+  canWallSlide: 1
   wallStickTime: 0.15
   wallSlideSpeedLoss: 0.05
   wallSlidingSpeedMax: 2
   canWallClimb: 0
   wallClimbSpeed: 2
-  canWallJump: 0
+  canWallJump: 1
   wallClimbForce: {x: 12, y: 16}
   wallOffForce: {x: 8, y: 15}
   wallLeapForce: {x: 18, y: 17}

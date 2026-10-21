@@ -46,37 +46,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   enemyData: {fileID: 11400000, guid: 78530024cc693db439d9884a81363c94, type: 2}
   currentHealth: 0
---- !u!1 &4821803315582965824
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6178610772692680962}
-  m_Layer: 10
-  m_Name: AttackOrigin
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6178610772692680962
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4821803315582965824}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6675077669277327910}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5134951269536716660
 GameObject:
   m_ObjectHideFlags: 0
@@ -104,7 +73,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6675077669277327910}
@@ -186,6 +155,7 @@ GameObject:
   - component: {fileID: 2709530703883293876}
   - component: {fileID: 2280274409274092430}
   - component: {fileID: 2948731175527631967}
+  - component: {fileID: 566255764140674756}
   m_Layer: 10
   m_Name: ShooterEnemy
   m_TagString: Untagged
@@ -206,7 +176,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6178610772692680962}
   - {fileID: 2756448423009401696}
   - {fileID: 2026363646222815456}
   m_Father: {fileID: 0}
@@ -230,6 +199,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   eyeOffset: {x: 0, y: 0.5}
+  maxTrailLength: 10
+  trailMemoryTime: 10
+  platformSearchRange: 8
+  maxDropHeight: 8
   spriteRenderer: {fileID: 0}
   spriteFacesRight: 1
 --- !u!114 &-2325959678832883612
@@ -317,7 +290,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1, y: 2}
   m_EdgeRadius: 0
 --- !u!114 &4192187944547697270
 MonoBehaviour:
@@ -426,3 +399,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileAttack
   spawnOffset: {x: 0.5, y: 0}
+--- !u!114 &566255764140674756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 137699a92ae474f4ab67c4d1cabd7e2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MotionInterpolator
+  smoothedChildren:
+  - {fileID: 2756448423009401696}
+  snapDistance: 3
