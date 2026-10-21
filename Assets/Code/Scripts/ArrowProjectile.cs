@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DYP;
 using UnityEngine;
 
@@ -42,8 +43,14 @@ public class ArrowProjectile : MonoBehaviour
     private LayerMask activeHitLayers;
     private bool launched;
 
+    // Reused buffers for explosions, to avoid allocating every time one goes off.
+    private static readonly List<Collider2D> s_ExplosionOverlaps = new List<Collider2D>();
+    private static readonly Dictionary<Transform, (Collider2D collider, float distance)> s_ExplosionTargets =
+        new Dictionary<Transform, (Collider2D collider, float distance)>();
+
     public ArrowData Data => arrowData;
     public int RemainingBounces => remainingBounces;
+    public bool IsExplosive => arrowData != null && arrowData.IsExplosive;
 
     private void Awake()
     {
@@ -139,21 +146,115 @@ public class ArrowProjectile : MonoBehaviour
             return;
         }
 
-        HandleTargetHit(hit.collider);
+        HandleTargetHit(hit);
     }
 
-    private void HandleTargetHit(Collider2D other)
+    // The character a collider belongs to: everything under the Rigidbody2D the collider is attached to.
+    private static Transform GetCharacter(Collider2D other)
+    {
+        return other.attachedRigidbody != null
+            ? other.attachedRigidbody.transform
+            : other.transform.root;
+    }
+
+    private static IDamageable FindDamageable(Collider2D other)
     {
         // Health can sit on a sibling child of the character (player and enemies both do this),
-        // so search the whole character: everything under the Rigidbody2D the hit collider belongs to.
+        // so search the whole character.
         IDamageable target = other.GetComponentInParent<IDamageable>();
         if (target == null)
+            target = GetCharacter(other).GetComponentInChildren<IDamageable>();
+
+        return target;
+    }
+
+    /// <summary>
+    /// Damages and knocks back every target within ArrowData.explosionRadius.
+    /// Damage and knockback fall off linearly from the center values to the edge values,
+    /// measured to the closest point of each target's collider. Knockback pushes away from the center.
+    /// </summary>
+    private void Explode(Vector2 center)
+    {
+        // Destroy is deferred to the end of the frame; stop here so a second physics step can't explode again.
+        launched = false;
+
+        float explosionRadius = arrowData.explosionRadius;
+
+        if (arrowData.explosionEffect != null)
         {
-            Transform character = other.attachedRigidbody != null
-                ? other.attachedRigidbody.transform
-                : other.transform.root;
-            target = character.GetComponentInChildren<IDamageable>();
+            GameObject effect = Instantiate(
+                arrowData.explosionEffect,
+                new Vector3(center.x, center.y, transform.position.z),
+                Quaternion.identity);
+
+            if (arrowData.explosionEffectDuration > 0f)
+                Destroy(effect, arrowData.explosionEffectDuration);
         }
+
+        // Only targets get hurt, never the environment.
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(activeHitLayers.value & ~environmentLayers.value);
+        filter.useTriggers = Physics2D.queriesHitTriggers;
+
+        s_ExplosionOverlaps.Clear();
+        Physics2D.OverlapCircle(center, explosionRadius, filter, s_ExplosionOverlaps);
+
+        // A character can have several colliders; keep the one closest to the center.
+        s_ExplosionTargets.Clear();
+        foreach (Collider2D col in s_ExplosionOverlaps)
+        {
+            if (IsOwner(col))
+                continue;
+
+            float distance = Vector2.Distance(center, col.ClosestPoint(center));
+            Transform character = GetCharacter(col);
+
+            if (!s_ExplosionTargets.TryGetValue(character, out var closest) || distance < closest.distance)
+                s_ExplosionTargets[character] = (col, distance);
+        }
+
+        foreach (var pair in s_ExplosionTargets)
+        {
+            Collider2D col = pair.Value.collider;
+            float falloff = Mathf.Clamp01(pair.Value.distance / explosionRadius);
+
+            IDamageable target = FindDamageable(col);
+            if (target != null)
+                target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff));
+
+            float explosionKnockback = Mathf.Lerp(arrowData.explosionCenterKnockback, arrowData.explosionEdgeKnockback, falloff);
+
+            if (explosionKnockback > 0f)
+            {
+                BasicMovementController2D targetMovement =
+                    col.GetComponentInParent<BasicMovementController2D>();
+
+                if (targetMovement != null)
+                {
+                    Vector2 away = (Vector2)pair.Key.position - center;
+                    Vector2 pushDirection = away.sqrMagnitude > 0.0001f ? away.normalized : direction;
+
+                    targetMovement.ApplyKnockback(pushDirection * explosionKnockback);
+                }
+            }
+        }
+
+        Destroy(gameObject);
+    }
+
+    private void HandleTargetHit(RaycastHit2D hit)
+    {
+        if (IsExplosive)
+        {
+            Explode(hit.centroid);
+            return;
+        }
+
+        // Destroy is deferred to the end of the frame; stop here so a second physics step can't hit again.
+        launched = false;
+
+        Collider2D other = hit.collider;
+        IDamageable target = FindDamageable(other);
 
         if (target != null)
             target.TakeDamage(damage);
@@ -165,7 +266,7 @@ public class ArrowProjectile : MonoBehaviour
                 other.GetComponentInParent<BasicMovementController2D>();
 
             if (targetMovement != null)
-                targetMovement.AddImpulse(direction * knockback);
+                targetMovement.ApplyKnockback(direction * knockback);
         }
 
         Destroy(gameObject);
@@ -189,7 +290,10 @@ public class ArrowProjectile : MonoBehaviour
     {
         if (remainingBounces <= 0)
         {
-            Destroy(gameObject);
+            if (IsExplosive)
+                Explode(hit.centroid);
+            else
+                Destroy(gameObject);
             return;
         }
 
@@ -216,5 +320,11 @@ public class ArrowProjectile : MonoBehaviour
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, radius);
+
+        if (IsExplosive)
+        {
+            Gizmos.color = new Color(1f, 0.4f, 0f);
+            Gizmos.DrawWireSphere(transform.position, arrowData.explosionRadius);
+        }
     }
 }

@@ -97,7 +97,13 @@ namespace DYP
             public float MaxPlanarSpeed = 18f;
             [Tooltip("Cancel falling speed before an upward impulse, so shooting downward always launches the character up.")]
             public bool CancelFallingOnUpwardImpulse = true;
+            [Tooltip("Seconds movement and jump input are ignored after ApplyKnockback.")]
+            public float KnockbackStunTime = 0.3f;
+            [Tooltip("Upward speed added by ApplyKnockback while on the ground.")]
+            public float KnockbackLift = 4f;
 
+            [HideInInspector]
+            public float KnockbackStunTimer = 0.0f;
             [HideInInspector]
             public bool HorizontalActive = false;
             [HideInInspector]
@@ -534,6 +540,33 @@ namespace DYP
             }
         }
 
+        /// <summary>
+        /// Knockback from being hit (arrows, explosions). Like AddImpulse, but adds a small lift when
+        /// on the ground and ignores movement/jump input for KnockbackStunTime, so the character
+        /// can't immediately walk out of the push.
+        /// </summary>
+        public void ApplyKnockback(Vector2 impulse)
+        {
+            if (IsState(MotorState.OnLadder) || IsState(MotorState.Frozen))
+            {
+                return;
+            }
+
+            if (IsOnGround() && m_Recoil.KnockbackLift > 0.0f)
+            {
+                impulse.y = Mathf.Max(impulse.y, 0.0f) + m_Recoil.KnockbackLift;
+            }
+
+            AddImpulse(impulse);
+
+            m_Recoil.KnockbackStunTimer = Mathf.Max(m_Recoil.KnockbackStunTimer, m_Recoil.KnockbackStunTime);
+        }
+
+        public bool IsKnockbackStunned()
+        {
+            return m_Recoil.KnockbackStunTimer > 0.0f;
+        }
+
         public void SetFrozen(bool freeze)
         {
             if (freeze)
@@ -833,6 +866,8 @@ namespace DYP
             m_Recoil.AirDeceleration = m_EntityData.recoilAirDeceleration;
             m_Recoil.MaxPlanarSpeed = m_EntityData.recoilMaxPlanarSpeed;
             m_Recoil.CancelFallingOnUpwardImpulse = m_EntityData.cancelFallingOnUpwardImpulse;
+            m_Recoil.KnockbackStunTime = m_EntityData.knockbackStunTime;
+            m_Recoil.KnockbackLift = m_EntityData.knockbackLift;
         }
 
         public void _Update(float timeStep)
@@ -856,6 +891,14 @@ namespace DYP
 
             // read input from input driver
             Vector2 input = m_InputBuffer.Input;
+
+            // knocked back: ignore movement and jump input until the stun wears off
+            if (IsKnockbackStunned())
+            {
+                input = Vector2.zero;
+                m_InputBuffer.IsJumpPressed = false;
+                m_InputBuffer.IsDashPressed = false;
+            }
 
             Vector2Int rawInput = Vector2Int.zero;
 
@@ -1389,6 +1432,8 @@ namespace DYP
                 m_CustomAction._Update(timeStep);
             }
 
+
+            if (m_Recoil.KnockbackStunTimer > 0.0f) m_Recoil.KnockbackStunTimer -= timeStep;
 
             if (m_FallingJumpPaddingFrame >= 0) m_FallingJumpPaddingFrame--;
             if (m_WillJumpPaddingFrame >= 0) m_WillJumpPaddingFrame--;

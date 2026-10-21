@@ -139,6 +139,10 @@ public class DebugMenu : MonoBehaviour
         AddFloatRow("Air Deceleration", () => d.recoilAirDeceleration, v => d.recoilAirDeceleration = v);
         AddFloatRow("Max Planar Speed", () => d.recoilMaxPlanarSpeed, v => d.recoilMaxPlanarSpeed = v);
         AddBoolRow("Cancel Falling On Up Impulse", () => d.cancelFallingOnUpwardImpulse, v => d.cancelFallingOnUpwardImpulse = v);
+
+        AddSection("Knockback");
+        AddFloatRow("Stun Time", () => d.knockbackStunTime, v => d.knockbackStunTime = v, 0f, 10f);
+        AddFloatRow("Lift", () => d.knockbackLift, v => d.knockbackLift = v);
     }
 
     /// <summary>

@@ -14,7 +14,7 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private BasicMovementController2D movementController;
 
     [Header("Arrows")]
-    [Tooltip("Element 0 is selected with key 1, element 1 with key 2. Each prefab carries its own ArrowData.")]
+    [Tooltip("Element 0 is selected with key 1, element 1 with key 2, element 2 with key 3. Each prefab carries its own ArrowData.")]
     [SerializeField] private GameObject[] arrowPrefab;
     [SerializeField] private int selectedArrowIndex = 0;
 
@@ -25,11 +25,6 @@ public class BowCombat : MonoBehaviour
     [Header("Charge")]
     [Tooltip("Seconds of holding needed to reach full charge.")]
     [SerializeField] private float maxChargeTime = 1.2f;
-
-    [Header("Player Recoil")]
-    [Tooltip("Velocity added to the player opposite the shot. Capped by the controller's Recoil > Max Planar Speed.")]
-    [SerializeField] private float minRecoil = 3f;
-    [SerializeField] private float maxRecoil = 12f;
 
     [Header("Arrow Spawn")]
     [SerializeField] private float spawnOffset = 0.15f;
@@ -211,8 +206,10 @@ public class BowCombat : MonoBehaviour
             return;
         }
 
-        
-        float recoil = Mathf.Lerp(minRecoil, maxRecoil, charge);
+        // Each arrow type sets its own recoil in its ArrowData.
+        float recoil = arrow.Data != null
+            ? Mathf.Lerp(arrow.Data.minRecoil, arrow.Data.maxRecoil, charge)
+            : 0f;
 
         // Use the player root as the owner so the arrow ignores
         // every player collider.

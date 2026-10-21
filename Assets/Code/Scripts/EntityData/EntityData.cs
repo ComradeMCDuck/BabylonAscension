@@ -111,6 +111,12 @@ public class EntityData : ScriptableObject
     [Tooltip("Cancel falling speed before an upward impulse, so shooting downward always launches the character up.")]
     public bool cancelFallingOnUpwardImpulse = true;
 
+    [Header("Controller - Knockback (when hit)")]
+    [Tooltip("Seconds movement and jump input are ignored after being knocked back, so the character can't instantly walk out of it.")]
+    [Min(0f)] public float knockbackStunTime = 0.3f;
+    [Tooltip("Upward speed added when knocked back while on the ground, so the hit pops the character up and it slides with air deceleration.")]
+    [Min(0f)] public float knockbackLift = 4f;
+
     /// <summary>
     /// Tells listeners (e.g. the movement controller) that values were changed from code.
     /// </summary>
