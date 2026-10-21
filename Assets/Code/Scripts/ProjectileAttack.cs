@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Attack that spawns EntityData.attackEffectPrefab (a 2D Projectile) toward the target.
+/// Attack that spawns EntityData.attackEffectPrefab (a 2D ArrowProjectile) toward the target.
 /// Used by both melee enemies (short attackRange, projectile stops at the range)
 /// and shooters (long attackRange, projectileKeepsFlying).
 /// </summary>
@@ -20,9 +20,9 @@ public class ProjectileAttack : EnemyAttack
 
         GameObject projectileObject = Instantiate(data.attackEffectPrefab, GetSpawnPosition(targetPosition), Quaternion.identity);
 
-        if (!projectileObject.TryGetComponent(out Projectile projectile))
+        if (!projectileObject.TryGetComponent(out ArrowProjectile projectile))
         {
-            Debug.LogError($"{data.attackEffectPrefab.name} has no Projectile component.", this);
+            Debug.LogError($"{data.attackEffectPrefab.name} has no ArrowProjectile component.", this);
             Destroy(projectileObject);
             return;
         }

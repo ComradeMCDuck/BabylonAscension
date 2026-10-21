@@ -25,7 +25,7 @@ MonoBehaviour:
   attackRange: 10
   attackCooldown: 2
   attackSpeed: 12
-  attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
+  attackEffectPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
   patrolSpeedMultiplier: 0.5
   patrolWaitTime: 1.5
   loseSightTime: 2
