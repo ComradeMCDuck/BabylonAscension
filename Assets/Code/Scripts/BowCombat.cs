@@ -14,7 +14,7 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private BasicMovementController2D movementController;
 
     [Header("Arrows")]
-    [Tooltip("Element 0 is selected with key 1, element 1 with key 2, element 2 with key 3. Each prefab carries its own ArrowData.")]
+    [Tooltip("Element 0 is selected with key 1, element 1 with key 2, element 2 with key 3, element 3 with key 4. Each prefab carries its own ArrowData.")]
     [SerializeField] private GameObject[] arrowPrefab;
     [SerializeField] private int selectedArrowIndex = 0;
 

@@ -105,6 +105,16 @@
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
+                },
+                {
+                    "name": "FourthArrow",
+                    "type": "Button",
+                    "id": "5a5f8468-89fa-4ad0-bf6d-6eaeae132d97",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
                 }
             ],
             "bindings": [
@@ -446,6 +456,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "ThirdArrow",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c9ba4476-65c3-413f-8020-07628f0cd738",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "FourthArrow",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

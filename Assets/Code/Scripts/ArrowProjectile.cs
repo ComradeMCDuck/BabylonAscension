@@ -38,6 +38,9 @@ public class ArrowProjectile : MonoBehaviour
     private float damage;
     private float knockback;
     private int remainingBounces;
+    private int remainingPenetrations;
+    // Characters already hit by this projectile, so a penetrating shot can't hit the same one twice.
+    private readonly HashSet<Transform> hitCharacters = new HashSet<Transform>();
     private float remainingRange = float.PositiveInfinity;
     private GameObject owner;
     private LayerMask activeHitLayers;
@@ -48,8 +51,12 @@ public class ArrowProjectile : MonoBehaviour
     private static readonly Dictionary<Transform, (Collider2D collider, float distance)> s_ExplosionTargets =
         new Dictionary<Transform, (Collider2D collider, float distance)>();
 
+    // Reused buffer for every hit along one physics step.
+    private static readonly List<RaycastHit2D> s_StepHits = new List<RaycastHit2D>();
+
     public ArrowData Data => arrowData;
     public int RemainingBounces => remainingBounces;
+    public int RemainingPenetrations => remainingPenetrations;
     public bool IsExplosive => arrowData != null && arrowData.IsExplosive;
 
     private void Awake()
@@ -85,6 +92,7 @@ public class ArrowProjectile : MonoBehaviour
 
         // Copy the count so the shared ArrowData asset is never modified.
         remainingBounces = Mathf.Max(0, arrowData.bounces);
+        remainingPenetrations = Mathf.Max(0, arrowData.penetrations);
         remainingRange = float.PositiveInfinity;
         activeHitLayers = hitLayers;
 
@@ -101,6 +109,7 @@ public class ArrowProjectile : MonoBehaviour
         speed = data.attackSpeed;
         knockback = 0f;
         remainingBounces = arrowData != null ? Mathf.Max(0, arrowData.bounces) : 0;
+        remainingPenetrations = arrowData != null ? Mathf.Max(0, arrowData.penetrations) : 0;
         remainingRange = data.projectileKeepsFlying ? float.PositiveInfinity : data.projectileRange;
         activeHitLayers = enemyShotHitLayers;
 
@@ -113,6 +122,7 @@ public class ArrowProjectile : MonoBehaviour
     {
         owner = shooter;
         direction = launchDirection.normalized;
+        hitCharacters.Clear();
 
         // Make the projectile's local X axis follow its travel direction.
         if (alignToDirection) transform.right = direction;
@@ -129,24 +139,39 @@ public class ArrowProjectile : MonoBehaviour
         Vector2 position = transform.position;
         float step = Mathf.Min(speed * Time.fixedDeltaTime, remainingRange);
 
-        RaycastHit2D hit = Physics2D.CircleCast(position, radius, direction, step, activeHitLayers);
+        // Collect everything along this step (not just the first hit), so a penetrating
+        // shot can pass through several targets and still find the wall behind them.
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(activeHitLayers);
+        filter.useTriggers = Physics2D.queriesHitTriggers;
 
-        if (hit.collider == null || IsOwner(hit.collider))
+        s_StepHits.Clear();
+        Physics2D.CircleCast(position, radius, direction, filter, s_StepHits, step);
+        s_StepHits.Sort((a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (RaycastHit2D hit in s_StepHits)
         {
-            MoveTo(position + direction * step);
+            if (IsOwner(hit.collider))
+                continue;
 
-            remainingRange -= step;
-            if (remainingRange <= 0f) Destroy(gameObject);
-            return;
+            if (IsEnvironment(hit.collider))
+            {
+                HandleEnvironmentHit(hit);
+                return;
+            }
+
+            // Already hit by this projectile (its other colliders, or still overlapping after penetrating it).
+            if (hitCharacters.Contains(GetCharacter(hit.collider)))
+                continue;
+
+            if (HandleTargetHit(hit))
+                return;
         }
 
-        if (IsEnvironment(hit.collider))
-        {
-            HandleEnvironmentHit(hit);
-            return;
-        }
+        MoveTo(position + direction * step);
 
-        HandleTargetHit(hit);
+        remainingRange -= step;
+        if (remainingRange <= 0f) Destroy(gameObject);
     }
 
     // The character a collider belongs to: everything under the Rigidbody2D the collider is attached to.
@@ -242,18 +267,21 @@ public class ArrowProjectile : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void HandleTargetHit(RaycastHit2D hit)
+    /// <summary>
+    /// Damages and knocks back the hit target. Returns true if the projectile stopped
+    /// (exploded or out of penetrations), false if it penetrates and keeps flying.
+    /// </summary>
+    private bool HandleTargetHit(RaycastHit2D hit)
     {
         if (IsExplosive)
         {
             Explode(hit.centroid);
-            return;
+            return true;
         }
 
-        // Destroy is deferred to the end of the frame; stop here so a second physics step can't hit again.
-        launched = false;
-
         Collider2D other = hit.collider;
+        hitCharacters.Add(GetCharacter(other));
+
         IDamageable target = FindDamageable(other);
 
         if (target != null)
@@ -269,7 +297,17 @@ public class ArrowProjectile : MonoBehaviour
                 targetMovement.ApplyKnockback(direction * knockback);
         }
 
+        // Penetrate: use one and keep flying.
+        if (remainingPenetrations > 0)
+        {
+            remainingPenetrations--;
+            return false;
+        }
+
+        // Destroy is deferred to the end of the frame; stop here so a second physics step can't hit again.
+        launched = false;
         Destroy(gameObject);
+        return true;
     }
 
     private bool IsOwner(Collider2D other)
