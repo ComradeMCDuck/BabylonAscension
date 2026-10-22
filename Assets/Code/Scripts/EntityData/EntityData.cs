@@ -54,6 +54,25 @@ public class EntityData : ScriptableObject
     public bool projectileKeepsFlying = false;
     [Min(0.1f)] public float projectileLifetime = 5f;
 
+    [Header("Jump Attack (enemies with a JumpAttack component)")]
+    public float jumpAttackDamage = 30f;
+    [Tooltip("Seconds after a jump attack before the next one. The basic attack is used in the meantime.")]
+    [Min(0f)] public float jumpAttackCooldown = 6f;
+    [Tooltip("Max horizontal distance to the player at which the enemy starts a jump attack.")]
+    [Min(0f)] public float jumpAttackRange = 4f;
+    [Tooltip("How far past the player the enemy aims to land.")]
+    [Min(0f)] public float jumpAttackOvershoot = 1.5f;
+    [Tooltip("Peak height of the lunge, separate from the normal jump height. Lower = flatter and faster lunge.")]
+    [Min(0.05f)] public float jumpAttackLungeHeight = 0.8f;
+    [Tooltip("Fastest horizontal lunge speed. Far lunges that would need more land short. Also capped by Recoil Max Planar Speed.")]
+    [Min(0f)] public float jumpAttackMaxLungeSpeed = 16f;
+    [Tooltip("Crouch time before the leap. Gives the player time to react.")]
+    [Min(0f)] public float jumpAttackWindup = 0.3f;
+    [Tooltip("Size of the damage area in front of the enemy while it is in the air.")]
+    public Vector2 jumpAttackHitboxSize = new Vector2(1.2f, 1.2f);
+    [Tooltip("The player can be at most this much higher or lower than the enemy for it to jump attack.")]
+    [Min(0f)] public float jumpAttackMaxHeightDifference = 1.5f;
+
     [Header("Gravity")]
     public float fallMultiplier = 2f; // > 1 = faster fall, < 1 = slower fall
     public float riseMultiplier = 1f; // applies while moving upward

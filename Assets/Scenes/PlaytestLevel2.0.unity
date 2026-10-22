@@ -2620,6 +2620,10 @@ PrefabInstance:
       propertyPath: patrolPointB
       value: 
       objectReference: {fileID: 118413099}
+    - target: {fileID: 3616614064456725153, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5381662566538865667, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
       propertyPath: m_Name
       value: MeleeEnemy (1)
@@ -2663,6 +2667,14 @@ PrefabInstance:
     - target: {fileID: 6675077669277327910, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7310452981736204815, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: targetLayers.m_Bits
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8850691945402964416, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8859,7 +8871,7 @@ MonoBehaviour:
   boxColliders: 19
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.2564
+  buildMilliseconds: 0.1836
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
