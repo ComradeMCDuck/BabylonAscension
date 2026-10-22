@@ -45,3 +45,34 @@ ok, now the variables show in the panel.
 Now we can start with making the variables that you put in the windows change data in EntityData and the data is then used in BasicMovementController2D.sc.
 Add the variables in BasicMovementController2D.sc to PlayerData, but only Movement Settings, On Ladder Settings, Jump, Wall interaction and Recoil. Other things like Dash and Custom action will be left alone.
 Make also sure that the variables that are used in the windows wont result in error or crash. If the player puts in a wrong input, the variable wont be changed.
+---------------------------
+I got the task to reimplement the melee enemy acording to some criteria.
+Currently, the enemies are 3d capsules that follow the player if they are in range and attack the player with 3D cubes when close enough. I however, need the enemies to be 2D sprites with 2D colliders like the player is and the enemy projectiles to be 2d sprites.
+I also need the enemy behavior to be modular, so when I want to implement shooters, then I could use the same codes.
+
+The enemy should have 3 states:
+- Patrol / Idle: walk in a designated area (between 2 points)
+- Chase: If the player enters "lign of sight", which can be a circular area where the enemy casts raycasts and if the player gets into this area and is hit by the raycast, then the enemy starts chasing.
+- Attack:  If the player is close enough, then the enemy starts attacking.
+
+This is the description for a basic melee enemy:
+Behavior:
+- close combat
+- speed
+Alús strength is in numbers. Its tactic is to get to the player as fast as possible and hurt them. 
+
+Please make these changes in the EnemyBehavior.sc and use MeleeEnemyData for data or create any other needed scripts
+------------------------
+I cant figure out where CharacterMotor2D is and what the Raycaster means.
+----------------------
+NullReferenceException: Object reference not set to an instance of an object
+EnemyBehavior.Move (System.Single direction, System.Single speedMultiplier) (at Assets/Code/Scripts/EnemyBehavior.cs:217)
+EnemyBehavior.Patrol () (at Assets/Code/Scripts/EnemyBehavior.cs:169)
+EnemyBehavior.FixedUpdate () (at Assets/Code/Scripts/EnemyBehavior.cs:118)
+UnityEngine.StackTraceUtility:ExtractStringFromExceptionInternal(Object, String&, String&)
+---------------------
+I want no 3D collisions, so the player will be now damaged by just 2D projectile and the arrows shot by the player will also be 2D
+-------------------
+when the melee enemy gets close enough to the player, the projectile wont fly far enough so that it hits the player. could there be a separate variable of the distance that the projectile reaches before being destroyed?
+-----------------
+the AI wont jump on platforms when the player is higher than the enemy. which probably is because the enemy is trying to reach the player but is not checking platforms or if the player is in the higher elevation. Would there be a way to implement this to the game?
