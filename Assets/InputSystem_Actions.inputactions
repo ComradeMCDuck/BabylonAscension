@@ -378,6 +378,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
+                    "action": "Crouch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "766048aa-153c-43ed-8e37-035cf8e66cce",
+                    "path": "<Keyboard>/leftAlt",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
                     "action": "Sprint",
                     "isComposite": false,
                     "isPartOfComposite": false

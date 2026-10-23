@@ -9,20 +9,31 @@ public class Health : MonoBehaviour, IDamageable
 {
     [SerializeField] private EntityData entityData;
     private float currentHealth;
+    public event System.Action<Health> Died;
+    public bool IsDead { get; private set; }
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => entityData != null ? entityData.maxHealth : 100f;
 
     void Awake()
     {
-        currentHealth = entityData.maxHealth;
+        RestoreHealth();
+    }
+
+    public void RestoreHealth()
+    {
+        currentHealth = MaxHealth;
+        IsDead = false;
     }
     
     public void TakeDamage(float damage)
     {
-        currentHealth -= damage;
-        Debug.Log($"{gameObject.name} took {damage} damage. Current health: {currentHealth}/{entityData.maxHealth}");
+        if (IsDead || damage <= 0f) return;
+        currentHealth = Mathf.Max(0f, currentHealth - damage);
         if (currentHealth <= 0)
         {
-            Debug.Log($"{gameObject.name} has been destroyed.");
-            Destroy(gameObject);
+            IsDead = true;
+            if (Died != null) Died.Invoke(this);
+            else Destroy(gameObject);
         }
     }
 }

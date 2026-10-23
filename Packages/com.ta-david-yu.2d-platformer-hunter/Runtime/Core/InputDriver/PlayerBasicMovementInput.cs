@@ -32,6 +32,9 @@ namespace DYP
         [SerializeField]
         private InputActionReference fourthArrowActionReference;
 
+        [SerializeField] private InputActionReference crouchActionReference;
+        private InputAction m_CrouchAction;
+
         private InputAction m_MoveAction;
         private InputAction m_JumpAction;
         private InputAction m_DashAction;
@@ -49,10 +52,12 @@ namespace DYP
         private void OnDisable()
         {
             DisableActions();
+            if (m_Controller != null) m_Controller.HoldCrouch(false);
         }
 
         private void ResolveActions()
         {
+            m_CrouchAction = crouchActionReference != null ? crouchActionReference.action : GetAction("Crouch");
             m_MoveAction = moveActionReference != null ? moveActionReference.action : GetAction("Move");
             m_JumpAction = jumpActionReference != null ? jumpActionReference.action : GetAction("Jump");
             m_DashAction = dashActionReference != null ? dashActionReference.action : GetAction("Sprint");
@@ -76,6 +81,7 @@ namespace DYP
 
         private void EnableActions()
         {
+            if (m_CrouchAction != null) m_CrouchAction.Enable();
             if (m_MoveAction != null) m_MoveAction.Enable();
             if (m_JumpAction != null) m_JumpAction.Enable();
             if (m_DashAction != null) m_DashAction.Enable();
@@ -87,6 +93,7 @@ namespace DYP
 
         private void DisableActions()
         {
+            if (m_CrouchAction != null) m_CrouchAction.Disable();
             if (m_MoveAction != null) m_MoveAction.Disable();
             if (m_JumpAction != null) m_JumpAction.Disable();
             if (m_DashAction != null) m_DashAction.Disable();
@@ -99,6 +106,8 @@ namespace DYP
         // Update is called once per frame
         void Update()
         {
+            if (Time.timeScale == 0f) return;
+
             if (m_Controller == null)
             {
                 return;
@@ -115,6 +124,8 @@ namespace DYP
             var holdingDash = m_DashAction != null && m_DashAction.IsPressed();
 
             var releaseJump = m_JumpAction != null && m_JumpAction.WasReleasedThisFrame();
+
+            m_Controller.HoldCrouch(m_CrouchAction != null && m_CrouchAction.IsPressed());
 
             m_Controller.InputMovement(new Vector2(horizontal, vertical));
 

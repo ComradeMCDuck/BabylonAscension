@@ -24,6 +24,7 @@ namespace DYP
             public bool IsJumpReleased = false;
             public bool IsDashPressed = false;
             public bool IsDashHeld = false;
+            public bool IsCrouchHeld = false;
         }
 
         [System.Serializable]
@@ -257,6 +258,47 @@ namespace DYP
 
         [SerializeField]
         private Recoil m_Recoil = new Recoil();
+
+        [System.Serializable]
+        class CrouchSettings
+        {
+            [Range(0f, 1f)] public float SpeedMultiplier = 0.35f;
+            [Min(0.01f)] public float SlideStartSpeed = 9f;
+            [Min(0f)] public float SlideEndSpeed = 3f;
+            [Tooltip("Horizontal speed lost per second while sliding.")]
+            [Min(0.01f)] public float SlideFriction = 5f;
+        }
+
+        [SerializeField]
+        private CrouchSettings m_Crouch = new CrouchSettings();
+
+        public bool IsCrouching { get; private set; }
+        public bool IsSliding { get; private set; }
+
+        public void HoldCrouch(bool value)
+        {
+            m_InputBuffer.IsCrouchHeld = value;
+        }
+
+        public void ResetForRespawn()
+        {
+            m_InputBuffer = new InputBuffer();
+            m_Velocity = Vector3.zero;
+            m_VelocityXSmoothing = 0f;
+            m_AirJumpCounter = 0;
+            m_WillJumpPaddingFrame = -1;
+            m_FallingJumpPaddingFrame = -1;
+            m_WillDashPaddingFrame = -1;
+            m_Recoil.KnockbackStunTimer = 0f;
+            m_Recoil.HorizontalActive = false;
+            m_Recoil.VerticalActive = false;
+            m_WallInteraction.WallStickTimer = 0f;
+            m_OnLadderState = new OnLadderState();
+            m_ApplyGravity = true;
+            IsCrouching = false;
+            IsSliding = false;
+            changeState(MotorState.Falling);
+        }
 
         private MotorState m_MotorState;
 
@@ -953,6 +995,22 @@ namespace DYP
 
             }
 
+            // Keep crouch held in the air so landing can enter a slide before ground braking.
+            bool wasSliding = IsSliding;
+            IsCrouching = m_InputBuffer.IsCrouchHeld && IsOnGround()
+                && !IsKnockbackStunned() && IsState(MotorState.OnGround);
+            float slideEndSpeed = Mathf.Max(0f, m_Crouch.SlideEndSpeed);
+            float slideStartSpeed = Mathf.Max(slideEndSpeed + 0.01f, m_Crouch.SlideStartSpeed);
+            IsSliding = IsCrouching && Mathf.Abs(m_Velocity.x) >=
+                (wasSliding ? slideEndSpeed + 0.001f : slideStartSpeed);
+
+            // Preserve momentum when jumping or walking off an edge during a slide.
+            if (wasSliding && !IsOnGround())
+            {
+                m_Recoil.HorizontalActive = true;
+                m_VelocityXSmoothing = 0;
+            }
+
             // dashing state
             if (IsState(MotorState.Dashing))
             {
@@ -1134,19 +1192,31 @@ namespace DYP
 
                 // setup velocity.x based on input
                 float targetVecX = input.x * m_MovementSettings.Speed;
+                if (IsCrouching) targetVecX *= Mathf.Clamp01(m_Crouch.SpeedMultiplier);
 
                 // stop recoil momentum when hitting a wall in the moving direction
-                if (m_Recoil.HorizontalActive)
+                if (m_Recoil.HorizontalActive || IsSliding)
                 {
                     if ((m_Velocity.x > 0.0f && m_Motor.Collisions.Right) || (m_Velocity.x < 0.0f && m_Motor.Collisions.Left))
                     {
                         m_Velocity.x = 0;
                         m_Recoil.HorizontalActive = false;
+                        IsSliding = false;
                     }
                 }
 
+                // Sliding uses friction instead of movement input or recoil ground braking.
+                if (IsSliding)
+                {
+                    m_Velocity.x = Mathf.MoveTowards(m_Velocity.x, 0f,
+                        Mathf.Max(0.01f, m_Crouch.SlideFriction) * timeStep);
+                    m_VelocityXSmoothing = 0;
+                    m_Recoil.HorizontalActive = true;
+                    if (Mathf.Abs(m_Velocity.x) <= slideEndSpeed)
+                        IsSliding = false;
+                }
                 // recoil momentum: accelerate / decelerate toward the input speed instead of snapping to it
-                if (m_Recoil.HorizontalActive)
+                else if (m_Recoil.HorizontalActive)
                 {
                     bool hasInput = rawInput.x != 0;
                     float accel;
@@ -1550,6 +1620,8 @@ namespace DYP
 
             if (success)
             {
+                IsCrouching = false;
+                IsSliding = false;
                 consumeJumpPressed();
 
                 // a real jump restores variable jump height

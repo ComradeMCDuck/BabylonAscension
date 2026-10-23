@@ -95,6 +95,14 @@ public class BowCombat : MonoBehaviour
 
     private void Update()
     {
+        if (Time.timeScale == 0f)
+        {
+            isCharging = false;
+            chargeTimer = 0f;
+            SetBowFrame(0);
+            return;
+        }
+
         if (Mouse.current == null || aimCamera == null)
             return;
 
@@ -223,10 +231,8 @@ public class BowCombat : MonoBehaviour
             shooter
         );
 
-        // Push the player opposite the shot direction.
-        // Works both on the ground and in midair.
-
-        if (movementController != null)
+        // Push the player opposite the shot direction only while airborne.
+        if (movementController != null && !movementController.IsOnGround() && !movementController.IsSliding)
         {
             movementController.AddImpulse(-(Vector2)direction * recoil);
         }
