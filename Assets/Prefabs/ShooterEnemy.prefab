@@ -104,7 +104,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  - {fileID: 2100000, guid: b18d0f7200353cc49992e13f1ac325d7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -379,6 +379,9 @@ MonoBehaviour:
     AirDeceleration: 2
     MaxPlanarSpeed: 18
     CancelFallingOnUpwardImpulse: 1
+    KnockbackStunTime: 0.3
+    KnockbackLift: 4
+    KnockbackStunTimer: 0
     HorizontalActive: 0
     VerticalActive: 0
   m_Dash:
