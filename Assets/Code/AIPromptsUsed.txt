@@ -76,3 +76,76 @@ I want no 3D collisions, so the player will be now damaged by just 2D projectile
 when the melee enemy gets close enough to the player, the projectile wont fly far enough so that it hits the player. could there be a separate variable of the distance that the projectile reaches before being destroyed?
 -----------------
 the AI wont jump on platforms when the player is higher than the enemy. which probably is because the enemy is trying to reach the player but is not checking platforms or if the player is in the higher elevation. Would there be a way to implement this to the game?
+-----------
+We recently made the change with our character controller to make it kinematic and not physics based.
+We started using an external 2D controller and so far the controller is working as intended.
+
+But in our game we have a bow recoil mechanic that worked on the physics based controller, but now it does not work on the controller since it is kinematic.
+
+Could you make the recoil work on the controller with these variables that can be changed?:
+- there is a charge time that can be changed
+- minimum and maximum damage depending on how long you hold the shoot button
+- minimum and maximum speed of the arrow depending on how long you hold the shoot button
+- minimum and maximum knockback to the enemy depending on how long you hold the shoot button
+- minimum and maximum recoil to the player depending on how long you hold the shoot button
+- spawn ofset of the arrow
+- shooting cooldown
+There might be other variables that were in the old bow combat script. Respect those too
+------------
+I would like for the downward shot always launch you
+-------------
+I am currently trying to implement a bouncing arrow upgrade.
+
+My vision is:
+When the player presses 1, they execute an action in BasicMovementController2D.sc called PressPick1stArrow. this picks a basic arrow from an array in BowCombat.sc that gets launched. Then, in ArrowProjectile.sc, it uses the ArrowData.sc of the basic arrow.
+Then when the player presses 2, they chose bouncing arrow.
+Don't implement bouncing mechanic for the bouncing arrow! That will be the next step after I test if the script you create works.
+
+If you need any verification, ask.
+-------------
+Ok, the changing of the prefabs of the arrows works perfectly!
+Now for the bouncing of the arrow if it is the bouncing arrow:
+My idea is, that when the arrow has a bouncesCount and the arrow hits an object that has "Environment" layer on it, the arrow will bounce from the object like if it was a wall in a game of pool. 
+That means for example, that if the arrow hit the roof holding a 30 degrees angle compared to the wall, the arrow will change direction in a 150 degrees direction.
+when this happens, there will be a bounce tracker and if the tracker reaches 0, the next hit to an "Environment" object will destroy it.
+If the arrow hits an enemy, then it will damage the enemy as normal.
+make these changes in the ArrowProjectile.sc.
+----------
+I want to implement explosive arrows.
+They will be selected by pressing 3 and they wont be using the min damage and max damage like the other arrows that use charge of the shot, but the damage will be distributed depending on how far from the center of the explosion the enemy was. Also, the knockback depends on the center of the explosion of the arrow.
+------------
+make the explosion effect disapear after a set amount of time.
+-----------
+the knockback does not work now on the enemies even when shooting other arrows
+-----------
+I want the recoil when shooting the arrow to be affected by the arrow that has been shot
+--------
+I need to implement a penetrating bow, which means:
+There would be a new variable in EntityData holding the number of penetrations. if the arrow hits an enemy, the enemy gets hit, but the arrow keeps flying. only after reaching 0 penetration does the arrow stop penetrating. Implement this mechanic for ArrowProjectile.
+------
+I need you to move the projectile penetrations from EntityData to ArrowData if that is posible
+---------
+also when pressing 4 then i should change the arrow to the penetration arrow like with the rest of the arrows
+----------
+in the enemy behavior, could you implement the follow and subsequent platforms handling acording to these criteria?:
+
+- enemy remembers which platforms a player touched (if they are in sight)
+- enemy tries to copy the players path by checking if there is room above to jump and jump is doable by the enemy (This can fail becasue player has double jumps, wall jump, etc that the enemy cant do)
+- If not it searches for other platforms in the last seen direction of the player
+- If not it tries to predict what woud happen if it went another way
+----------
+the players character has jerky movement. it might be something with delayed updating of the sprite. Is this the problem or is there a different one?
+--------
+yes, the timestep change fixed the issue. How do I make the interpolation script?
+--------
+there are now 2 projectile scripts and I want to compact them into one. could you make the Arrow projectile be pausible to be used by the ranged enemy?
+------
+yes, make this change too
+---------
+now the arrow projectiles shot by the shooter enemy are not interacting with the player
+--------
+So far, the dash does not make the character dash to where the player is looking, but where the player last moved towards. could you make it so that the dash action makes the dash in the direction of where the sprite is turned to, which is in bow combat?
+I am also not sure, if it is logical to make the visual of the player be fliped in bow combat and not somewhere seperate. Should there be a seperate script, that makes these flips?
+--------
+i want this cursor dashing to work only when the player is not moving
+----------

@@ -14,6 +14,9 @@ public class ArrowData : ScriptableObject
     [Tooltip("Velocity added to the shooter opposite the shot at full charge.")]
     [SerializeField] public float maxRecoil = 24f;
     [SerializeField] public int bounces = 0;
+    [Tooltip("How many targets the arrow passes through. Each target hit uses one; the hit after reaching 0 stops the arrow. " +
+             "Explosive arrows still explode on the first hit.")]
+    [Min(0)] public int penetrations = 0;
 
     [Header("Explosion")]
     [Tooltip("Above 0 makes this an explosive arrow: it explodes on impact and uses the explosion values below " +

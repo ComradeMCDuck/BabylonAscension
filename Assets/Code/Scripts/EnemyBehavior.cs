@@ -4,10 +4,11 @@ using DYP;
 using UnityEngine;
 
 /// <summary>
-/// Shared 2D enemy brain with three states: Patrol, Chase and Attack.
+/// Shared 2D enemy brain with the states Patrol, Chase, Attack and (optionally) JumpAttack.
 /// Movement goes through BasicMovementController2D (the same motor the player uses),
 /// and the attack itself is delegated to an EnemyAttack component. A different enemy type
 /// (e.g. a shooter) is this same brain with a different EntityData and EnemyAttack setup.
+/// Adding a JumpAttack component makes the enemy leap through the player whenever its cooldown is ready.
 /// </summary>
 [RequireComponent(typeof(BasicMovementController2D))]
 public class EnemyBehavior : MonoBehaviour
@@ -16,7 +17,8 @@ public class EnemyBehavior : MonoBehaviour
     {
         Patrol,
         Chase,
-        Attack
+        Attack,
+        JumpAttack
     }
 
     // Extra distance the player has to move away before the enemy stops attacking, so it doesn't flicker between Chase and Attack.
@@ -44,6 +46,10 @@ public class EnemyBehavior : MonoBehaviour
     private const float MinAirTimeForFailure = 0.15f;
     // Extra walking cost given to jumps, so the enemy prefers just walking off an edge when both work.
     private const float JumpCost = 0.25f;
+    // A jump attack whose leap was ruled out (e.g. it would land off a ledge) is re-checked after this many seconds.
+    private const float JumpAttackRecheckInterval = 0.25f;
+    // If the enemy hasn't left the ground this long after pressing jump, the leap is given up.
+    private const float LeapTakeoffTimeout = 0.3f;
 
     [SerializeField] private EntityData enemyData;
 
@@ -74,6 +80,7 @@ public class EnemyBehavior : MonoBehaviour
 
     private BasicMovementController2D movement;
     private EnemyAttack attack;
+    private JumpAttack jumpAttack;
     private Collider2D selfCollider;
     private Collider2D playerCollider;
     private int sightMask;
@@ -135,6 +142,14 @@ public class EnemyBehavior : MonoBehaviour
     private bool airborneOnRoute;
     private float airborneStartTime;
 
+    private int leapDirection;
+    private Vector2 lungeVelocity;
+    private bool leapStarted;
+    private bool leapLeftGround;
+    private float leapStartTime;
+    private float jumpAttackGiveUpTime;
+    private float nextJumpAttackCheckTime;
+
     public EnemyState CurrentState => currentState;
     public int FacingDirection => facingDirection;
     public event Action<EnemyState> StateChanged;
@@ -149,6 +164,7 @@ public class EnemyBehavior : MonoBehaviour
     {
         movement = GetComponent<BasicMovementController2D>();
         attack = GetComponent<EnemyAttack>();
+        jumpAttack = GetComponent<JumpAttack>();
         selfCollider = GetComponent<Collider2D>();
 
         // RequireComponent only adds missing components when EnemyBehavior is added,
@@ -226,6 +242,9 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.Attack:
                 AttackPlayer();
                 break;
+            case EnemyState.JumpAttack:
+                RunJumpAttack();
+                break;
         }
     }
 
@@ -241,6 +260,8 @@ public class EnemyBehavior : MonoBehaviour
                 break;
 
             case EnemyState.Chase:
+                // The jump attack takes priority whenever its cooldown is ready; the basic attack covers the time in between.
+                if (TryStartJumpAttack(canSeePlayer)) break;
                 if (canSeePlayer && distanceToPlayer <= enemyData.attackRange) SetState(EnemyState.Attack);
                 else if (!remembersPlayer) SetState(EnemyState.Patrol);
                 break;
@@ -248,9 +269,123 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.Attack:
                 // Never cancel an attack halfway through its windup.
                 if (attack != null && attack.IsAttacking) break;
+                if (TryStartJumpAttack(canSeePlayer)) break;
                 if (!canSeePlayer || distanceToPlayer > enemyData.attackRange + AttackRangeTolerance) SetState(EnemyState.Chase);
                 break;
+
+            case EnemyState.JumpAttack:
+                // Runs until the enemy lands; afterwards Chase decides what's next.
+                if (jumpAttack == null || !jumpAttack.IsActive) SetState(EnemyState.Chase);
+                break;
         }
+    }
+
+    /// <summary>
+    /// Starts a jump attack if the cooldown is ready, the enemy stands on the ground and the player is in range at
+    /// roughly the same height. The lunge is a low arc (jumpAttackLungeHeight, independent of the normal jump height)
+    /// aimed to land jumpAttackOvershoot past the player, so the enemy passes through them. It is skipped if the
+    /// predicted landing is off a ledge.
+    /// </summary>
+    private bool TryStartJumpAttack(bool canSeePlayer)
+    {
+        if (jumpAttack == null || !jumpAttack.IsReady || !canSeePlayer || currentGround == null) return false;
+        // Gravity comes from the jump settings, so a zero jump height means no arc to lunge along.
+        if (Time.time < nextJumpAttackCheckTime || Gravity <= 0f) return false;
+
+        Bounds self = selfCollider.bounds;
+        Bounds player = playerCollider.bounds;
+        float deltaX = player.center.x - self.center.x;
+        if (Mathf.Abs(deltaX) > enemyData.jumpAttackRange) return false;
+        if (Mathf.Abs(player.min.y - Feet) > enemyData.jumpAttackMaxHeightDifference) return false;
+
+        int direction = deltaX >= 0f ? 1 : -1;
+        Vector2 velocity = GetLungeVelocity(Mathf.Abs(deltaX) + enemyData.jumpAttackOvershoot, direction, out float airTime);
+
+        Vector2 start = new Vector2(self.center.x, self.center.y + SkinWidth);
+        if (!SimulateArc(start, velocity, out _, out Vector2 landing) || landing.y < self.center.y - GapDepth)
+        {
+            nextJumpAttackCheckTime = Time.time + JumpAttackRecheckInterval;
+            return false;
+        }
+
+        leapDirection = direction;
+        lungeVelocity = velocity;
+        leapStarted = false;
+        leapLeftGround = false;
+        jumpAttackGiveUpTime = Time.time + enemyData.jumpAttackWindup + airTime + 1f;
+
+        // The leap moves the enemy off its route; Chase replans from wherever it lands.
+        hasRoute = false;
+        airborneOnRoute = false;
+
+        jumpAttack.Begin(enemyData);
+        SetState(EnemyState.JumpAttack);
+        return true;
+    }
+
+    /// <summary>
+    /// Launch velocity for a lunge that peaks at jumpAttackLungeHeight and covers the given distance.
+    /// The lunge is launched as an impulse with no input afterwards, so the controller keeps the momentum in the air
+    /// (slowed only by Recoil Air Deceleration) and stops it on landing.
+    /// </summary>
+    private Vector2 GetLungeVelocity(float distance, int direction, out float airTime)
+    {
+        float gravity = Gravity;
+        float speedY = Mathf.Sqrt(2f * gravity * enemyData.jumpAttackLungeHeight);
+        airTime = 2f * speedY / gravity;
+
+        // Aim slightly faster to make up for the air deceleration.
+        float speedX = (distance + 0.5f * enemyData.recoilAirDeceleration * airTime * airTime) / airTime;
+        speedX = Mathf.Min(speedX, enemyData.jumpAttackMaxLungeSpeed);
+
+        // AddImpulse caps the total speed at Recoil Max Planar Speed; keep the height and give up horizontal speed.
+        float maxPlanar = enemyData.recoilMaxPlanarSpeed;
+        float maxSpeedX = maxPlanar > speedY ? Mathf.Sqrt(maxPlanar * maxPlanar - speedY * speedY) : 0f;
+        speedX = Mathf.Min(speedX, maxSpeedX);
+
+        return new Vector2(direction * speedX, speedY);
+    }
+
+    /// <summary>
+    /// Crouches during the windup, then lunges toward (and through) the player, damaging the area in front of it
+    /// while in the air. Ends on landing, which starts the jump attack cooldown.
+    /// </summary>
+    private void RunJumpAttack()
+    {
+        if (!jumpAttack.WindupFinished)
+        {
+            Move(0f, 0f);
+            Face(leapDirection);
+            return;
+        }
+
+        if (!leapStarted)
+        {
+            // Knocked off the ground during the windup: cancel instead of jumping in mid-air.
+            if (currentGround == null)
+            {
+                jumpAttack.End(enemyData);
+                return;
+            }
+
+            movement.AddImpulse(lungeVelocity);
+            nextJumpTime = Time.time + enemyData.jumpCooldown;
+            leapStarted = true;
+            leapStartTime = Time.time;
+        }
+
+        // No input during the lunge: input would steer the momentum back toward the normal run speed.
+        Move(0f, 0f);
+        Face(leapDirection);
+        jumpAttack.DealDamage(selfCollider, facingDirection, enemyData);
+
+        if (currentGround == null) leapLeftGround = true;
+
+        bool landed = currentGround != null && leapLeftGround;
+        bool neverTookOff = !leapLeftGround && Time.time - leapStartTime > LeapTakeoffTimeout;
+
+        if (landed || neverTookOff || Time.time >= jumpAttackGiveUpTime)
+            jumpAttack.End(enemyData);
     }
 
     private void SetState(EnemyState newState)
@@ -563,27 +698,30 @@ public class EnemyBehavior : MonoBehaviour
     /// </summary>
     private bool Simulate(Route move, out Collider2D landedOn, out Vector2 landing)
     {
+        Bounds self = selfCollider.bounds;
+        float horizontalSpeed = move.Direction * enemyData.speed;
+
+        if (move.Jump)
+            return SimulateArc(new Vector2(move.TakeoffX, self.center.y + SkinWidth), new Vector2(horizontalSpeed, JumpSpeed), out landedOn, out landing);
+
+        // Start just past the edge, where the enemy starts to fall.
+        Bounds ground = move.From.bounds;
+        float edge = move.Direction > 0 ? ground.max.x : ground.min.x;
+        var start = new Vector2(edge + move.Direction * self.extents.x, self.center.y + SkinWidth);
+        return SimulateArc(start, new Vector2(horizontalSpeed, 0f), out landedOn, out landing);
+    }
+
+    /// <summary>
+    /// Sweeps the enemy's collider from position with the given launch velocity under the controller's gravity
+    /// until it lands on something. Returns false if there's no room at the start or it falls too far.
+    /// </summary>
+    private bool SimulateArc(Vector2 position, Vector2 velocity, out Collider2D landedOn, out Vector2 landing)
+    {
         landedOn = null;
         landing = default;
 
         Bounds self = selfCollider.bounds;
-        Bounds ground = move.From.bounds;
         Vector2 size = (Vector2)self.size - Vector2.one * (SkinWidth * 2f);
-        Vector2 position;
-        Vector2 velocity;
-
-        if (move.Jump)
-        {
-            position = new Vector2(move.TakeoffX, self.center.y + SkinWidth);
-            velocity = new Vector2(move.Direction * enemyData.speed, JumpSpeed);
-        }
-        else
-        {
-            // Start just past the edge, where the enemy starts to fall.
-            float edge = move.Direction > 0 ? ground.max.x : ground.min.x;
-            position = new Vector2(edge + move.Direction * self.extents.x, self.center.y + SkinWidth);
-            velocity = new Vector2(move.Direction * enemyData.speed, 0f);
-        }
 
         // No room to stand there (low ceiling, a wall right past the edge...).
         if (Physics2D.OverlapBox(position, size, 0f, groundFilter, simOverlapBuffer) > 0) return false;
@@ -887,6 +1025,13 @@ public class EnemyBehavior : MonoBehaviour
         {
             Gizmos.DrawWireSphere(playerTrail[i].Point, 0.12f);
             if (i > 0) Gizmos.DrawLine(playerTrail[i - 1].Point, playerTrail[i].Point);
+        }
+
+        // Jump attack damage area (red) while leaping.
+        if (currentState == EnemyState.JumpAttack && enemyData != null && selfCollider != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(JumpAttack.GetHitboxCenter(selfCollider, facingDirection, enemyData), enemyData.jumpAttackHitboxSize);
         }
 
         if (hasRoute && selfCollider != null)
