@@ -47,15 +47,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   aimCamera: {fileID: 0}
-  spriteVisual: {fileID: 1245336768785642657}
   bowPivot: {fileID: 8889766612805912733}
   arrowSpawn: {fileID: 3965774374420034426}
-  bodyRenderer: {fileID: 0}
   bowRenderer: {fileID: 7292817614088652803}
   movementController: {fileID: 0}
   arrowPrefab:
   - {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
   - {fileID: 6124286472832785063, guid: 3e9adc6afd7d7d44492c5c88b42bdd6f, type: 3}
+  - {fileID: 6124286472832785063, guid: d60d3030fcd54714bdc5c012594c470c, type: 3}
+  - {fileID: 6124286472832785063, guid: 2b46e268e0516284eba146d808a4ba56, type: 3}
   selectedArrowIndex: 0
   bowFrames:
   - {fileID: -415446080585258355, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
@@ -408,7 +408,8 @@ GameObject:
   - component: {fileID: 5143643343682009756}
   - component: {fileID: 7487572580236149384}
   - component: {fileID: 785066282450330949}
-  - component: {fileID: 6243754938804078711}
+  - component: {fileID: 6391775073961633728}
+  - component: {fileID: 8089714174100080038}
   m_Layer: 8
   m_Name: Adventurer
   m_TagString: Player
@@ -506,7 +507,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.35, y: 2.27}
+  m_Size: {x: 1, y: 2.27}
   m_EdgeRadius: 0
 --- !u!114 &6949021075820648454
 MonoBehaviour:
@@ -554,6 +555,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Motor: {fileID: 1712470358665181117}
+  m_EntityData: {fileID: 11400000, guid: b799efc2fe1ca5f499ba8c7469f85560, type: 2}
   m_MovementSettings:
     Speed: 8
     AccelerationTimeAirborne: 0.1
@@ -641,7 +643,7 @@ MonoBehaviour:
   dashActionReference: {fileID: 0}
   firstArrowActionReference: {fileID: 0}
   secondArrowActionReference: {fileID: 0}
---- !u!114 &6243754938804078711
+--- !u!114 &6391775073961633728
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -650,8 +652,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 8824978788996705367}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eade38bd42662504f92839e98f3bbe6e, type: 3}
+  m_Script: {fileID: 11500000, guid: 137699a92ae474f4ab67c4d1cabd7e2c, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerHurtbox3D
-  hurtboxLayer: Player
-  depth: 1
+  m_EditorClassIdentifier: Assembly-CSharp::MotionInterpolator
+  smoothedChildren:
+  - {fileID: 7664295490018543239}
+  - {fileID: 8889766612805912733}
+  - {fileID: 7362350623775227887}
+  snapDistance: 3
+--- !u!114 &8089714174100080038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8824978788996705367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a5bd315bcda91b40bdbf7a424b347a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFacing
+  aimCamera: {fileID: 0}
+  spriteVisual: {fileID: 1245336768785642657}
+  movementController: {fileID: 0}

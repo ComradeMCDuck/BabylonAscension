@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdb76347b8be099498ed2c252b74ae42, type: 3}
   m_Name: PlayerData
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
+  entityID: 0
   maxHealth: 100
   detectionRange: 5
   moveSpeed: 7.5
@@ -25,6 +26,49 @@ MonoBehaviour:
   attackCooldown: 5
   attackSpeed: 1
   attackEffectPrefab: {fileID: 0}
+  patrolSpeedMultiplier: 0.4
+  patrolWaitTime: 1
+  loseSightTime: 2
+  canJump: 1
+  jumpCheckDistance: 1
+  jumpCooldown: 0.5
+  attackWindup: 0.2
+  projectileRange: 2
+  projectileKeepsFlying: 0
+  projectileLifetime: 5
   fallMultiplier: 3
   riseMultiplier: 3
   maxFallSpeed: 30
+  speed: 8
+  accelerationTimeAirborne: 0.1
+  accelerationTimeGrounded: 0.1
+  snapToRestrictedArea: 0
+  exitLadderOnGround: 1
+  onLadderSpeed: 4
+  lockFacingToRight: 1
+  hasVariableJumpHeight: 0
+  airJumpAllowed: 0
+  maxJumpHeight: 3.5
+  minJumpHeight: 1
+  timeToApex: 0.4
+  onLadderJumpForce: 0.4
+  fallingJumpPaddingTime: 0.09
+  willJumpPaddingTime: 0.15
+  canWallSlide: 1
+  wallStickTime: 0.15
+  wallSlideSpeedLoss: 0.05
+  wallSlidingSpeedMax: 2
+  canWallClimb: 0
+  wallClimbSpeed: 2
+  canWallJump: 1
+  wallClimbForce: {x: 12, y: 16}
+  wallOffForce: {x: 8, y: 15}
+  wallLeapForce: {x: 18, y: 17}
+  canGrabLedge: 0
+  ledgeDetectionOffset: 0.1
+  recoilGroundAcceleration: 60
+  recoilGroundDeceleration: 70
+  recoilAirAcceleration: 25
+  recoilAirDeceleration: 2
+  recoilMaxPlanarSpeed: 18
+  cancelFallingOnUpwardImpulse: 1

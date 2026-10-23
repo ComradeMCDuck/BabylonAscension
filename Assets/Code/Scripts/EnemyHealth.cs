@@ -1,7 +1,7 @@
 
 using UnityEngine;
 
-public class EnemyHealth : MonoBehaviour, IArrowDamageable
+public class EnemyHealth : MonoBehaviour, IDamageable
 {
     [Header("References")]
     [SerializeField] private EntityData enemyData;
@@ -29,7 +29,7 @@ public class EnemyHealth : MonoBehaviour, IArrowDamageable
         }
     }
 
-    public void TakeArrowDamage(float damage)
+    public void TakeDamage(float damage)
     {
         if (isDead || damage <= 0f)
             return;
@@ -52,8 +52,12 @@ public class EnemyHealth : MonoBehaviour, IArrowDamageable
 
         isDead = true;
 
-        Debug.Log($"{name} died!");
+        // Health sits on a child of the enemy, so remove the whole enemy, not just this object.
+        EnemyBehavior enemy = GetComponentInParent<EnemyBehavior>();
+        GameObject body = enemy != null ? enemy.gameObject : gameObject;
 
-        Destroy(gameObject);
+        Debug.Log($"{body.name} died!");
+
+        Destroy(body);
     }
 }

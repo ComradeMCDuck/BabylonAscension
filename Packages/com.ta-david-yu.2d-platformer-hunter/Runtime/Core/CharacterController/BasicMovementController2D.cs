@@ -97,7 +97,13 @@ namespace DYP
             public float MaxPlanarSpeed = 18f;
             [Tooltip("Cancel falling speed before an upward impulse, so shooting downward always launches the character up.")]
             public bool CancelFallingOnUpwardImpulse = true;
+            [Tooltip("Seconds movement and jump input are ignored after ApplyKnockback.")]
+            public float KnockbackStunTime = 0.3f;
+            [Tooltip("Upward speed added by ApplyKnockback while on the ground.")]
+            public float KnockbackLift = 4f;
 
+            [HideInInspector]
+            public float KnockbackStunTimer = 0.0f;
             [HideInInspector]
             public bool HorizontalActive = false;
             [HideInInspector]
@@ -233,6 +239,10 @@ namespace DYP
         private InputBuffer m_InputBuffer = new InputBuffer();
 
         [Header("Settings")]
+        [Tooltip("Optional. When assigned, Movement, On Ladder, Jump, Wall Interaction and Recoil settings are taken from this asset.")]
+        [SerializeField]
+        private EntityData m_EntityData;
+
         [SerializeField]
         private MovementSettings m_MovementSettings;
 
@@ -279,6 +289,12 @@ namespace DYP
                 }
             }
         }
+
+        /// <summary>
+        /// Facing set by an external source (e.g. mouse aim). 1: right, -1: left, 0: none.
+        /// When non-zero, dashes without horizontal movement input go this way.
+        /// </summary>
+        public int AimFacingDirection { get; set; } = 0;
 
         [SerializeField]
         private Dash m_Dash = new Dash();
@@ -346,6 +362,14 @@ namespace DYP
         private void Start()
         {
             Init();
+        }
+
+        private void OnDestroy()
+        {
+            if (m_EntityData != null)
+            {
+                m_EntityData.Changed -= onEntityDataChanged;
+            }
         }
 
         private void FixedUpdate()
@@ -514,6 +538,33 @@ namespace DYP
             {
                 m_Recoil.VerticalActive = true;
             }
+        }
+
+        /// <summary>
+        /// Knockback from being hit (arrows, explosions). Like AddImpulse, but adds a small lift when
+        /// on the ground and ignores movement/jump input for KnockbackStunTime, so the character
+        /// can't immediately walk out of the push.
+        /// </summary>
+        public void ApplyKnockback(Vector2 impulse)
+        {
+            if (IsState(MotorState.OnLadder) || IsState(MotorState.Frozen))
+            {
+                return;
+            }
+
+            if (IsOnGround() && m_Recoil.KnockbackLift > 0.0f)
+            {
+                impulse.y = Mathf.Max(impulse.y, 0.0f) + m_Recoil.KnockbackLift;
+            }
+
+            AddImpulse(impulse);
+
+            m_Recoil.KnockbackStunTimer = Mathf.Max(m_Recoil.KnockbackStunTimer, m_Recoil.KnockbackStunTime);
+        }
+
+        public bool IsKnockbackStunned()
+        {
+            return m_Recoil.KnockbackStunTimer > 0.0f;
         }
 
         public void SetFrozen(bool freeze)
@@ -740,13 +791,83 @@ namespace DYP
             // h = g * t^2 * 0.5
             // g = h / (t^2*0.5)
 
-            m_Gravity = -m_Jump.MaxHeight / (m_Jump.TimeToApex * m_Jump.TimeToApex * 0.5f);
-            m_MaxJumpSpeed = Mathf.Abs(m_Gravity) * m_Jump.TimeToApex;
-            m_MinJumpSpeed = Mathf.Sqrt(2 * Mathf.Abs(m_Gravity) * m_Jump.MinHeight);
+            if (m_EntityData != null)
+            {
+                applyEntityData();
+
+                m_EntityData.Changed -= onEntityDataChanged;
+                m_EntityData.Changed += onEntityDataChanged;
+            }
+
+            calculateJumpValues();
             m_AirJumpCounter = 0;
 
             m_Motor.OnMotorCollisionEnter2D += onMotorCollisionEnter2D;
             m_Motor.OnMotorCollisionStay2D += onMotorCollisionStay2D;
+        }
+
+        private void calculateJumpValues()
+        {
+            m_Gravity = -m_Jump.MaxHeight / (m_Jump.TimeToApex * m_Jump.TimeToApex * 0.5f);
+            m_MaxJumpSpeed = Mathf.Abs(m_Gravity) * m_Jump.TimeToApex;
+            m_MinJumpSpeed = Mathf.Sqrt(2 * Mathf.Abs(m_Gravity) * m_Jump.MinHeight);
+        }
+
+        private void onEntityDataChanged()
+        {
+            applyEntityData();
+            calculateJumpValues();
+        }
+
+        /// <summary>
+        /// Copies the settings from the EntityData asset into this controller.
+        /// </summary>
+        private void applyEntityData()
+        {
+            if (m_EntityData == null)
+            {
+                return;
+            }
+
+            m_MovementSettings.Speed = m_EntityData.speed;
+            m_MovementSettings.AccelerationTimeAirborne = m_EntityData.accelerationTimeAirborne;
+            m_MovementSettings.AccelerationTimeGrounded = m_EntityData.accelerationTimeGrounded;
+
+            m_OnLadderSettings.SnapToRestrictedArea = m_EntityData.snapToRestrictedArea;
+            m_OnLadderSettings.ExitLadderOnGround = m_EntityData.exitLadderOnGround;
+            m_OnLadderSettings.OnLadderSpeed = m_EntityData.onLadderSpeed;
+            m_OnLadderSettings.LockFacingToRight = m_EntityData.lockFacingToRight;
+
+            m_Jump.HasVariableJumpHeight = m_EntityData.hasVariableJumpHeight;
+            m_Jump.AirJumpAllowed = m_EntityData.airJumpAllowed;
+            m_Jump.MaxHeight = m_EntityData.maxJumpHeight;
+            m_Jump.MinHeight = m_EntityData.minJumpHeight;
+            m_Jump.TimeToApex = Mathf.Max(m_EntityData.timeToApex, 0.01f);
+            m_Jump.OnLadderJumpForce = m_EntityData.onLadderJumpForce;
+            m_Jump.FallingJumpPaddingTime = m_EntityData.fallingJumpPaddingTime;
+            m_Jump.WillJumpPaddingTime = m_EntityData.willJumpPaddingTime;
+
+            m_WallInteraction.CanWallSlide = m_EntityData.canWallSlide;
+            m_WallInteraction.WallStickTime = m_EntityData.wallStickTime;
+            m_WallInteraction.WallSlideSpeedLoss = m_EntityData.wallSlideSpeedLoss;
+            m_WallInteraction.WallSlidingSpeedMax = m_EntityData.wallSlidingSpeedMax;
+            m_WallInteraction.CanWallClimb = m_EntityData.canWallClimb;
+            m_WallInteraction.WallClimbSpeed = m_EntityData.wallClimbSpeed;
+            m_WallInteraction.CanWallJump = m_EntityData.canWallJump;
+            m_WallInteraction.ClimbForce = m_EntityData.wallClimbForce;
+            m_WallInteraction.OffForce = m_EntityData.wallOffForce;
+            m_WallInteraction.LeapForce = m_EntityData.wallLeapForce;
+            m_WallInteraction.CanGrabLedge = m_EntityData.canGrabLedge;
+            m_WallInteraction.LedgeDetectionOffset = m_EntityData.ledgeDetectionOffset;
+
+            m_Recoil.GroundAcceleration = m_EntityData.recoilGroundAcceleration;
+            m_Recoil.GroundDeceleration = m_EntityData.recoilGroundDeceleration;
+            m_Recoil.AirAcceleration = m_EntityData.recoilAirAcceleration;
+            m_Recoil.AirDeceleration = m_EntityData.recoilAirDeceleration;
+            m_Recoil.MaxPlanarSpeed = m_EntityData.recoilMaxPlanarSpeed;
+            m_Recoil.CancelFallingOnUpwardImpulse = m_EntityData.cancelFallingOnUpwardImpulse;
+            m_Recoil.KnockbackStunTime = m_EntityData.knockbackStunTime;
+            m_Recoil.KnockbackLift = m_EntityData.knockbackLift;
         }
 
         public void _Update(float timeStep)
@@ -770,6 +891,14 @@ namespace DYP
 
             // read input from input driver
             Vector2 input = m_InputBuffer.Input;
+
+            // knocked back: ignore movement and jump input until the stun wears off
+            if (IsKnockbackStunned())
+            {
+                input = Vector2.zero;
+                m_InputBuffer.IsJumpPressed = false;
+                m_InputBuffer.IsDashPressed = false;
+            }
 
             Vector2Int rawInput = Vector2Int.zero;
 
@@ -1304,6 +1433,8 @@ namespace DYP
             }
 
 
+            if (m_Recoil.KnockbackStunTimer > 0.0f) m_Recoil.KnockbackStunTimer -= timeStep;
+
             if (m_FallingJumpPaddingFrame >= 0) m_FallingJumpPaddingFrame--;
             if (m_WillJumpPaddingFrame >= 0) m_WillJumpPaddingFrame--;
             if (m_WillDashPaddingFrame >= 0) m_WillDashPaddingFrame--;
@@ -1546,7 +1677,9 @@ namespace DYP
                 }
             }
 
-            int dashDir = (rawInputX != 0) ? rawInputX : FacingDirection;
+            // Movement input wins; without it, dash towards the aim facing.
+            int dashDir = (rawInputX != 0) ? rawInputX
+                : (AimFacingDirection != 0) ? AimFacingDirection : FacingDirection;
             if (!DashModule.CanDashToSlidingWall)
             {
                 // Skip the dash if cannot dash towards the current sliding wall

@@ -7,16 +7,14 @@ public class BowCombat : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Camera aimCamera;
-    [SerializeField] private Transform spriteVisual;
     [SerializeField] private Transform bowPivot;
     [SerializeField] private Transform arrowSpawn;
-    [SerializeField] private SpriteRenderer bodyRenderer;
     [SerializeField] private SpriteRenderer bowRenderer;
     [Tooltip("Kinematic 2D controller. Recoil is applied through it when assigned.")]
     [SerializeField] private BasicMovementController2D movementController;
 
     [Header("Arrows")]
-    [Tooltip("Element 0 is selected with key 1, element 1 with key 2. Each prefab carries its own ArrowData.")]
+    [Tooltip("Element 0 is selected with key 1, element 1 with key 2, element 2 with key 3, element 3 with key 4. Each prefab carries its own ArrowData.")]
     [SerializeField] private GameObject[] arrowPrefab;
     [SerializeField] private int selectedArrowIndex = 0;
 
@@ -27,11 +25,6 @@ public class BowCombat : MonoBehaviour
     [Header("Charge")]
     [Tooltip("Seconds of holding needed to reach full charge.")]
     [SerializeField] private float maxChargeTime = 1.2f;
-
-    [Header("Player Recoil")]
-    [Tooltip("Velocity added to the player opposite the shot. Capped by the controller's Recoil > Max Planar Speed.")]
-    [SerializeField] private float minRecoil = 3f;
-    [SerializeField] private float maxRecoil = 12f;
 
     [Header("Arrow Spawn")]
     [SerializeField] private float spawnOffset = 0.15f;
@@ -45,7 +38,6 @@ public class BowCombat : MonoBehaviour
 
     private float chargeTimer;
     private bool isCharging;
-    private bool facingLeft;
 
     public bool IsCharging => isCharging;
     public int SelectedArrowIndex => selectedArrowIndex;
@@ -61,9 +53,6 @@ public class BowCombat : MonoBehaviour
 
         if (aimCamera == null)
             aimCamera = Camera.main;
-
-        if (bodyRenderer == null && spriteVisual != null)
-            bodyRenderer = spriteVisual.GetComponentInChildren<SpriteRenderer>();
 
         if (bowRenderer == null && bowPivot != null)
             bowRenderer = bowPivot.GetComponentInChildren<SpriteRenderer>();
@@ -156,21 +145,6 @@ public class BowCombat : MonoBehaviour
         ) * Mathf.Rad2Deg;
 
         bowPivot.rotation = Quaternion.Euler(0f, 0f, angle);
-
-        // Flip only the body visual. BowPivot is a separate sibling.
-        facingLeft = aimDirection.x < 0f;
-
-        if (spriteVisual != null)
-        {
-            Vector3 scale = spriteVisual.localScale;
-            scale.x = Mathf.Abs(scale.x) * (facingLeft ? -1f : 1f);
-            spriteVisual.localScale = scale;
-        }
-
-        // Keep the body's SpriteRenderer in sync with the
-        // existing PlayerController's facing state.
-        if (bodyRenderer != null)
-            bodyRenderer.flipX = false;
     }
 
 
@@ -232,11 +206,13 @@ public class BowCombat : MonoBehaviour
             return;
         }
 
-        
-        float recoil = Mathf.Lerp(minRecoil, maxRecoil, charge);
+        // Each arrow type sets its own recoil in its ArrowData.
+        float recoil = arrow.Data != null
+            ? Mathf.Lerp(arrow.Data.minRecoil, arrow.Data.maxRecoil, charge)
+            : 0f;
 
         // Use the player root as the owner so the arrow ignores
-        // every player collider, including the 3D hurtbox.
+        // every player collider.
         GameObject shooter = movementController != null
             ? movementController.gameObject
             : gameObject;

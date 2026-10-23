@@ -1,0 +1,151 @@
+I need to implement arrow selection when the player presses 1 or 2 according to these criteria:
+When the player presses 1, the first arrow prefab will be choosen in BowCombat which, when the player shoots, will be launched and also the arrow will have different arrow data in the ArrowProjectile.sc depending on the arrow
+these scripts might have to be changed: BasicMovementController2D.sc; PlayerBasicMovementInput.sc; BowCombat.sc; ArrowProjectile.sc
+----------------------------------------
+ok, the arrow selection works well.
+Now I need to implement the bounce variable in the ArrowProjectile.sc.
+The desired outcome is:
+When the arrow hits an object with layer "Environment", the arrow bounces like "balls in the pool table".
+Example: when the arrow hits the ground with 30 degrees relative to the ground, the arrow then bounces to 150 degrees relative to the ground.
+After that, a variable of the bounces will be reduced by 1. when there is 0 in bounces, the projectile gets destroyed when hitting "Environment". when the arrow hits an enemy, the arrow deals damage.
+------------------------------------
+the enemies so far shoot projectiles that have 3D collider, so they dont interact with the player. i need you to tell be how to fix this or implement a fix
+--------------------------------
+I am trying to set up a ladder in the MetricZoo scene from the 2D platformer package, but I am having problems setting it up.
+There are scripts Ladder.sc; LadderZoneSetter.sc; Area2D.sc and maybe other ladder scripts that I cant find that are used for the ladder.
+Object called Ladder in MetricZoo is the one that should be working as a ladder.
+BasicMovementController2D.sc has ladder interaction setting.
+BabylonAscension\Packages\com.ta-david-yu.2d-platformer-hunter\Samples\PlaygroundSamples\Scenes has scenes that use ladders for reference.
+Please only change the MetricZoo scene so that it has a set up ladder and dont change any scripts without my knowledge
+-----------------------------------------
+I am trying to set up a ladder in the MetricZoo scene from the 2D platformer package, but I am having problems setting it up.
+There are scripts Ladder.sc; LadderZoneSetter.sc; Area2D.sc and maybe other ladder scripts that I cant find that are used for the ladder.
+Object called Ladder in MetricZoo is the one that should be working as a ladder.
+BasicMovementController2D.sc has ladder interaction setting.
+BabylonAscension\Packages\com.ta-david-yu.2d-platformer-hunter\Samples\PlaygroundSamples\Scenes has scenes that use ladders for reference.
+Please only change the MetricZoo scene so that it has a set up ladder and dont change any scripts without my knowledge
+----------------------------
+I am trying to make reference to EntityData in the controller, but the inspector tells me
+
+Packages\com.ta-david-yu.2d-platformer-hunter\Runtime\Core\CharacterController\BasicMovementController2D.cs(19,26): error CS0246: The type or namespace name 'EntityData' could not be found (are you missing a using directive or an assembly reference?)
+------------------------------------
+I want to implement debug menu, where the user can change variables in the game.
+What will the player do / see: they press TAB button and a canvas panel shows up on the left side of the screen. When they press TAB, the panel closes
+So far I need it to be just opening and closing the panel. no implementation of the debuging.
+--------------------------------------
+could you create a template of the debug menu?
+This means, that for example, there is a Player Data section.
+Unther this, all the relevant variables will be shown like this:
+On the left side, there is the name of the variable. On the right side, there is a text window where current variable is and it can be rewritten.
+So far, dont implement it in a way, that it would change any variables in other scripts. just visual representation
+------------------------------------
+I see the variable squares, but I dont see numbers or what is written in the vindows
+--------------------------------------
+ok, now the variables show in the panel.
+Now we can start with making the variables that you put in the windows change data in EntityData and the data is then used in BasicMovementController2D.sc.
+Add the variables in BasicMovementController2D.sc to PlayerData, but only Movement Settings, On Ladder Settings, Jump, Wall interaction and Recoil. Other things like Dash and Custom action will be left alone.
+Make also sure that the variables that are used in the windows wont result in error or crash. If the player puts in a wrong input, the variable wont be changed.
+---------------------------
+I got the task to reimplement the melee enemy acording to some criteria.
+Currently, the enemies are 3d capsules that follow the player if they are in range and attack the player with 3D cubes when close enough. I however, need the enemies to be 2D sprites with 2D colliders like the player is and the enemy projectiles to be 2d sprites.
+I also need the enemy behavior to be modular, so when I want to implement shooters, then I could use the same codes.
+
+The enemy should have 3 states:
+- Patrol / Idle: walk in a designated area (between 2 points)
+- Chase: If the player enters "lign of sight", which can be a circular area where the enemy casts raycasts and if the player gets into this area and is hit by the raycast, then the enemy starts chasing.
+- Attack:  If the player is close enough, then the enemy starts attacking.
+
+This is the description for a basic melee enemy:
+Behavior:
+- close combat
+- speed
+Alús strength is in numbers. Its tactic is to get to the player as fast as possible and hurt them. 
+
+Please make these changes in the EnemyBehavior.sc and use MeleeEnemyData for data or create any other needed scripts
+------------------------
+I cant figure out where CharacterMotor2D is and what the Raycaster means.
+----------------------
+NullReferenceException: Object reference not set to an instance of an object
+EnemyBehavior.Move (System.Single direction, System.Single speedMultiplier) (at Assets/Code/Scripts/EnemyBehavior.cs:217)
+EnemyBehavior.Patrol () (at Assets/Code/Scripts/EnemyBehavior.cs:169)
+EnemyBehavior.FixedUpdate () (at Assets/Code/Scripts/EnemyBehavior.cs:118)
+UnityEngine.StackTraceUtility:ExtractStringFromExceptionInternal(Object, String&, String&)
+---------------------
+I want no 3D collisions, so the player will be now damaged by just 2D projectile and the arrows shot by the player will also be 2D
+-------------------
+when the melee enemy gets close enough to the player, the projectile wont fly far enough so that it hits the player. could there be a separate variable of the distance that the projectile reaches before being destroyed?
+-----------------
+the AI wont jump on platforms when the player is higher than the enemy. which probably is because the enemy is trying to reach the player but is not checking platforms or if the player is in the higher elevation. Would there be a way to implement this to the game?
+-----------
+We recently made the change with our character controller to make it kinematic and not physics based.
+We started using an external 2D controller and so far the controller is working as intended.
+
+But in our game we have a bow recoil mechanic that worked on the physics based controller, but now it does not work on the controller since it is kinematic.
+
+Could you make the recoil work on the controller with these variables that can be changed?:
+- there is a charge time that can be changed
+- minimum and maximum damage depending on how long you hold the shoot button
+- minimum and maximum speed of the arrow depending on how long you hold the shoot button
+- minimum and maximum knockback to the enemy depending on how long you hold the shoot button
+- minimum and maximum recoil to the player depending on how long you hold the shoot button
+- spawn ofset of the arrow
+- shooting cooldown
+There might be other variables that were in the old bow combat script. Respect those too
+------------
+I would like for the downward shot always launch you
+-------------
+I am currently trying to implement a bouncing arrow upgrade.
+
+My vision is:
+When the player presses 1, they execute an action in BasicMovementController2D.sc called PressPick1stArrow. this picks a basic arrow from an array in BowCombat.sc that gets launched. Then, in ArrowProjectile.sc, it uses the ArrowData.sc of the basic arrow.
+Then when the player presses 2, they chose bouncing arrow.
+Don't implement bouncing mechanic for the bouncing arrow! That will be the next step after I test if the script you create works.
+
+If you need any verification, ask.
+-------------
+Ok, the changing of the prefabs of the arrows works perfectly!
+Now for the bouncing of the arrow if it is the bouncing arrow:
+My idea is, that when the arrow has a bouncesCount and the arrow hits an object that has "Environment" layer on it, the arrow will bounce from the object like if it was a wall in a game of pool. 
+That means for example, that if the arrow hit the roof holding a 30 degrees angle compared to the wall, the arrow will change direction in a 150 degrees direction.
+when this happens, there will be a bounce tracker and if the tracker reaches 0, the next hit to an "Environment" object will destroy it.
+If the arrow hits an enemy, then it will damage the enemy as normal.
+make these changes in the ArrowProjectile.sc.
+----------
+I want to implement explosive arrows.
+They will be selected by pressing 3 and they wont be using the min damage and max damage like the other arrows that use charge of the shot, but the damage will be distributed depending on how far from the center of the explosion the enemy was. Also, the knockback depends on the center of the explosion of the arrow.
+------------
+make the explosion effect disapear after a set amount of time.
+-----------
+the knockback does not work now on the enemies even when shooting other arrows
+-----------
+I want the recoil when shooting the arrow to be affected by the arrow that has been shot
+--------
+I need to implement a penetrating bow, which means:
+There would be a new variable in EntityData holding the number of penetrations. if the arrow hits an enemy, the enemy gets hit, but the arrow keeps flying. only after reaching 0 penetration does the arrow stop penetrating. Implement this mechanic for ArrowProjectile.
+------
+I need you to move the projectile penetrations from EntityData to ArrowData if that is posible
+---------
+also when pressing 4 then i should change the arrow to the penetration arrow like with the rest of the arrows
+----------
+in the enemy behavior, could you implement the follow and subsequent platforms handling acording to these criteria?:
+
+- enemy remembers which platforms a player touched (if they are in sight)
+- enemy tries to copy the players path by checking if there is room above to jump and jump is doable by the enemy (This can fail becasue player has double jumps, wall jump, etc that the enemy cant do)
+- If not it searches for other platforms in the last seen direction of the player
+- If not it tries to predict what woud happen if it went another way
+----------
+the players character has jerky movement. it might be something with delayed updating of the sprite. Is this the problem or is there a different one?
+--------
+yes, the timestep change fixed the issue. How do I make the interpolation script?
+--------
+there are now 2 projectile scripts and I want to compact them into one. could you make the Arrow projectile be pausible to be used by the ranged enemy?
+------
+yes, make this change too
+---------
+now the arrow projectiles shot by the shooter enemy are not interacting with the player
+--------
+So far, the dash does not make the character dash to where the player is looking, but where the player last moved towards. could you make it so that the dash action makes the dash in the direction of where the sprite is turned to, which is in bow combat?
+I am also not sure, if it is logical to make the visual of the player be fliped in bow combat and not somewhere seperate. Should there be a seperate script, that makes these flips?
+--------
+i want this cursor dashing to work only when the player is not moving
+----------

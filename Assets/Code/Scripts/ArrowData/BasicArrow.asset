@@ -12,3 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96d82f6fee7ea00438c63cc98f43688e, type: 3}
   m_Name: BasicArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
+  minDamage: 5
+  maxDamage: 30
+  minArrowSpeed: 12
+  maxArrowSpeed: 24
+  minKnockback: 4
+  maxKnockback: 24
+  bounces: 0
+  explosionRadius: 0
+  explosionCenterDamage: 40
+  explosionEdgeDamage: 5
+  explosionCenterKnockback: 15
+  explosionEdgeKnockback: 3
+  explosionEffect: {fileID: 0}
+  explosionEffectDuration: 1

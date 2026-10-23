@@ -25,9 +25,9 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Curve: -0.08
+    - _Curve: -0.03
     - _Swirl: 0
-    - _Zoom: 0.85
+    - _Zoom: 1
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1
