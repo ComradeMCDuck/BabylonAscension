@@ -11,7 +11,10 @@ public abstract class EnemyAttack : MonoBehaviour
 {
     private float nextAttackTime;
 
-    /// <summary>True during the windup. EnemyBehavior does not leave the Attack state while this is set.</summary>
+    /// <summary>
+    /// True from the start of the windup until the attack is over. EnemyBehavior does not leave the Attack state
+    /// or turn the enemy around while this is set.
+    /// </summary>
     public bool IsAttacking { get; private set; }
 
     /// <summary>Raised when the windup starts. Hook animations or sounds here.</summary>
@@ -36,12 +39,20 @@ public abstract class EnemyAttack : MonoBehaviour
 
         if (data.attackWindup > 0f) yield return new WaitForSeconds(data.attackWindup);
 
-        PerformAttack(targetPosition, data);
+        yield return StartCoroutine(PerformAttackRoutine(targetPosition, data));
         nextAttackTime = Time.time + data.attackCooldown;
         IsAttacking = false;
     }
 
-    protected abstract void PerformAttack(Vector2 targetPosition, EntityData data);
+    /// <summary>Instant attacks (e.g. spawning a projectile) override this.</summary>
+    protected virtual void PerformAttack(Vector2 targetPosition, EntityData data) { }
+
+    /// <summary>Attacks that take time (e.g. a sword swing) override this instead. The cooldown starts when it ends.</summary>
+    protected virtual IEnumerator PerformAttackRoutine(Vector2 targetPosition, EntityData data)
+    {
+        PerformAttack(targetPosition, data);
+        yield break;
+    }
 
     // Disabling a MonoBehaviour stops its coroutines, so the windup would never finish.
     protected virtual void OnDisable()

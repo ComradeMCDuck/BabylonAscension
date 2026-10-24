@@ -46,13 +46,21 @@ public class EntityData : ScriptableObject
     [Min(0f)] public float jumpCheckDistance = 1f;
     [Tooltip("Minimum seconds between two enemy jumps.")]
     [Min(0f)] public float jumpCooldown = 0.5f;
-    [Tooltip("Delay between starting an attack and the projectile spawning. Gives the player time to react.")]
+    [Tooltip("Delay between starting an attack and the projectile spawning (or the slash starting). Gives the player time to react.")]
     [Min(0f)] public float attackWindup = 0.2f;
     [Tooltip("How far the projectile travels from where it spawns before it is destroyed. Ignored when projectileKeepsFlying is on.")]
     [Min(0f)] public float projectileRange = 2f;
     [Tooltip("If true, the projectile keeps flying past projectileRange until it hits something (shooters). If false, it stops at projectileRange (melee).")]
     public bool projectileKeepsFlying = false;
     [Min(0.1f)] public float projectileLifetime = 5f;
+
+    [Header("Slash Attack (enemies with a SlashAttack component)")]
+    [Tooltip("Point the hitbox swings around, relative to the enemy's position when facing right. Mirrored when facing left. Damage is attackDamage.")]
+    public Vector2 slashOriginOffset = new Vector2(0.2f, 0.3f);
+    [Tooltip("Total angle (degrees) the hitbox sweeps through, centered on the direction to the player. It swings from top to bottom.")]
+    [Range(0f, 360f)] public float slashArcAngle = 140f;
+    [Tooltip("Seconds the swing takes. The hitbox is active for this long.")]
+    [Min(0.01f)] public float slashDuration = 0.25f;
 
     [Header("Jump Attack (enemies with a JumpAttack component)")]
     public float jumpAttackDamage = 30f;
@@ -68,8 +76,6 @@ public class EntityData : ScriptableObject
     [Min(0f)] public float jumpAttackMaxLungeSpeed = 16f;
     [Tooltip("Crouch time before the leap. Gives the player time to react.")]
     [Min(0f)] public float jumpAttackWindup = 0.3f;
-    [Tooltip("Size of the damage area in front of the enemy while it is in the air.")]
-    public Vector2 jumpAttackHitboxSize = new Vector2(1.2f, 1.2f);
     [Tooltip("The player can be at most this much higher or lower than the enemy for it to jump attack.")]
     [Min(0f)] public float jumpAttackMaxHeightDifference = 1.5f;
 

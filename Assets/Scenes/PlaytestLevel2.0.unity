@@ -2652,9 +2652,17 @@ PrefabInstance:
       propertyPath: patrolPointB
       value: 
       objectReference: {fileID: 118413099}
+    - target: {fileID: 3616614064456725153, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: m_Layer
+      value: 11
+      objectReference: {fileID: 0}
     - target: {fileID: 5381662566538865667, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
       propertyPath: m_Name
       value: MeleeEnemy (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6232862976135369917, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: m_Layer
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 6675077669277327910, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
       propertyPath: m_LocalPosition.x
@@ -9014,7 +9022,7 @@ MonoBehaviour:
   boxColliders: 19
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0281
+  buildMilliseconds: 0.0219
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
