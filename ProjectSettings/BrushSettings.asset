@@ -45,7 +45,7 @@ MonoBehaviour:
   newWindowWidth: 0
   newWindowHeight: 0
   newWindowSill: 0
-  extrudeDistance: 0.5
+  extrudeDistance: 1
   extrudeIndividual: 0
   defaultModelStaticFlags: 87
   defaultMaterial: {fileID: 2100000, guid: b0b92c31e47e90645ac7ed7fa12f7702, type: 2}
