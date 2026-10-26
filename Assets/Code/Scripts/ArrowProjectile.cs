@@ -297,6 +297,10 @@ public class ArrowProjectile : MonoBehaviour
                 targetMovement.ApplyKnockback(direction * knockback);
         }
 
+        // Damage over time; the ticks only deal damage, the knockback above happens once on the hit.
+        if (target != null && arrowData != null && arrowData.IsPoisonous)
+            PoisonEffect.Apply(target, arrowData.poisonDamage, arrowData.poisonTime, arrowData.poisonInterval);
+
         // Penetrate: use one and keep flying.
         if (remainingPenetrations > 0)
         {

@@ -11,6 +11,8 @@ public class Health : MonoBehaviour, IDamageable
     [SerializeField] private EntityData entityData;
     [SerializeField] private SpriteRenderer spriteRenderer;
     private float currentHealth;
+    private Color originalColor;
+    private Coroutine damageIndication;
 
     void Awake()
     {
@@ -23,13 +25,22 @@ public class Health : MonoBehaviour, IDamageable
                 Debug.LogWarning($"{gameObject.name}: No SpriteRenderer assigned to Health.", this);
             }
         }
+
+        if (spriteRenderer != null)
+            originalColor = spriteRenderer.color;
     }
     
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
         Debug.Log($"{gameObject.name} took {damage} damage. Current health: {currentHealth}/{entityData.maxHealth}");
-        StartCoroutine(DamageIndication());
+        // Restart instead of stacking flashes (e.g. poison ticks), so the sprite always returns to its real color.
+        if (spriteRenderer != null)
+        {
+            if (damageIndication != null)
+                StopCoroutine(damageIndication);
+            damageIndication = StartCoroutine(DamageIndication());
+        }
         if (currentHealth <= 0)
         {
             Debug.Log($"{gameObject.name} has been destroyed.");
@@ -39,8 +50,6 @@ public class Health : MonoBehaviour, IDamageable
 
     public IEnumerator DamageIndication()
     {
-        Color originalColor = spriteRenderer.color;
-        Color startColor = spriteRenderer.color;
         float flashDuration = 1 / entityData.damageIndicationDuration; // Duration of the flash
 
         while (spriteRenderer.color != Color.red)

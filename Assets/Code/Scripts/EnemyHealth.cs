@@ -12,6 +12,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     [SerializeField] private float currentHealth;
 
     private bool isDead;
+    private Color originalColor;
+    private Coroutine damageIndication;
 
     public float CurrentHealth => currentHealth;
     public float MaxHealth => enemyData != null
@@ -37,6 +39,10 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 this
             );
         }
+        else
+        {
+            originalColor = spriteRenderer.color;
+        }
     }
 
     public void TakeDamage(float damage)
@@ -48,8 +54,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         
         if (spriteRenderer != null)
         {
-            // Flash the sprite red to indicate damage
-            StartCoroutine(DamageIndication());
+            // Flash the sprite red to indicate damage. Restart instead of stacking flashes
+            // (e.g. poison ticks), so the sprite always returns to its real color.
+            if (damageIndication != null)
+                StopCoroutine(damageIndication);
+            damageIndication = StartCoroutine(DamageIndication());
         }
 
         Debug.Log(
@@ -63,8 +72,6 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     public IEnumerator DamageIndication()
     {
-        Color originalColor = spriteRenderer.color;
-        Color startColor = spriteRenderer.color;
         float flashDuration = 1 / enemyData.damageIndicationDuration; // Duration of the flash
 
         while (spriteRenderer.color != Color.red)

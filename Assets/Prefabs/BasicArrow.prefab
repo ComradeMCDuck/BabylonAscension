@@ -47,6 +47,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   lifetime: 5
   arrowData: {fileID: 11400000, guid: dcd2279d2b080394db12403ee3e444bc, type: 2}
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  enemyShotHitLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  environmentLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  radius: 0.1
+  alignToDirection: 1
 --- !u!212 &6866620899458589148
 SpriteRenderer:
   serializedVersion: 3
@@ -96,8 +107,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -765150924802650856, guid: 8c40719d16dd4634aa7b16f767838ba1, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 8c40719d16dd4634aa7b16f767838ba1, type: 3}
+  m_Color: {r: 0.43876824, g: 0.60011196, b: 0.6415094, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

@@ -115,6 +115,16 @@
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
+                },
+                {
+                    "name": "FifthArrow",
+                    "type": "Button",
+                    "id": "f7eff8a2-14c7-4490-8f4e-f302803e3c64",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
                 }
             ],
             "bindings": [
@@ -467,6 +477,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "FourthArrow",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "78108156-93d6-4db6-bdd2-e11018a5f98e",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "FifthArrow",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

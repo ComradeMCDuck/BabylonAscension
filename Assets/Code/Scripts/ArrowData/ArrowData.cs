@@ -35,5 +35,15 @@ public class ArrowData : ScriptableObject
     [Tooltip("Seconds before the explosion effect is removed. 0 or less keeps it (use that if the effect removes itself).")]
     [SerializeField] public float explosionEffectDuration = 1f;
 
+    [Header("Poison")]
+    [Tooltip("Above 0 makes this a poisonous arrow: a hit target keeps taking Poison Damage every Poison Interval for this many seconds. " +
+             "The hit itself still does normal damage and knockback; poison ticks never knock back. Hitting a poisoned target again restarts the timer.")]
+    [Min(0f)] public float poisonTime = 0f;
+    [Tooltip("Seconds between two poison damage ticks.")]
+    [Min(0.05f)] public float poisonInterval = 0.5f;
+    [Tooltip("Damage dealt on each poison tick.")]
+    [Min(0f)] public float poisonDamage = 2f;
+
     public bool IsExplosive => explosionRadius > 0f;
+    public bool IsPoisonous => poisonTime > 0f && poisonDamage > 0f;
 }
