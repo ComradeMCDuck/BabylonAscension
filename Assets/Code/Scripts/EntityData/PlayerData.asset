@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
   entityID: 0
   maxHealth: 100
+  damageIndicationDuration: 0.2
   detectionRange: 5
   moveSpeed: 7.5
   jumpSpeed: 15
@@ -36,6 +37,17 @@ MonoBehaviour:
   projectileRange: 2
   projectileKeepsFlying: 0
   projectileLifetime: 5
+  slashOriginOffset: {x: 0.2, y: 0.3}
+  slashArcAngle: 140
+  slashDuration: 0.25
+  jumpAttackDamage: 30
+  jumpAttackCooldown: 6
+  jumpAttackRange: 4
+  jumpAttackOvershoot: 1.5
+  jumpAttackLungeHeight: 0.8
+  jumpAttackMaxLungeSpeed: 16
+  jumpAttackWindup: 0.3
+  jumpAttackMaxHeightDifference: 1.5
   fallMultiplier: 3
   riseMultiplier: 3
   maxFallSpeed: 30
@@ -55,7 +67,7 @@ MonoBehaviour:
   fallingJumpPaddingTime: 0.09
   willJumpPaddingTime: 0.15
   canWallSlide: 1
-  wallStickTime: 0.15
+  wallStickTime: 0.05
   wallSlideSpeedLoss: 0.05
   wallSlidingSpeedMax: 2
   canWallClimb: 0
@@ -72,3 +84,5 @@ MonoBehaviour:
   recoilAirDeceleration: 2
   recoilMaxPlanarSpeed: 18
   cancelFallingOnUpwardImpulse: 1
+  knockbackStunTime: 0.3
+  knockbackLift: 4

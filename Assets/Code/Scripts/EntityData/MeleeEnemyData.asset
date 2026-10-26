@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
   entityID: 1
   maxHealth: 100
+  damageIndicationDuration: 0.2
   detectionRange: 10
   moveSpeed: 4
   jumpSpeed: 1
@@ -22,7 +23,7 @@ MonoBehaviour:
   nextDashCooldown: 1
   lockZAxis: 1
   attackDamage: 20
-  attackRange: 2
+  attackRange: 1.5
   attackCooldown: 1
   attackSpeed: 10
   attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
@@ -31,11 +32,22 @@ MonoBehaviour:
   loseSightTime: 1.5
   canJump: 1
   jumpCheckDistance: 1
-  jumpCooldown: 0.5
+  jumpCooldown: 0.25
   attackWindup: 0.15
   projectileRange: 4.5
   projectileKeepsFlying: 0
   projectileLifetime: 1
+  slashOriginOffset: {x: 0.2, y: 0}
+  slashArcAngle: 140
+  slashDuration: 0.25
+  jumpAttackDamage: 30
+  jumpAttackCooldown: 6
+  jumpAttackRange: 4
+  jumpAttackOvershoot: 1.5
+  jumpAttackLungeHeight: 0.8
+  jumpAttackMaxLungeSpeed: 16
+  jumpAttackWindup: 0.3
+  jumpAttackMaxHeightDifference: 1.5
   fallMultiplier: 2
   riseMultiplier: 1
   maxFallSpeed: 20
@@ -72,3 +84,5 @@ MonoBehaviour:
   recoilAirDeceleration: 2
   recoilMaxPlanarSpeed: 18
   cancelFallingOnUpwardImpulse: 1
+  knockbackStunTime: 0.3
+  knockbackLift: 4

@@ -1,10 +1,12 @@
 
+using System.Collections;
 using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour, IDamageable
 {
     [Header("References")]
     [SerializeField] private EntityData enemyData;
+    [SerializeField] private SpriteRenderer spriteRenderer;
 
     [Header("Runtime Health")]
     [SerializeField] private float currentHealth;
@@ -27,6 +29,14 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 this
             );
         }
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogWarning(
+                $"{name}: No SpriteRenderer assigned to EnemyHealth.",
+                this
+            );
+        }
     }
 
     public void TakeDamage(float damage)
@@ -35,6 +45,12 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             return;
 
         currentHealth = Mathf.Max(0f, currentHealth - damage);
+        
+        if (spriteRenderer != null)
+        {
+            // Flash the sprite red to indicate damage
+            StartCoroutine(DamageIndication());
+        }
 
         Debug.Log(
             $"{name} took {damage} damage. " +
@@ -43,6 +59,30 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
         if (currentHealth <= 0f)
             Die();
+    }
+
+    public IEnumerator DamageIndication()
+    {
+        Color originalColor = spriteRenderer.color;
+        Color startColor = spriteRenderer.color;
+        float flashDuration = 1 / enemyData.damageIndicationDuration; // Duration of the flash
+
+        while (spriteRenderer.color != Color.red)
+        {
+            spriteRenderer.color = new Color(Mathf.MoveTowards(spriteRenderer.color.r, Color.red.r, flashDuration * Time.deltaTime),
+                                             Mathf.MoveTowards(spriteRenderer.color.g, Color.red.g, flashDuration * Time.deltaTime),
+                                             Mathf.MoveTowards(spriteRenderer.color.b, Color.red.b, flashDuration * Time.deltaTime),
+                                             Mathf.MoveTowards(spriteRenderer.color.a, Color.red.a, flashDuration * Time.deltaTime));
+            yield return null;
+        }
+        while (spriteRenderer.color != originalColor)
+        {
+            spriteRenderer.color = new Color(Mathf.MoveTowards(spriteRenderer.color.r, originalColor.r, flashDuration * Time.deltaTime),
+                                             Mathf.MoveTowards(spriteRenderer.color.g, originalColor.g, flashDuration * Time.deltaTime),
+                                             Mathf.MoveTowards(spriteRenderer.color.b, originalColor.b, flashDuration * Time.deltaTime),
+                                             Mathf.MoveTowards(spriteRenderer.color.a, originalColor.a, flashDuration * Time.deltaTime));
+            yield return null;
+        }
     }
 
     private void Die()

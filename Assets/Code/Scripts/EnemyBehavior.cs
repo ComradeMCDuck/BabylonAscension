@@ -372,12 +372,12 @@ public class EnemyBehavior : MonoBehaviour
             nextJumpTime = Time.time + enemyData.jumpCooldown;
             leapStarted = true;
             leapStartTime = Time.time;
+            jumpAttack.StartLeap(leapDirection, enemyData);
         }
 
         // No input during the lunge: input would steer the momentum back toward the normal run speed.
         Move(0f, 0f);
         Face(leapDirection);
-        jumpAttack.DealDamage(selfCollider, facingDirection, enemyData);
 
         if (currentGround == null) leapLeftGround = true;
 
@@ -939,8 +939,11 @@ public class EnemyBehavior : MonoBehaviour
     private void AttackPlayer()
     {
         Move(0f, 0f);
-        Face(lastKnownPlayerPosition.x - transform.position.x);
 
+        // Turn toward the player only between attacks, so jumping over the enemy mid-attack doesn't flip it.
+        if (attack != null && attack.IsAttacking) return;
+
+        Face(lastKnownPlayerPosition.x - transform.position.x);
         if (attack != null) attack.TryAttack(lastKnownPlayerPosition, enemyData);
     }
 
@@ -1025,13 +1028,6 @@ public class EnemyBehavior : MonoBehaviour
         {
             Gizmos.DrawWireSphere(playerTrail[i].Point, 0.12f);
             if (i > 0) Gizmos.DrawLine(playerTrail[i - 1].Point, playerTrail[i].Point);
-        }
-
-        // Jump attack damage area (red) while leaping.
-        if (currentState == EnemyState.JumpAttack && enemyData != null && selfCollider != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(JumpAttack.GetHitboxCenter(selfCollider, facingDirection, enemyData), enemyData.jumpAttackHitboxSize);
         }
 
         if (hasRoute && selfCollider != null)
