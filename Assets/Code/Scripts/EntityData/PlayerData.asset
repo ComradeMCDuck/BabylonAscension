@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
   entityID: 0
   maxHealth: 100
+  damageIndicationDuration: 0.2
   detectionRange: 5
   moveSpeed: 7.5
   jumpSpeed: 15

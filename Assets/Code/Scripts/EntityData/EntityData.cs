@@ -13,6 +13,7 @@ public class EntityData : ScriptableObject
 
     [Header("Health")]
     public float maxHealth = 100f;
+    public float damageIndicationDuration = 0.1f;
 
     [Header("Movement")]
     [Tooltip("Enemies: radius of the line-of-sight circle.")]

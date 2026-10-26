@@ -65,55 +65,8 @@ MonoBehaviour:
   - {fileID: 1047152348, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
   - {fileID: 1950325863, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
   maxChargeTime: 1.2
-  minRecoil: 0
-  maxRecoil: 24
   spawnOffset: 0.15
   fireCooldown: 0.1
---- !u!1 &1688899677540107645
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6992680936040339111}
-  - component: {fileID: 2510993454509902133}
-  m_Layer: 8
-  m_Name: Health
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6992680936040339111
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1688899677540107645}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6433339575886944430}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2510993454509902133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1688899677540107645}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c68d08a2c99137e4b83a64f5956dd658, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Health
-  entityData: {fileID: 11400000, guid: b799efc2fe1ca5f499ba8c7469f85560, type: 2}
 --- !u!1 &1705944809059051592
 GameObject:
   m_ObjectHideFlags: 0
@@ -410,6 +363,7 @@ GameObject:
   - component: {fileID: 785066282450330949}
   - component: {fileID: 6391775073961633728}
   - component: {fileID: 8089714174100080038}
+  - component: {fileID: 7189589638907935899}
   m_Layer: 8
   m_Name: Adventurer
   m_TagString: Player
@@ -432,7 +386,6 @@ Transform:
   m_Children:
   - {fileID: 7362350623775227887}
   - {fileID: 7664295490018543239}
-  - {fileID: 6992680936040339111}
   - {fileID: 8889766612805912733}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -596,6 +549,9 @@ MonoBehaviour:
     AirDeceleration: 2
     MaxPlanarSpeed: 18
     CancelFallingOnUpwardImpulse: 1
+    KnockbackStunTime: 0.3
+    KnockbackLift: 4
+    KnockbackStunTimer: 0
     HorizontalActive: 0
     VerticalActive: 0
   m_Dash:
@@ -643,6 +599,8 @@ MonoBehaviour:
   dashActionReference: {fileID: 0}
   firstArrowActionReference: {fileID: 0}
   secondArrowActionReference: {fileID: 0}
+  thirdArrowActionReference: {fileID: 0}
+  fourthArrowActionReference: {fileID: 0}
 --- !u!114 &6391775073961633728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -675,3 +633,17 @@ MonoBehaviour:
   aimCamera: {fileID: 0}
   spriteVisual: {fileID: 1245336768785642657}
   movementController: {fileID: 0}
+--- !u!114 &7189589638907935899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8824978788996705367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c68d08a2c99137e4b83a64f5956dd658, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  entityData: {fileID: 11400000, guid: b799efc2fe1ca5f499ba8c7469f85560, type: 2}
+  spriteRenderer: {fileID: 0}
