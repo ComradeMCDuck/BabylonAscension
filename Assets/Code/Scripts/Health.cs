@@ -16,6 +16,8 @@ public class Health : MonoBehaviour, IDamageable
     public float CurrentHealth => currentHealth;
     public float MaxHealth => entityData != null ? entityData.maxHealth : 100f;
 
+    private bool isFlashing = false;
+
     void Awake()
     {
         RestoreHealth();
@@ -38,7 +40,7 @@ public class Health : MonoBehaviour, IDamageable
         if (IsDead || damage <= 0f) return;
         currentHealth = Mathf.Max(0f, currentHealth - damage);
         Debug.Log($"{gameObject.name} took {damage} damage. Current health: {currentHealth}/{entityData.maxHealth}");
-        StartCoroutine(DamageIndication());
+        if (!isFlashing) StartCoroutine(DamageIndication());
         if (currentHealth <= 0)
         {
             IsDead = true;
@@ -49,6 +51,7 @@ public class Health : MonoBehaviour, IDamageable
 
     public IEnumerator DamageIndication()
     {
+        isFlashing = true;
         Color originalColor = spriteRenderer.color;
         Color startColor = spriteRenderer.color;
         float flashDuration = 1 / entityData.damageIndicationDuration; // Duration of the flash
@@ -69,5 +72,6 @@ public class Health : MonoBehaviour, IDamageable
                                              Mathf.MoveTowards(spriteRenderer.color.a, originalColor.a, flashDuration * Time.deltaTime));
             yield return null;
         }
+        isFlashing = false;
     }
 }
