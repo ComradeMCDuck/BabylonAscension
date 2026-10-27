@@ -17,6 +17,8 @@ public class Health : MonoBehaviour, IDamageable
     public float MaxHealth => entityData != null ? entityData.maxHealth : 100f;
 
     private bool isFlashing = false;
+    private Color originalColor;
+    private Coroutine damageIndication;
 
     void Awake()
     {
@@ -27,6 +29,9 @@ public class Health : MonoBehaviour, IDamageable
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             if (spriteRenderer == null) Debug.LogWarning($"{gameObject.name}: No SpriteRenderer assigned to Health.", this);
         }
+
+        if (spriteRenderer != null)
+            originalColor = spriteRenderer.color;
     }
 
     public void RestoreHealth()
@@ -41,6 +46,13 @@ public class Health : MonoBehaviour, IDamageable
         currentHealth = Mathf.Max(0f, currentHealth - damage);
         Debug.Log($"{gameObject.name} took {damage} damage. Current health: {currentHealth}/{entityData.maxHealth}");
         if (!isFlashing) StartCoroutine(DamageIndication());
+        // Restart instead of stacking flashes (e.g. poison ticks), so the sprite always returns to its real color.
+        if (spriteRenderer != null)
+        {
+            if (damageIndication != null)
+                StopCoroutine(damageIndication);
+            damageIndication = StartCoroutine(DamageIndication());
+        }
         if (currentHealth <= 0)
         {
             IsDead = true;
@@ -53,7 +65,6 @@ public class Health : MonoBehaviour, IDamageable
     {
         isFlashing = true;
         Color originalColor = spriteRenderer.color;
-        Color startColor = spriteRenderer.color;
         float flashDuration = 1 / entityData.damageIndicationDuration; // Duration of the flash
 
         while (spriteRenderer.color != Color.red)
