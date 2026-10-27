@@ -21,6 +21,9 @@ namespace DYP
         private InputActionReference dashActionReference;
 
         [SerializeField]
+        private InputActionReference crouchActionReference;
+
+        [SerializeField]
         private InputActionReference firstArrowActionReference;
 
         [SerializeField]
@@ -38,6 +41,7 @@ namespace DYP
         private InputAction m_MoveAction;
         private InputAction m_JumpAction;
         private InputAction m_DashAction;
+        private InputAction m_CrouchAction;
         private InputAction m_FirstArrowAction;
         private InputAction m_SecondArrowAction;
         private InputAction m_ThirdArrowAction;
@@ -60,6 +64,7 @@ namespace DYP
             m_MoveAction = moveActionReference != null ? moveActionReference.action : GetAction("Move");
             m_JumpAction = jumpActionReference != null ? jumpActionReference.action : GetAction("Jump");
             m_DashAction = dashActionReference != null ? dashActionReference.action : GetAction("Sprint");
+            m_CrouchAction = crouchActionReference != null ? crouchActionReference.action : GetAction("Crouch");
             // "Previous" is bound to key 1, "Next" to key 2, "ThirdArrow" to key 3, "FourthArrow" to key 4 and "FifthArrow" to key 5 in InputSystem_Actions.
             m_FirstArrowAction = firstArrowActionReference != null ? firstArrowActionReference.action : GetAction("Previous");
             m_SecondArrowAction = secondArrowActionReference != null ? secondArrowActionReference.action : GetAction("Next");
@@ -84,6 +89,7 @@ namespace DYP
             if (m_MoveAction != null) m_MoveAction.Enable();
             if (m_JumpAction != null) m_JumpAction.Enable();
             if (m_DashAction != null) m_DashAction.Enable();
+            if (m_CrouchAction != null) m_CrouchAction.Enable();
             if (m_FirstArrowAction != null) m_FirstArrowAction.Enable();
             if (m_SecondArrowAction != null) m_SecondArrowAction.Enable();
             if (m_ThirdArrowAction != null) m_ThirdArrowAction.Enable();
@@ -96,6 +102,7 @@ namespace DYP
             if (m_MoveAction != null) m_MoveAction.Disable();
             if (m_JumpAction != null) m_JumpAction.Disable();
             if (m_DashAction != null) m_DashAction.Disable();
+            if (m_CrouchAction != null) m_CrouchAction.Disable();
             if (m_FirstArrowAction != null) m_FirstArrowAction.Disable();
             if (m_SecondArrowAction != null) m_SecondArrowAction.Disable();
             if (m_ThirdArrowAction != null) m_ThirdArrowAction.Disable();
@@ -120,6 +127,7 @@ namespace DYP
 
             var holdingJump = m_JumpAction != null && m_JumpAction.IsPressed();
             var holdingDash = m_DashAction != null && m_DashAction.IsPressed();
+            var holdingCrouch = m_CrouchAction != null && m_CrouchAction.IsPressed();
 
             var releaseJump = m_JumpAction != null && m_JumpAction.WasReleasedThisFrame();
 
@@ -132,6 +140,8 @@ namespace DYP
             m_Controller.HoldJump(holdingJump);
 
             m_Controller.HoldDash(holdingDash);
+
+            m_Controller.HoldCrouch(holdingCrouch);
 
             m_Controller.ReleaseJump(releaseJump);
 

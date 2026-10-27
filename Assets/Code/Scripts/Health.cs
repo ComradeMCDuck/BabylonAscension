@@ -16,7 +16,6 @@ public class Health : MonoBehaviour, IDamageable
     public float CurrentHealth => currentHealth;
     public float MaxHealth => entityData != null ? entityData.maxHealth : 100f;
 
-    private bool isFlashing = false;
     private Color originalColor;
     private Coroutine damageIndication;
 
@@ -38,6 +37,13 @@ public class Health : MonoBehaviour, IDamageable
     {
         currentHealth = MaxHealth;
         IsDead = false;
+        // Cancel a flash that was interrupted (e.g. by death) so the sprite doesn't respawn tinted red.
+        if (damageIndication != null)
+        {
+            StopCoroutine(damageIndication);
+            damageIndication = null;
+            spriteRenderer.color = originalColor;
+        }
     }
 
     public void TakeDamage(float damage)
@@ -45,7 +51,6 @@ public class Health : MonoBehaviour, IDamageable
         if (IsDead || damage <= 0f) return;
         currentHealth = Mathf.Max(0f, currentHealth - damage);
         Debug.Log($"{gameObject.name} took {damage} damage. Current health: {currentHealth}/{entityData.maxHealth}");
-        if (!isFlashing) StartCoroutine(DamageIndication());
         // Restart instead of stacking flashes (e.g. poison ticks), so the sprite always returns to its real color.
         if (spriteRenderer != null)
         {
@@ -63,8 +68,6 @@ public class Health : MonoBehaviour, IDamageable
 
     public IEnumerator DamageIndication()
     {
-        isFlashing = true;
-        Color originalColor = spriteRenderer.color;
         float flashDuration = 1 / entityData.damageIndicationDuration; // Duration of the flash
 
         while (spriteRenderer.color != Color.red)
@@ -83,6 +86,6 @@ public class Health : MonoBehaviour, IDamageable
                                              Mathf.MoveTowards(spriteRenderer.color.a, originalColor.a, flashDuration * Time.deltaTime));
             yield return null;
         }
-        isFlashing = false;
+        damageIndication = null;
     }
 }
