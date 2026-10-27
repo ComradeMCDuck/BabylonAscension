@@ -81,6 +81,7 @@ public class EnemyBehavior : MonoBehaviour
     private BasicMovementController2D movement;
     private EnemyAttack attack;
     private JumpAttack jumpAttack;
+    private EnemyHealth health;
     private Collider2D selfCollider;
     private Collider2D playerCollider;
     private int sightMask;
@@ -185,6 +186,29 @@ public class EnemyBehavior : MonoBehaviour
 
         if (enemyData == null) Debug.LogError($"{name}: No EntityData assigned to EnemyBehavior.", this);
         if (attack == null) Debug.LogWarning($"{name}: No EnemyAttack component found, the enemy will not attack.", this);
+
+        // Health sits on a child of the enemy.
+        health = GetComponentInChildren<EnemyHealth>();
+        if (health != null) health.Damaged += OnDamaged;
+    }
+
+    private void OnDestroy()
+    {
+        if (health != null) health.Damaged -= OnDamaged;
+    }
+
+    /// <summary>
+    /// Getting hit gives away where the player is: the enemy starts chasing toward them even without seeing them,
+    /// and gives up after loseSightTime like when it loses sight.
+    /// </summary>
+    private void OnDamaged()
+    {
+        if (!enabled || enemyData == null || playerCollider == null) return;
+
+        lastKnownPlayerPosition = playerCollider.bounds.center;
+        lastSeenTime = Time.time;
+
+        if (currentState == EnemyState.Patrol) SetState(EnemyState.Chase);
     }
 
     private void Start()
@@ -325,23 +349,34 @@ public class EnemyBehavior : MonoBehaviour
 
     /// <summary>
     /// Launch velocity for a lunge that peaks at jumpAttackLungeHeight and covers the given distance.
+    /// If that low arc would need more than jumpAttackMaxLungeSpeed, the arc is raised instead (longer air time)
+    /// so the lunge still lands at the given distance.
     /// The lunge is launched as an impulse with no input afterwards, so the controller keeps the momentum in the air
-    /// (slowed only by Recoil Air Deceleration) and stops it on landing.
+    /// (slowed only by Recoil Air Deceleration) and it is stopped on landing.
     /// </summary>
     private Vector2 GetLungeVelocity(float distance, int direction, out float airTime)
     {
         float gravity = Gravity;
+        float deceleration = enemyData.recoilAirDeceleration;
+        float maxSpeedX = Mathf.Max(enemyData.jumpAttackMaxLungeSpeed, 0.01f);
         float speedY = Mathf.Sqrt(2f * gravity * enemyData.jumpAttackLungeHeight);
         airTime = 2f * speedY / gravity;
 
         // Aim slightly faster to make up for the air deceleration.
-        float speedX = (distance + 0.5f * enemyData.recoilAirDeceleration * airTime * airTime) / airTime;
-        speedX = Mathf.Min(speedX, enemyData.jumpAttackMaxLungeSpeed);
+        float speedX = (distance + 0.5f * deceleration * airTime * airTime) / airTime;
 
-        // AddImpulse caps the total speed at Recoil Max Planar Speed; keep the height and give up horizontal speed.
-        float maxPlanar = enemyData.recoilMaxPlanarSpeed;
-        float maxSpeedX = maxPlanar > speedY ? Mathf.Sqrt(maxPlanar * maxPlanar - speedY * speedY) : 0f;
-        speedX = Mathf.Min(speedX, maxSpeedX);
+        if (speedX > maxSpeedX)
+        {
+            // Air time at which the max speed covers the distance: distance = maxSpeedX * t - 0.5 * deceleration * t^2.
+            float discriminant = maxSpeedX * maxSpeedX - 2f * deceleration * distance;
+            if (deceleration <= 0f) airTime = distance / maxSpeedX;
+            else if (discriminant >= 0f) airTime = (maxSpeedX - Mathf.Sqrt(discriminant)) / deceleration;
+            // Out of reach even with the max speed: fly as far as it gets before the deceleration stops it.
+            else airTime = maxSpeedX / deceleration;
+
+            speedX = maxSpeedX;
+            speedY = 0.5f * gravity * airTime;
+        }
 
         return new Vector2(direction * speedX, speedY);
     }
@@ -368,7 +403,8 @@ public class EnemyBehavior : MonoBehaviour
                 return;
             }
 
-            movement.AddImpulse(lungeVelocity);
+            // The lunge is aimed at an exact landing spot, so it ignores the recoil speed cap meant for bow recoil.
+            movement.AddImpulse(lungeVelocity, true);
             nextJumpTime = Time.time + enemyData.jumpCooldown;
             leapStarted = true;
             leapStartTime = Time.time;
@@ -385,7 +421,11 @@ public class EnemyBehavior : MonoBehaviour
         bool neverTookOff = !leapLeftGround && Time.time - leapStartTime > LeapTakeoffTimeout;
 
         if (landed || neverTookOff || Time.time >= jumpAttackGiveUpTime)
+        {
+            // Stop where the lunge lands instead of sliding on, so jumpAttackOvershoot is where the enemy ends up.
+            if (landed) movement.StopHorizontalMomentum();
             jumpAttack.End(enemyData);
+        }
     }
 
     private void SetState(EnemyState newState)

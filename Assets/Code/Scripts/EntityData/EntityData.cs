@@ -69,11 +69,11 @@ public class EntityData : ScriptableObject
     [Min(0f)] public float jumpAttackCooldown = 6f;
     [Tooltip("Max horizontal distance to the player at which the enemy starts a jump attack.")]
     [Min(0f)] public float jumpAttackRange = 4f;
-    [Tooltip("How far past the player the enemy aims to land.")]
+    [Tooltip("How far past the player's center the enemy lands (and stops).")]
     [Min(0f)] public float jumpAttackOvershoot = 1.5f;
-    [Tooltip("Peak height of the lunge, separate from the normal jump height. Lower = flatter and faster lunge.")]
+    [Tooltip("Lowest peak height of the lunge, separate from the normal jump height. Lower = flatter and faster lunge. Raised automatically when the lunge would need more than Max Lunge Speed.")]
     [Min(0.05f)] public float jumpAttackLungeHeight = 0.8f;
-    [Tooltip("Fastest horizontal lunge speed. Far lunges that would need more land short. Also capped by Recoil Max Planar Speed.")]
+    [Tooltip("Fastest horizontal lunge speed. Far lunges that would need more use a higher arc instead. Not limited by Recoil Max Planar Speed.")]
     [Min(0f)] public float jumpAttackMaxLungeSpeed = 16f;
     [Tooltip("Crouch time before the leap. Gives the player time to react.")]
     [Min(0f)] public float jumpAttackWindup = 0.3f;

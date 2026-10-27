@@ -29,7 +29,7 @@ MonoBehaviour:
   attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
   patrolSpeedMultiplier: 0.35
   patrolWaitTime: 1
-  loseSightTime: 1.5
+  loseSightTime: 3
   canJump: 1
   jumpCheckDistance: 1
   jumpCooldown: 0.25
@@ -40,12 +40,12 @@ MonoBehaviour:
   slashOriginOffset: {x: 0.2, y: 0}
   slashArcAngle: 140
   slashDuration: 0.25
-  jumpAttackDamage: 30
+  jumpAttackDamage: 20
   jumpAttackCooldown: 6
   jumpAttackRange: 4
-  jumpAttackOvershoot: 1.5
+  jumpAttackOvershoot: 6
   jumpAttackLungeHeight: 0.8
-  jumpAttackMaxLungeSpeed: 16
+  jumpAttackMaxLungeSpeed: 24
   jumpAttackWindup: 0.3
   jumpAttackMaxHeightDifference: 1.5
   fallMultiplier: 2

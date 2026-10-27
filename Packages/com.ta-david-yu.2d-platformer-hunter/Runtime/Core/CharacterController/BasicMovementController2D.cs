@@ -547,8 +547,9 @@ namespace DYP
         /// Instantly adds velocity to the character (e.g. bow recoil, knockback).
         /// Horizontal momentum then decays using the Recoil settings instead of
         /// snapping back to the input speed.
+        /// ignoreSpeedCap skips the Recoil Max Planar Speed limit (e.g. an enemy lunge that has to reach a set distance).
         /// </summary>
-        public void AddImpulse(Vector2 impulse)
+        public void AddImpulse(Vector2 impulse, bool ignoreSpeedCap = false)
         {
             if (IsState(MotorState.OnLadder) || IsState(MotorState.Frozen))
             {
@@ -562,7 +563,7 @@ namespace DYP
 
             Vector2 planarVelocity = new Vector2(m_Velocity.x, m_Velocity.y) + impulse;
 
-            if (planarVelocity.magnitude > m_Recoil.MaxPlanarSpeed)
+            if (!ignoreSpeedCap && planarVelocity.magnitude > m_Recoil.MaxPlanarSpeed)
             {
                 planarVelocity = planarVelocity.normalized * m_Recoil.MaxPlanarSpeed;
             }
@@ -580,6 +581,16 @@ namespace DYP
             {
                 m_Recoil.VerticalActive = true;
             }
+        }
+
+        /// <summary>
+        /// Instantly stops horizontal movement and ends horizontal recoil momentum (e.g. landing from a lunge without sliding).
+        /// </summary>
+        public void StopHorizontalMomentum()
+        {
+            m_Velocity.x = 0.0f;
+            m_VelocityXSmoothing = 0;
+            m_Recoil.HorizontalActive = false;
         }
 
         /// <summary>

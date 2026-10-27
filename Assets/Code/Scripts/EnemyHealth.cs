@@ -1,4 +1,4 @@
-
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -12,6 +12,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     [SerializeField] private float currentHealth;
 
     private bool isDead;
+    public event Action Damaged;
     private Color originalColor;
     private Coroutine damageIndication;
 
@@ -60,6 +61,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
                 StopCoroutine(damageIndication);
             damageIndication = StartCoroutine(DamageIndication());
         }
+
+        Damaged?.Invoke();
 
         Debug.Log(
             $"{name} took {damage} damage. " +
