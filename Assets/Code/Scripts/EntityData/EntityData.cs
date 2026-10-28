@@ -80,6 +80,23 @@ public class EntityData : ScriptableObject
     [Tooltip("The player can be at most this much higher or lower than the enemy for it to jump attack.")]
     [Min(0f)] public float jumpAttackMaxHeightDifference = 1.5f;
 
+    [Header("Charge Attack (enemies with a ChargeAttack component)")]
+    public float chargeDamage = 40f;
+    [Tooltip("Seconds after a charge ends before the next one. The basic attack is used in the meantime.")]
+    [Min(0f)] public float chargeCooldown = 8f;
+    [Tooltip("Max horizontal distance to the player at which the enemy starts a charge.")]
+    [Min(0f)] public float chargeRange = 7f;
+    [Tooltip("The player can be at most this much higher or lower than the enemy for it to charge.")]
+    [Min(0f)] public float chargeMaxHeightDifference = 1f;
+    [Tooltip("Time the enemy stands still facing the player before running. Gives the player time to react.")]
+    [Min(0f)] public float chargeWindup = 0.6f;
+    [Tooltip("Running speed during the charge. Independent of the normal movement speed.")]
+    [Min(0.01f)] public float chargeSpeed = 14f;
+    [Tooltip("The charge stops (without a stun) after running this far, or earlier at a ledge.")]
+    [Min(0f)] public float chargeDistance = 12f;
+    [Tooltip("Seconds the enemy is stunned (can't move or attack) after charging into a wall.")]
+    [Min(0f)] public float chargeStunDuration = 3f;
+
     [Header("Gravity")]
     public float fallMultiplier = 2f; // > 1 = faster fall, < 1 = slower fall
     public float riseMultiplier = 1f; // applies while moving upward
