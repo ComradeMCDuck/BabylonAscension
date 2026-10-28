@@ -51,7 +51,7 @@ MonoBehaviour:
   fallMultiplier: 3
   riseMultiplier: 3
   maxFallSpeed: 30
-  speed: 8
+  speed: 10
   accelerationTimeAirborne: 0.1
   accelerationTimeGrounded: 0.1
   snapToRestrictedArea: 0

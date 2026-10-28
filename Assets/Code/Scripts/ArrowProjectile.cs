@@ -231,6 +231,10 @@ public class ArrowProjectile : MonoBehaviour
             if (IsOwner(col))
                 continue;
 
+            // Walls shield targets behind them.
+            if (IsBlockedFromExplosion(center, col))
+                continue;
+
             float distance = Vector2.Distance(center, col.ClosestPoint(center));
             Transform character = GetCharacter(col);
 
@@ -265,6 +269,16 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// True if environment is in the way of both the collider's closest point and its center,
+    /// so a target peeking out from behind cover still gets hit.
+    /// </summary>
+    private bool IsBlockedFromExplosion(Vector2 center, Collider2D col)
+    {
+        return Physics2D.Linecast(center, col.ClosestPoint(center), environmentLayers).collider != null
+            && Physics2D.Linecast(center, col.bounds.center, environmentLayers).collider != null;
     }
 
     /// <summary>
@@ -332,8 +346,9 @@ public class ArrowProjectile : MonoBehaviour
     {
         if (remainingBounces <= 0)
         {
+            // Explode just off the surface, so the wall check doesn't start inside the wall that was hit.
             if (IsExplosive)
-                Explode(hit.centroid);
+                Explode(hit.centroid + hit.normal * BounceSkin);
             else
                 Destroy(gameObject);
             return;
