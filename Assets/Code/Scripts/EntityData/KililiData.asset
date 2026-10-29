@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdb76347b8be099498ed2c252b74ae42, type: 3}
+  m_Name: KililiData
+  m_EditorClassIdentifier: Assembly-CSharp::EntityData
+  entityID: 2
+  maxHealth: 50
+  damageIndicationDuration: 0.2
+  detectionRange: 15
+  moveSpeed: 4
+  jumpSpeed: 1
+  dashSpeed: 10
+  dashDuration: 0.2
+  nextDashCooldown: 1
+  lockZAxis: 1
+  attackDamage: 20
+  attackRange: 10
+  attackCooldown: 2
+  attackSpeed: 18
+  attackEffectPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
+  patrolSpeedMultiplier: 0.5
+  patrolWaitTime: 1.5
+  loseSightTime: 2
+  canJump: 1
+  jumpCheckDistance: 1
+  jumpCooldown: 0.5
+  attackWindup: 0.3
+  projectileGravity: 2.5
+  projectileLifetime: 5
+  slashOriginOffset: {x: 0.2, y: 0.3}
+  slashArcAngle: 140
+  slashDuration: 0.25
+  jumpAttackDamage: 30
+  jumpAttackCooldown: 6
+  jumpAttackRange: 4
+  jumpAttackOvershoot: 1.5
+  jumpAttackLungeHeight: 0.8
+  jumpAttackMaxLungeSpeed: 16
+  jumpAttackWindup: 0.3
+  jumpAttackMaxHeightDifference: 1.5
+  chargeDamage: 40
+  chargeCooldown: 8
+  chargeRange: 7
+  chargeMaxHeightDifference: 1
+  chargeWindup: 0.6
+  chargeSpeed: 14
+  chargeDistance: 12
+  chargeStunDuration: 3
+  fallMultiplier: 2
+  riseMultiplier: 1
+  maxFallSpeed: 20
+  speed: 4
+  accelerationTimeAirborne: 0.1
+  accelerationTimeGrounded: 0.1
+  snapToRestrictedArea: 0
+  exitLadderOnGround: 1
+  onLadderSpeed: 4
+  lockFacingToRight: 1
+  hasVariableJumpHeight: 1
+  airJumpAllowed: 1
+  maxJumpHeight: 3.5
+  minJumpHeight: 1
+  timeToApex: 0.4
+  onLadderJumpForce: 0.4
+  fallingJumpPaddingTime: 0.09
+  willJumpPaddingTime: 0.15
+  canWallSlide: 0
+  wallStickTime: 0.15
+  wallSlideSpeedLoss: 0.05
+  wallSlidingSpeedMax: 2
+  canWallClimb: 0
+  wallClimbSpeed: 2
+  canWallJump: 0
+  wallClimbForce: {x: 12, y: 16}
+  wallOffForce: {x: 8, y: 15}
+  wallLeapForce: {x: 18, y: 17}
+  canGrabLedge: 0
+  ledgeDetectionOffset: 0.1
+  recoilGroundAcceleration: 60
+  recoilGroundDeceleration: 70
+  recoilAirAcceleration: 25
+  recoilAirDeceleration: 2
+  recoilMaxPlanarSpeed: 18
+  cancelFallingOnUpwardImpulse: 1
+  knockbackStunTime: 0.3
+  knockbackLift: 4

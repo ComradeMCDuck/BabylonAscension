@@ -95,6 +95,25 @@ public class EntityData : ScriptableObject
     [Tooltip("Seconds the enemy is stunned (can't move or attack) after charging into a wall.")]
     [Min(0f)] public float chargeStunDuration = 3f;
 
+    [Header("Flight (enemies with an EnemyFlight component)")]
+    [Tooltip("Top flying speed.")]
+    [Min(0.01f)] public float flySpeed = 6f;
+    [Tooltip("How quickly the flying speed changes. Lower = floatier, swings wider around corners.")]
+    [Min(0.01f)] public float flyAcceleration = 20f;
+    [Tooltip("Distance to the player the enemy tries to keep while flying around them. Keep it below attackRange.")]
+    [Min(0f)] public float flyPreferredDistance = 6f;
+    [Tooltip("Closest the enemy hovers to the player when walls leave no room at the preferred distance.")]
+    [Min(0f)] public float flyMinDistance = 3f;
+    [Tooltip("The enemy circles over the player between these angles (degrees, 0 = right of the player, 90 = straight above, 180 = left).")]
+    [Range(-90f, 270f)] public float flyMinAngle = 30f;
+    [Range(-90f, 270f)] public float flyMaxAngle = 150f;
+    [Tooltip("How fast (degrees per second) the enemy circles over the player.")]
+    [Min(0f)] public float flyOrbitSpeed = 20f;
+    [Tooltip("Height of the up and down wing-flap motion.")]
+    [Min(0f)] public float flyBobAmplitude = 0.25f;
+    [Tooltip("Wing flaps per second.")]
+    [Min(0f)] public float flyBobFrequency = 2f;
+
     [Header("Gravity")]
     public float fallMultiplier = 2f; // > 1 = faster fall, < 1 = slower fall
     public float riseMultiplier = 1f; // applies while moving upward

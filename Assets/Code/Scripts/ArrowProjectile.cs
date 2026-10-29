@@ -290,16 +290,10 @@ public class ArrowProjectile : MonoBehaviour
 
             if (explosionKnockback > 0f)
             {
-                BasicMovementController2D targetMovement =
-                    col.GetComponentInParent<BasicMovementController2D>();
+                Vector2 away = (Vector2)pair.Key.position - center;
+                Vector2 pushDirection = away.sqrMagnitude > 0.0001f ? away.normalized : direction;
 
-                if (targetMovement != null)
-                {
-                    Vector2 away = (Vector2)pair.Key.position - center;
-                    Vector2 pushDirection = away.sqrMagnitude > 0.0001f ? away.normalized : direction;
-
-                    targetMovement.ApplyKnockback(pushDirection * explosionKnockback);
-                }
+                ApplyKnockback(col, pushDirection * explosionKnockback);
             }
         }
 
@@ -336,15 +330,8 @@ public class ArrowProjectile : MonoBehaviour
         if (target != null)
             target.TakeDamage(damage);
 
-        // Characters move with the same 2D controller as the player, so knockback goes through it.
         if (knockback > 0f)
-        {
-            BasicMovementController2D targetMovement =
-                other.GetComponentInParent<BasicMovementController2D>();
-
-            if (targetMovement != null)
-                targetMovement.ApplyKnockback(direction * knockback);
-        }
+            ApplyKnockback(other, direction * knockback);
 
         // Damage over time; the ticks only deal damage, the knockback above happens once on the hit.
         if (target != null && arrowData != null && arrowData.IsPoisonous)
@@ -361,6 +348,24 @@ public class ArrowProjectile : MonoBehaviour
         launched = false;
         Destroy(gameObject);
         return true;
+    }
+
+    /// <summary>
+    /// Characters move with the same 2D controller as the player, so knockback normally goes through it.
+    /// A flying enemy has that controller switched off, so its flight takes the push instead.
+    /// </summary>
+    private static void ApplyKnockback(Collider2D target, Vector2 impulse)
+    {
+        EnemyFlight flight = target.GetComponentInParent<EnemyFlight>();
+        if (flight != null && flight.IsFlying)
+        {
+            flight.ApplyKnockback(impulse);
+            return;
+        }
+
+        BasicMovementController2D targetMovement = target.GetComponentInParent<BasicMovementController2D>();
+        if (targetMovement != null)
+            targetMovement.ApplyKnockback(impulse);
     }
 
     private bool IsOwner(Collider2D other)
