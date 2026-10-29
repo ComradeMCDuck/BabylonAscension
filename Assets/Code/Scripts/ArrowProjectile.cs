@@ -3,10 +3,11 @@ using DYP;
 using UnityEngine;
 
 /// <summary>
-/// 2D projectile shared by the player's bow and ranged/melee enemies (just a sprite, no Rigidbody or Collider needed).
+/// 2D projectile shared by the player's bow and ranged enemies (just a sprite, no Rigidbody or Collider needed).
 /// It moves itself and sweeps a circle along its path every physics step, so it can't tunnel
 /// through thin colliders and also hits kinematic Rigidbody2Ds, which kinematic-vs-kinematic trigger callbacks would miss.
-/// The player launches it with a charge and its ArrowData; enemies launch it with their EntityData.
+/// Gravity pulls it into an arc. The player launches it with a charge and its ArrowData (gravity scales with the charge);
+/// enemies launch it with their EntityData and aim higher to make up for the drop.
 /// </summary>
 public class ArrowProjectile : MonoBehaviour
 {
@@ -35,13 +36,13 @@ public class ArrowProjectile : MonoBehaviour
 
     private Vector2 direction;
     private float speed;
+    private float gravity;
     private float damage;
     private float knockback;
     private int remainingBounces;
     private int remainingPenetrations;
     // Characters already hit by this projectile, so a penetrating shot can't hit the same one twice.
     private readonly HashSet<Transform> hitCharacters = new HashSet<Transform>();
-    private float remainingRange = float.PositiveInfinity;
     private GameObject owner;
     private LayerMask activeHitLayers;
     private bool launched;
@@ -72,7 +73,7 @@ public class ArrowProjectile : MonoBehaviour
     }
 
     /// <summary>
-    /// Bow shot: damage, speed and knockback scale with the charge (0..1) between ArrowData's min and max.
+    /// Bow shot: damage, speed, knockback and gravity scale with the charge (0..1) between ArrowData's min and max.
     /// </summary>
     public void Launch(
         Vector3 direction,
@@ -89,33 +90,56 @@ public class ArrowProjectile : MonoBehaviour
         damage = Mathf.Lerp(arrowData.minDamage, arrowData.maxDamage, charge);
         speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed, charge);
         knockback = Mathf.Lerp(arrowData.minKnockback, arrowData.maxKnockback, charge);
+        gravity = Mathf.Lerp(arrowData.minChargeGravity, arrowData.maxChargeGravity, charge);
 
         // Copy the count so the shared ArrowData asset is never modified.
         remainingBounces = Mathf.Max(0, arrowData.bounces);
         remainingPenetrations = Mathf.Max(0, arrowData.penetrations);
-        remainingRange = float.PositiveInfinity;
         activeHitLayers = hitLayers;
 
         Begin(direction, shooter, lifetime);
     }
 
     /// <summary>
-    /// Enemy shot toward a target position, using the enemy's attack stats.
-    /// Unless projectileKeepsFlying is set, it disappears after projectileRange (that's how melee enemies use it).
+    /// Enemy shot at a target position, using the enemy's attack stats. The speed is fixed, so the enemy
+    /// aims higher to make up for projectileGravity.
     /// </summary>
     public void Launch(Vector2 targetPosition, EntityData data, GameObject shooter)
     {
         damage = data.attackDamage;
         speed = data.attackSpeed;
+        gravity = data.projectileGravity;
         knockback = 0f;
         remainingBounces = arrowData != null ? Mathf.Max(0, arrowData.bounces) : 0;
         remainingPenetrations = arrowData != null ? Mathf.Max(0, arrowData.penetrations) : 0;
-        remainingRange = data.projectileKeepsFlying ? float.PositiveInfinity : data.projectileRange;
         activeHitLayers = enemyShotHitLayers;
 
         // Direction is fixed once, at launch.
-        Vector2 toTarget = targetPosition - (Vector2)transform.position;
-        Begin(toTarget.sqrMagnitude > 0.0001f ? toTarget : Vector2.right, shooter, data.projectileLifetime);
+        Begin(GetAimDirection(targetPosition - (Vector2)transform.position), shooter, data.projectileLifetime);
+    }
+
+    /// <summary>
+    /// Launch direction that makes the arc pass through the target offset, using the flatter of the two angles that do.
+    /// Out of reach, it shoots at 45 degrees (the farthest-reaching angle) toward the target, so the arrow lands short.
+    /// </summary>
+    private Vector2 GetAimDirection(Vector2 toTarget)
+    {
+        if (toTarget.sqrMagnitude < 0.0001f) return Vector2.right;
+
+        float dx = Mathf.Abs(toTarget.x);
+        float dy = toTarget.y;
+        float side = toTarget.x < 0f ? -1f : 1f;
+
+        // No drop, or straight up/down: aim right at it.
+        if (gravity <= 0f || speed <= 0f || dx < 0.0001f) return toTarget;
+
+        // Projectile motion: tan(angle) = (v^2 - sqrt(v^4 - g(g dx^2 + 2 dy v^2))) / (g dx). The minus sign is the flat shot.
+        float v2 = speed * speed;
+        float discriminant = v2 * v2 - gravity * (gravity * dx * dx + 2f * dy * v2);
+        if (discriminant < 0f) return new Vector2(side, 1f);
+
+        float tanAngle = (v2 - Mathf.Sqrt(discriminant)) / (gravity * dx);
+        return new Vector2(side, tanAngle);
     }
 
     private void Begin(Vector2 launchDirection, GameObject shooter, float lifeSeconds)
@@ -136,8 +160,11 @@ public class ArrowProjectile : MonoBehaviour
         if (!launched)
             return;
 
+        // Half the step's gravity before moving and half after, so the flight follows the exact arc enemies aim with.
+        ApplyGravity(Time.fixedDeltaTime * 0.5f);
+
         Vector2 position = transform.position;
-        float step = Mathf.Min(speed * Time.fixedDeltaTime, remainingRange);
+        float step = speed * Time.fixedDeltaTime;
 
         // Collect everything along this step (not just the first hit), so a penetrating
         // shot can pass through several targets and still find the wall behind them.
@@ -169,9 +196,17 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         MoveTo(position + direction * step);
+        ApplyGravity(Time.fixedDeltaTime * 0.5f);
+    }
 
-        remainingRange -= step;
-        if (remainingRange <= 0f) Destroy(gameObject);
+    private void ApplyGravity(float time)
+    {
+        if (gravity <= 0f) return;
+
+        Vector2 velocity = direction * speed + Vector2.down * (gravity * time);
+        speed = velocity.magnitude;
+        if (speed > 0.0001f) direction = velocity / speed;
+        if (alignToDirection) transform.right = direction;
     }
 
     // The character a collider belongs to: everything under the Rigidbody2D the collider is attached to.
@@ -355,9 +390,6 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         remainingBounces--;
-
-        // Range already travelled up to the surface.
-        remainingRange -= hit.distance;
 
         // Mirror the direction around the surface normal, like a pool ball:
         // Example: hitting the ground at 30 degrees leaves it at 150 degrees.

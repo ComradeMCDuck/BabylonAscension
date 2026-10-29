@@ -240,23 +240,25 @@ namespace DYP
         private InputBuffer m_InputBuffer = new InputBuffer();
 
         [Header("Settings")]
-        [Tooltip("Optional. When assigned, Movement, On Ladder, Jump, Wall Interaction and Recoil settings are taken from this asset.")]
+        [Tooltip("Movement, On Ladder, Jump, Wall Interaction and Recoil settings are taken from this asset.")]
         [SerializeField]
         private EntityData m_EntityData;
 
-        [SerializeField]
+        // Copies of the EntityData settings, filled in by applyEntityData(). Hidden because they are edited on the EntityData asset;
+        // still serialized so a controller without an EntityData keeps its values.
+        [SerializeField, HideInInspector]
         private MovementSettings m_MovementSettings;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private OnLadderSettings m_OnLadderSettings;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private Jump m_Jump;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private WallInteraction m_WallInteraction;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private Recoil m_Recoil = new Recoil();
 
         [System.Serializable]

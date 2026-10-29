@@ -1,9 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Attack that spawns EntityData.attackEffectPrefab (a 2D ArrowProjectile) toward the target.
-/// Used by both melee enemies (short attackRange, projectile stops at the range)
-/// and shooters (long attackRange, projectileKeepsFlying).
+/// Attack that spawns EntityData.attackEffectPrefab (a 2D ArrowProjectile) aimed at the target. Used by shooters;
+/// the projectile arcs under EntityData.projectileGravity and the launch angle makes up for the drop.
 /// </summary>
 public class ProjectileAttack : EnemyAttack
 {

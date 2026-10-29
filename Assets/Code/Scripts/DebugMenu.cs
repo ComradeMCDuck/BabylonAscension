@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -18,6 +19,15 @@ public class DebugMenu : MonoBehaviour
     {
         public InputField Field;
         public Func<string> Read;
+    }
+
+    /// <summary>A copy of an enemy as it was when the level started, and the enemy currently spawned from it.</summary>
+    private class EnemySpawn
+    {
+        public GameObject Template;
+        public Transform Parent;
+        public string Name;
+        public GameObject Instance;
     }
 
     [Header("References")]
@@ -41,6 +51,9 @@ public class DebugMenu : MonoBehaviour
     private RectTransform content;
     private readonly List<InputField> fields = new List<InputField>();
     private readonly List<Binding> bindings = new List<Binding>();
+    private readonly List<EnemySpawn> enemySpawns = new List<EnemySpawn>();
+    // Inactive parent of the enemy templates, so the copies never run (Awake, Start, FixedUpdate...).
+    private Transform enemyTemplateRoot;
 
     private void Awake()
     {
@@ -60,6 +73,12 @@ public class DebugMenu : MonoBehaviour
         {
             RefreshFields();
         }
+    }
+
+    private void Start()
+    {
+        // In Start, so every enemy in the level has finished Awake and is still where it was placed.
+        SnapshotEnemies();
     }
 
     private void Update()
@@ -82,6 +101,9 @@ public class DebugMenu : MonoBehaviour
     /// </summary>
     private void BuildMenu()
     {
+        AddSection("Level");
+        AddButton("Respawn Killed Enemies", RespawnKilledEnemies);
+
         AddSection("Player Data");
 
         if (playerData == null)
@@ -143,6 +165,82 @@ public class DebugMenu : MonoBehaviour
         AddSection("Knockback");
         AddFloatRow("Stun Time", () => d.knockbackStunTime, v => d.knockbackStunTime = v, 0f, 10f);
         AddFloatRow("Lift", () => d.knockbackLift, v => d.knockbackLift = v);
+    }
+
+    /// <summary>
+    /// Stores an inactive copy of every enemy in the level, so killed ones can be recreated later.
+    /// </summary>
+    private void SnapshotEnemies()
+    {
+        GameObject root = new GameObject("DebugMenu_EnemyTemplates");
+        root.SetActive(false);
+        enemyTemplateRoot = root.transform;
+
+        foreach (EnemyBehavior enemy in FindObjectsByType<EnemyBehavior>(FindObjectsSortMode.None))
+        {
+            GameObject original = enemy.gameObject;
+
+            enemySpawns.Add(new EnemySpawn
+            {
+                // Keeps the original's local position, rotation and scale, and its references to scene objects (e.g. patrol points).
+                Template = Instantiate(original, enemyTemplateRoot, false),
+                Parent = original.transform.parent,
+                Name = original.name,
+                Instance = original
+            });
+        }
+    }
+
+    /// <summary>
+    /// Recreates every enemy that was killed, at its starting position with full health.
+    /// Enemies that are still alive are left as they are.
+    /// </summary>
+    private void RespawnKilledEnemies()
+    {
+        int respawned = 0;
+
+        foreach (EnemySpawn spawn in enemySpawns)
+        {
+            // Destroyed objects compare equal to null in Unity.
+            if (spawn.Instance != null) continue;
+
+            spawn.Instance = Instantiate(spawn.Template, spawn.Parent, false);
+            spawn.Instance.name = spawn.Name;
+            respawned++;
+        }
+
+        Debug.Log("Debug menu: respawned " + respawned + " killed enem" + (respawned == 1 ? "y" : "ies") + ".");
+    }
+
+    private void OnDestroy()
+    {
+        if (enemyTemplateRoot != null) Destroy(enemyTemplateRoot.gameObject);
+    }
+
+    /// <summary>
+    /// Adds a full-width button to the menu.
+    /// </summary>
+    public void AddButton(string label, Action onClick)
+    {
+        GameObject buttonObject = new GameObject("Button_" + label, typeof(RectTransform));
+        buttonObject.transform.SetParent(content, false);
+        buttonObject.AddComponent<LayoutElement>().preferredHeight = rowHeight;
+
+        Image background = buttonObject.AddComponent<Image>();
+        background.color = fieldColor;
+
+        Button button = buttonObject.AddComponent<Button>();
+        button.targetGraphic = background;
+        button.onClick.AddListener(() =>
+        {
+            // Deselect, otherwise the UI's submit key (e.g. Space for jumping) would press the button again.
+            if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
+            onClick();
+        });
+
+        Text text = CreateText("Text", buttonObject.transform, label, labelColor);
+        text.alignment = TextAnchor.MiddleCenter;
+        Stretch(text.rectTransform, 6f, 0f);
     }
 
     /// <summary>

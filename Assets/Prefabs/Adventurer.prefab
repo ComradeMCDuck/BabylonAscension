@@ -66,8 +66,10 @@ MonoBehaviour:
   - {fileID: 1047152348, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
   - {fileID: 1950325863, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
   maxChargeTime: 1.2
+  minDrawTime: 0.35
   spawnOffset: 0.15
   fireCooldown: 0.1
+  groundedRecoilMultiplier: 0.45
 --- !u!1 &1705944809059051592
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,8 +174,8 @@ SpriteRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7651568361535852871}
   m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
@@ -189,7 +191,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: b18d0f7200353cc49992e13f1ac325d7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -555,6 +557,11 @@ MonoBehaviour:
     KnockbackStunTimer: 0
     HorizontalActive: 0
     VerticalActive: 0
+  m_Crouch:
+    SpeedMultiplier: 0.35
+    SlideStartSpeed: 9
+    SlideEndSpeed: 3
+    SlideFriction: 5
   m_Dash:
     Module: {fileID: 11400000, guid: 5e87a1b7bfec1074c96e231912817d18, type: 2}
     WillDashPaddingTime: 0.15
@@ -598,10 +605,12 @@ MonoBehaviour:
   moveActionReference: {fileID: 0}
   jumpActionReference: {fileID: 0}
   dashActionReference: {fileID: 0}
+  crouchActionReference: {fileID: 0}
   firstArrowActionReference: {fileID: 0}
   secondArrowActionReference: {fileID: 0}
   thirdArrowActionReference: {fileID: 0}
   fourthArrowActionReference: {fileID: 0}
+  fifthArrowActionReference: {fileID: 0}
 --- !u!114 &6391775073961633728
 MonoBehaviour:
   m_ObjectHideFlags: 0

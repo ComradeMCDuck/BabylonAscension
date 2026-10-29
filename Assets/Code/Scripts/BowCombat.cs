@@ -25,6 +25,8 @@ public class BowCombat : MonoBehaviour
     [Header("Charge")]
     [Tooltip("Seconds of holding needed to reach full charge.")]
     [SerializeField] private float maxChargeTime = 1.2f;
+    [Tooltip("Seconds the bow must be drawn before releasing fires an arrow. Releasing earlier cancels the shot, so spam-clicking doesn't fire.")]
+    [SerializeField, Min(0f)] private float minDrawTime = 0.25f;
 
     [Header("Arrow Spawn")]
     [SerializeField] private float spawnOffset = 0.15f;
@@ -32,6 +34,8 @@ public class BowCombat : MonoBehaviour
 
     [Header("Firing")]
     [SerializeField] private float fireCooldown = 0.15f;
+    [Tooltip("Fraction of the arrow's recoil applied while standing on the ground. 1 = same as in the air.")]
+    [SerializeField, Range(0f, 1f)] private float groundedRecoilMultiplier = 0.8f;
 
     private float nextShotTime;
 
@@ -176,6 +180,14 @@ public class BowCombat : MonoBehaviour
         float charge = Charge01;
         isCharging = false;
 
+        // Released too early: cancel the shot instead of firing a weak arrow.
+        if (chargeTimer < minDrawTime)
+        {
+            chargeTimer = 0f;
+            SetBowFrame(0);
+            return;
+        }
+
         if (arrowPrefab == null ||
             selectedArrowIndex < 0 ||
             selectedArrowIndex >= arrowPrefab.Length ||
@@ -231,9 +243,12 @@ public class BowCombat : MonoBehaviour
             shooter
         );
 
-        // Push the player opposite the shot direction only while airborne.
-        if (movementController != null && !movementController.IsOnGround() && !movementController.IsSliding)
+        // Push the player opposite the shot direction; weaker while grounded, none while sliding.
+        if (movementController != null && !movementController.IsSliding)
         {
+            if (movementController.IsOnGround())
+                recoil *= groundedRecoilMultiplier;
+
             movementController.AddImpulse(-(Vector2)direction * recoil);
         }
     }

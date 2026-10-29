@@ -49,10 +49,8 @@ public class EntityData : ScriptableObject
     [Min(0f)] public float jumpCooldown = 0.5f;
     [Tooltip("Delay between starting an attack and the projectile spawning (or the slash starting). Gives the player time to react.")]
     [Min(0f)] public float attackWindup = 0.2f;
-    [Tooltip("How far the projectile travels from where it spawns before it is destroyed. Ignored when projectileKeepsFlying is on.")]
-    [Min(0f)] public float projectileRange = 2f;
-    [Tooltip("If true, the projectile keeps flying past projectileRange until it hits something (shooters). If false, it stops at projectileRange (melee).")]
-    public bool projectileKeepsFlying = false;
+    [Tooltip("Downward acceleration of the enemy's projectile. The speed (attackSpeed) is fixed, so the enemy aims higher to make up for it. 0 = flies straight.")]
+    [Min(0f)] public float projectileGravity = 10f;
     [Min(0.1f)] public float projectileLifetime = 5f;
 
     [Header("Slash Attack (enemies with a SlashAttack component)")]

@@ -7,6 +7,10 @@ public class ArrowData : ScriptableObject
     [SerializeField] public float maxDamage = 30f;
     [SerializeField] public float minArrowSpeed = 12f;
     [SerializeField] public float maxArrowSpeed = 24f;
+    [Tooltip("Downward acceleration of the arrow at no charge. Higher = drops faster. 0 = flies straight.")]
+    [Min(0f)] public float minChargeGravity = 20f;
+    [Tooltip("Downward acceleration of the arrow at full charge. Lower than the no-charge value makes charged shots fly flatter.")]
+    [Min(0f)] public float maxChargeGravity = 5f;
     [SerializeField] public float minKnockback = 2f;
     [SerializeField] public float maxKnockback = 12f;
     [Tooltip("Velocity added to the shooter opposite the shot at no charge. Capped by the shooter's Recoil Max Planar Speed.")]
