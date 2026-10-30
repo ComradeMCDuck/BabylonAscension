@@ -43,18 +43,21 @@ public class BowCombat : MonoBehaviour
     private float chargeTimer;
     private bool isCharging;
     private GameObject currentArrowPrefab;
+    private readonly BowUpgrades upgrades = new BowUpgrades();
 
     /// <summary>Raised with the new arrow prefab whenever the fired arrow changes.</summary>
     public event Action<GameObject> ArrowChanged;
 
     public bool IsCharging => isCharging;
     public GameObject CurrentArrowPrefab => currentArrowPrefab;
-    /// <summary>True once the player has picked an arrow other than the basic one.</summary>
-    public bool HasPickedArrow => currentArrowPrefab != null && currentArrowPrefab != basicArrowPrefab;
+    /// <summary>Permanent upgrades picked at altars. Recreated with the bow, so they reset on death.</summary>
+    public BowUpgrades Upgrades => upgrades;
+    /// <summary>Max Charge Time with upgrades applied.</summary>
+    public float MaxChargeTime => Mathf.Max(0f, upgrades.Apply(BowStat.MaxChargeTime, maxChargeTime));
     public float Charge01 =>
-        maxChargeTime <= 0f
+        MaxChargeTime <= 0f
             ? 1f
-            : Mathf.Clamp01(chargeTimer / maxChargeTime);
+            : Mathf.Clamp01(chargeTimer / MaxChargeTime);
 
     private void Awake()
     {
@@ -115,7 +118,7 @@ public class BowCombat : MonoBehaviour
         if (isCharging && Mouse.current.leftButton.isPressed)
         {
             chargeTimer += Time.deltaTime;
-            chargeTimer = Mathf.Min(chargeTimer, maxChargeTime);
+            chargeTimer = Mathf.Min(chargeTimer, MaxChargeTime);
             UpdateBowAnimation();
         }
 
@@ -234,7 +237,8 @@ public class BowCombat : MonoBehaviour
         arrow.Launch(
             direction,
             charge,
-            shooter
+            shooter,
+            upgrades.Apply(BowStat.FullChargeArrowSpeed, 1f)
         );
 
         // Push the player opposite the shot direction; weaker while grounded, none while sliding.

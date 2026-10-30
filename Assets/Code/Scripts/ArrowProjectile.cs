@@ -74,11 +74,13 @@ public class ArrowProjectile : MonoBehaviour
 
     /// <summary>
     /// Bow shot: damage, speed, knockback and gravity scale with the charge (0..1) between ArrowData's min and max.
+    /// maxSpeedMultiplier scales ArrowData's max speed (bow upgrades), so a full charge gets the whole bonus.
     /// </summary>
     public void Launch(
         Vector3 direction,
         float charge,
-        GameObject shooter)
+        GameObject shooter,
+        float maxSpeedMultiplier = 1f)
     {
         if (arrowData == null)
         {
@@ -88,7 +90,7 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         damage = Mathf.Lerp(arrowData.minDamage, arrowData.maxDamage, charge);
-        speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed, charge);
+        speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed * maxSpeedMultiplier, charge);
         knockback = Mathf.Lerp(arrowData.minKnockback, arrowData.maxKnockback, charge);
         gravity = Mathf.Lerp(arrowData.minChargeGravity, arrowData.maxChargeGravity, charge);
 
