@@ -7,6 +7,7 @@ TagManager:
   - Object
   - UpperLedgeCollider
   - WallCollider
+  - Altar
   layers:
   - Default
   - TransparentFX

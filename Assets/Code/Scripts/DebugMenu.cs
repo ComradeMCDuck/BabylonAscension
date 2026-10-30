@@ -176,7 +176,7 @@ public class DebugMenu : MonoBehaviour
         root.SetActive(false);
         enemyTemplateRoot = root.transform;
 
-        foreach (EnemyBehavior enemy in FindObjectsByType<EnemyBehavior>(FindObjectsSortMode.None))
+        foreach (EnemyBehavior enemy in FindObjectsByType<EnemyBehavior>())
         {
             GameObject original = enemy.gameObject;
 

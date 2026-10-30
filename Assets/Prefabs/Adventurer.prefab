@@ -51,13 +51,7 @@ MonoBehaviour:
   arrowSpawn: {fileID: 3965774374420034426}
   bowRenderer: {fileID: 7292817614088652803}
   movementController: {fileID: 0}
-  arrowPrefab:
-  - {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
-  - {fileID: 6124286472832785063, guid: 3e9adc6afd7d7d44492c5c88b42bdd6f, type: 3}
-  - {fileID: 6124286472832785063, guid: d60d3030fcd54714bdc5c012594c470c, type: 3}
-  - {fileID: 6124286472832785063, guid: 2b46e268e0516284eba146d808a4ba56, type: 3}
-  - {fileID: 6124286472832785063, guid: c37fe457e75f483589041f57f9b2b8c4, type: 3}
-  selectedArrowIndex: 0
+  basicArrowPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
   bowFrames:
   - {fileID: -415446080585258355, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
   - {fileID: 1305767116, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
@@ -606,11 +600,6 @@ MonoBehaviour:
   jumpActionReference: {fileID: 0}
   dashActionReference: {fileID: 0}
   crouchActionReference: {fileID: 0}
-  firstArrowActionReference: {fileID: 0}
-  secondArrowActionReference: {fileID: 0}
-  thirdArrowActionReference: {fileID: 0}
-  fourthArrowActionReference: {fileID: 0}
-  fifthArrowActionReference: {fileID: 0}
 --- !u!114 &6391775073961633728
 MonoBehaviour:
   m_ObjectHideFlags: 0

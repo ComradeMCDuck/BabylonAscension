@@ -23,30 +23,10 @@ namespace DYP
         [SerializeField]
         private InputActionReference crouchActionReference;
 
-        [SerializeField]
-        private InputActionReference firstArrowActionReference;
-
-        [SerializeField]
-        private InputActionReference secondArrowActionReference;
-
-        [SerializeField]
-        private InputActionReference thirdArrowActionReference;
-
-        [SerializeField]
-        private InputActionReference fourthArrowActionReference;
-
-        [SerializeField]
-        private InputActionReference fifthArrowActionReference;
-
         private InputAction m_MoveAction;
         private InputAction m_JumpAction;
         private InputAction m_DashAction;
         private InputAction m_CrouchAction;
-        private InputAction m_FirstArrowAction;
-        private InputAction m_SecondArrowAction;
-        private InputAction m_ThirdArrowAction;
-        private InputAction m_FourthArrowAction;
-        private InputAction m_FifthArrowAction;
 
         private void OnEnable()
         {
@@ -65,12 +45,6 @@ namespace DYP
             m_JumpAction = jumpActionReference != null ? jumpActionReference.action : GetAction("Jump");
             m_DashAction = dashActionReference != null ? dashActionReference.action : GetAction("Sprint");
             m_CrouchAction = crouchActionReference != null ? crouchActionReference.action : GetAction("Crouch");
-            // "Previous" is bound to key 1, "Next" to key 2, "ThirdArrow" to key 3, "FourthArrow" to key 4 and "FifthArrow" to key 5 in InputSystem_Actions.
-            m_FirstArrowAction = firstArrowActionReference != null ? firstArrowActionReference.action : GetAction("Previous");
-            m_SecondArrowAction = secondArrowActionReference != null ? secondArrowActionReference.action : GetAction("Next");
-            m_ThirdArrowAction = thirdArrowActionReference != null ? thirdArrowActionReference.action : GetAction("ThirdArrow");
-            m_FourthArrowAction = fourthArrowActionReference != null ? fourthArrowActionReference.action : GetAction("FourthArrow");
-            m_FifthArrowAction = fifthArrowActionReference != null ? fifthArrowActionReference.action : GetAction("FifthArrow");
         }
 
         private InputAction GetAction(string actionName)
@@ -90,11 +64,6 @@ namespace DYP
             if (m_JumpAction != null) m_JumpAction.Enable();
             if (m_DashAction != null) m_DashAction.Enable();
             if (m_CrouchAction != null) m_CrouchAction.Enable();
-            if (m_FirstArrowAction != null) m_FirstArrowAction.Enable();
-            if (m_SecondArrowAction != null) m_SecondArrowAction.Enable();
-            if (m_ThirdArrowAction != null) m_ThirdArrowAction.Enable();
-            if (m_FourthArrowAction != null) m_FourthArrowAction.Enable();
-            if (m_FifthArrowAction != null) m_FifthArrowAction.Enable();
         }
 
         private void DisableActions()
@@ -103,11 +72,6 @@ namespace DYP
             if (m_JumpAction != null) m_JumpAction.Disable();
             if (m_DashAction != null) m_DashAction.Disable();
             if (m_CrouchAction != null) m_CrouchAction.Disable();
-            if (m_FirstArrowAction != null) m_FirstArrowAction.Disable();
-            if (m_SecondArrowAction != null) m_SecondArrowAction.Disable();
-            if (m_ThirdArrowAction != null) m_ThirdArrowAction.Disable();
-            if (m_FourthArrowAction != null) m_FourthArrowAction.Disable();
-            if (m_FifthArrowAction != null) m_FifthArrowAction.Disable();
         }
 
         // Update is called once per frame
@@ -144,27 +108,6 @@ namespace DYP
             m_Controller.HoldCrouch(holdingCrouch);
 
             m_Controller.ReleaseJump(releaseJump);
-
-            if (m_FirstArrowAction != null && m_FirstArrowAction.triggered)
-            {
-                m_Controller.SelectArrow(0);
-            }
-            else if (m_SecondArrowAction != null && m_SecondArrowAction.triggered)
-            {
-                m_Controller.SelectArrow(1);
-            }
-            else if (m_ThirdArrowAction != null && m_ThirdArrowAction.triggered)
-            {
-                m_Controller.SelectArrow(2);
-            }
-            else if (m_FourthArrowAction != null && m_FourthArrowAction.triggered)
-            {
-                m_Controller.SelectArrow(3);
-            }
-            else if (m_FifthArrowAction != null && m_FifthArrowAction.triggered)
-            {
-                m_Controller.SelectArrow(4);
-            }
         }
     }
 }

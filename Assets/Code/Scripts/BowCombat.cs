@@ -1,4 +1,5 @@
 
+using System;
 using DYP;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -14,9 +15,8 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private BasicMovementController2D movementController;
 
     [Header("Arrows")]
-    [Tooltip("Element 0 is selected with key 1, element 1 with key 2, element 2 with key 3, element 3 with key 4, element 4 with key 5. Each prefab carries its own ArrowData.")]
-    [SerializeField] private GameObject[] arrowPrefab;
-    [SerializeField] private int selectedArrowIndex = 0;
+    [Tooltip("The arrow fired until another one is picked at an altar. Each prefab carries its own ArrowData.")]
+    [SerializeField] private GameObject basicArrowPrefab;
 
     [Header("Bow Animation")]
     [Tooltip("Frame 0 = idle, frames 1-5 = drawing.")]
@@ -42,9 +42,15 @@ public class BowCombat : MonoBehaviour
 
     private float chargeTimer;
     private bool isCharging;
+    private GameObject currentArrowPrefab;
+
+    /// <summary>Raised with the new arrow prefab whenever the fired arrow changes.</summary>
+    public event Action<GameObject> ArrowChanged;
 
     public bool IsCharging => isCharging;
-    public int SelectedArrowIndex => selectedArrowIndex;
+    public GameObject CurrentArrowPrefab => currentArrowPrefab;
+    /// <summary>True once the player has picked an arrow other than the basic one.</summary>
+    public bool HasPickedArrow => currentArrowPrefab != null && currentArrowPrefab != basicArrowPrefab;
     public float Charge01 =>
         maxChargeTime <= 0f
             ? 1f
@@ -64,37 +70,28 @@ public class BowCombat : MonoBehaviour
         if (aimCamera == null)
             Debug.LogError("BowCombat needs an aim camera.", this);
 
-        if (arrowPrefab == null || arrowPrefab.Length == 0)
-            Debug.LogError("Assign an arrow prefab to BowCombat.", this);
+        if (basicArrowPrefab == null)
+            Debug.LogError("Assign the basic arrow prefab to BowCombat.", this);
 
-        SelectArrow(selectedArrowIndex);
+        // A scene reload on death recreates the bow, so the pick resets to the basic arrow.
+        currentArrowPrefab = basicArrowPrefab;
         SetBowFrame(0);
     }
 
-    private void OnEnable()
+    /// <summary>Makes the bow fire the given arrow prefab, e.g. when the player picks one at an altar.</summary>
+    public void SetArrow(GameObject prefab)
     {
-        if (movementController != null)
-            movementController.OnArrowSelected += SelectArrow;
-    }
-
-    private void OnDisable()
-    {
-        if (movementController != null)
-            movementController.OnArrowSelected -= SelectArrow;
-    }
-
-    public void SelectArrow(int index)
-    {
-        if (arrowPrefab == null || arrowPrefab.Length == 0)
-            return;
-
-        if (index < 0 || index >= arrowPrefab.Length || arrowPrefab[index] == null)
+        if (prefab == null)
         {
-            Debug.LogWarning($"No arrow prefab assigned at index {index}.", this);
+            Debug.LogWarning("Tried to give BowCombat an empty arrow prefab.", this);
             return;
         }
 
-        selectedArrowIndex = index;
+        if (prefab == currentArrowPrefab)
+            return;
+
+        currentArrowPrefab = prefab;
+        ArrowChanged?.Invoke(prefab);
     }
 
     private void Update()
@@ -188,10 +185,7 @@ public class BowCombat : MonoBehaviour
             return;
         }
 
-        if (arrowPrefab == null ||
-            selectedArrowIndex < 0 ||
-            selectedArrowIndex >= arrowPrefab.Length ||
-            arrowPrefab[selectedArrowIndex] == null)
+        if (currentArrowPrefab == null)
         {
             SetBowFrame(0);
             return;
@@ -207,7 +201,7 @@ public class BowCombat : MonoBehaviour
             arrowSpawn.position + direction * spawnOffset;
 
         GameObject arrowObject = Instantiate(
-            arrowPrefab[selectedArrowIndex],
+            currentArrowPrefab,
             spawnPosition,
             Quaternion.LookRotation(Vector3.forward, Vector3.up)
         );
