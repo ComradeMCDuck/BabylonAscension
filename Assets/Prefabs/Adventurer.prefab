@@ -555,6 +555,11 @@ MonoBehaviour:
     KnockbackStunTimer: 0
     HorizontalActive: 0
     VerticalActive: 0
+  m_Crouch:
+    SpeedMultiplier: 0.35
+    SlideStartSpeed: 9
+    SlideEndSpeed: 3
+    SlideFriction: 5
   m_Dash:
     Module: {fileID: 11400000, guid: 5e87a1b7bfec1074c96e231912817d18, type: 2}
     WillDashPaddingTime: 0.15
@@ -598,10 +603,12 @@ MonoBehaviour:
   moveActionReference: {fileID: 0}
   jumpActionReference: {fileID: 0}
   dashActionReference: {fileID: 0}
+  crouchActionReference: {fileID: 0}
   firstArrowActionReference: {fileID: 0}
   secondArrowActionReference: {fileID: 0}
   thirdArrowActionReference: {fileID: 0}
   fourthArrowActionReference: {fileID: 0}
+  fifthArrowActionReference: {fileID: 0}
 --- !u!114 &6391775073961633728
 MonoBehaviour:
   m_ObjectHideFlags: 0
