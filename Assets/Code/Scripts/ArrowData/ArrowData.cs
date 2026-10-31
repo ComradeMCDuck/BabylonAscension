@@ -3,6 +3,11 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ArrowData", menuName = "Scriptable Objects/ArrowData")]
 public class ArrowData : ScriptableObject
 {
+    [Header("Shop")]
+    [Tooltip("Souls needed to unlock this arrow at an altar. Once bought, switching back to it is free until death.")]
+    [Min(0)] public int soulCost = 1;
+
+    [Header("Shot")]
     [SerializeField] public float minDamage = 5f;
     [SerializeField] public float maxDamage = 30f;
     [SerializeField] public float minArrowSpeed = 12f;

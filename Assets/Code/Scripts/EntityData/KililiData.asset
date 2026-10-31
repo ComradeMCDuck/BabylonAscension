@@ -27,6 +27,7 @@ MonoBehaviour:
   attackCooldown: 2
   attackSpeed: 18
   attackEffectPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
+  soulPrefab: {fileID: 5831294142424740042, guid: beb8f8c7c2e5e8541994daa80a8c7fdd, type: 3}
   patrolSpeedMultiplier: 0.5
   patrolWaitTime: 1.5
   loseSightTime: 2
@@ -55,6 +56,15 @@ MonoBehaviour:
   chargeSpeed: 14
   chargeDistance: 12
   chargeStunDuration: 3
+  flySpeed: 6
+  flyAcceleration: 20
+  flyPreferredDistance: 6
+  flyMinDistance: 3
+  flyMinAngle: 30
+  flyMaxAngle: 150
+  flyOrbitSpeed: 20
+  flyBobAmplitude: 0.25
+  flyBobFrequency: 2
   fallMultiplier: 2
   riseMultiplier: 1
   maxFallSpeed: 20

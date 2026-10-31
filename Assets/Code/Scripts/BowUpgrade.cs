@@ -29,6 +29,8 @@ public class BowUpgrade : ScriptableObject
     [Tooltip("Short description shown to the player, e.g. \"Draw time -0.2 s\".")]
     [SerializeField, TextArea] private string description;
     [SerializeField] private Sprite icon;
+    [Tooltip("Souls needed to buy this upgrade at an altar.")]
+    [SerializeField, Min(0)] private int soulCost = 1;
 
     [Header("Effect")]
     [Tooltip("Which bow value this upgrade changes.")]
@@ -40,6 +42,7 @@ public class BowUpgrade : ScriptableObject
     public string DisplayName => displayName;
     public string Description => description;
     public Sprite Icon => icon;
+    public int SoulCost => soulCost;
     public BowStat Stat => stat;
     public BowUpgradeMode Mode => mode;
     public float Amount => amount;

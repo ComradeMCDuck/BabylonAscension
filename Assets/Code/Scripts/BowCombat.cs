@@ -1,5 +1,6 @@
 
 using System;
+using System.Collections.Generic;
 using DYP;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -44,6 +45,8 @@ public class BowCombat : MonoBehaviour
     private bool isCharging;
     private GameObject currentArrowPrefab;
     private readonly BowUpgrades upgrades = new BowUpgrades();
+    // Arrows bought at altars (plus the basic arrow). Switching to an owned arrow is free.
+    private readonly HashSet<GameObject> ownedArrows = new HashSet<GameObject>();
 
     /// <summary>Raised with the new arrow prefab whenever the fired arrow changes.</summary>
     public event Action<GameObject> ArrowChanged;
@@ -78,7 +81,16 @@ public class BowCombat : MonoBehaviour
 
         // A scene reload on death recreates the bow, so the pick resets to the basic arrow.
         currentArrowPrefab = basicArrowPrefab;
+        if (basicArrowPrefab != null) ownedArrows.Add(basicArrowPrefab);
         SetBowFrame(0);
+    }
+
+    public bool OwnsArrow(GameObject prefab) => prefab != null && ownedArrows.Contains(prefab);
+
+    /// <summary>Marks an arrow as bought, so picking it later is free. Doesn't select it.</summary>
+    public void UnlockArrow(GameObject prefab)
+    {
+        if (prefab != null) ownedArrows.Add(prefab);
     }
 
     /// <summary>Makes the bow fire the given arrow prefab, e.g. when the player picks one at an altar.</summary>

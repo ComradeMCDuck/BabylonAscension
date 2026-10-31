@@ -1,65 +1,45 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
-/// An arrow icon in the altar window. Clicking it makes the player's bow fire this arrow.
-/// Every button except the picked arrow's is greyed out (all of them before the first pick),
-/// but they stay clickable so the player can change their mind.
+/// An arrow icon in the altar window. The first click buys the arrow with souls (price from its ArrowData);
+/// after that, clicking it makes the bow fire this arrow for free.
+/// Only the arrow the bow is firing is lit; all others are greyed out (all of them while on the basic arrow).
 /// </summary>
-[RequireComponent(typeof(Button))]
-public class ArrowPickButton : MonoBehaviour
+public class ArrowPickButton : AltarShopButton
 {
-    [Tooltip("The arrow prefab the bow fires after this button is clicked.")]
+    [Tooltip("The arrow prefab the bow fires after this button is clicked. Its ArrowData sets the price.")]
     [SerializeField] private GameObject arrowPrefab;
-    [Tooltip("Multiplied into the color of every image and text on the button while another arrow is picked.")]
-    [SerializeField] private Color greyedOutTint = new Color(0.35f, 0.35f, 0.35f, 1f);
 
-    private Button button;
-    private BowCombat bow;
-    private Graphic[] graphics;
-    private Color[] originalColors;
+    private int cost;
 
-    private void Awake()
+    protected override int Cost => cost;
+    protected override bool IsOwned => Bow.OwnsArrow(arrowPrefab);
+    protected override bool IsLit => Bow.CurrentArrowPrefab == arrowPrefab;
+    protected override bool IsValid => arrowPrefab != null;
+
+    protected override void Awake()
     {
-        button = GetComponent<Button>();
-        graphics = GetComponentsInChildren<Graphic>(true);
-        originalColors = new Color[graphics.Length];
-        for (int i = 0; i < graphics.Length; i++)
-            originalColors[i] = graphics[i].color;
-
-        bow = FindAnyObjectByType<BowCombat>();
-        if (bow == null)
-            Debug.LogError("ArrowPickButton can't find the player's BowCombat.", this);
+        base.Awake();
         if (arrowPrefab == null)
+        {
             Debug.LogError("Assign an arrow prefab to ArrowPickButton.", this);
+            return;
+        }
+
+        var projectile = arrowPrefab.GetComponent<ArrowProjectile>();
+        if (projectile != null && projectile.Data != null) cost = projectile.Data.soulCost;
+        else Debug.LogError($"{arrowPrefab.name} needs an ArrowProjectile with ArrowData for its price.", this);
     }
 
-    private void OnEnable()
-    {
-        button.onClick.AddListener(Pick);
-        if (bow != null) bow.ArrowChanged += OnArrowChanged;
-        Refresh();
-    }
+    protected override void Unlock() => Bow.UnlockArrow(arrowPrefab);
 
-    private void OnDisable()
-    {
-        button.onClick.RemoveListener(Pick);
-        if (bow != null) bow.ArrowChanged -= OnArrowChanged;
-    }
+    protected override void Use() => Bow.SetArrow(arrowPrefab);
 
-    private void Pick()
+    protected override void Subscribe(bool subscribe)
     {
-        if (bow != null && arrowPrefab != null) bow.SetArrow(arrowPrefab);
+        if (subscribe) Bow.ArrowChanged += OnArrowChanged;
+        else Bow.ArrowChanged -= OnArrowChanged;
     }
 
     private void OnArrowChanged(GameObject newArrow) => Refresh();
-
-    private void Refresh()
-    {
-        if (bow == null) return;
-        // Only the picked arrow is lit; while the player still has the basic arrow, every button is greyed out.
-        bool greyedOut = bow.CurrentArrowPrefab != arrowPrefab;
-        for (int i = 0; i < graphics.Length; i++)
-            graphics[i].color = greyedOut ? originalColors[i] * greyedOutTint : originalColors[i];
-    }
 }

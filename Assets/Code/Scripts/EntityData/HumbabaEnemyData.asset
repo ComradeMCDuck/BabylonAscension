@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cdb76347b8be099498ed2c252b74ae42, type: 3}
-  m_Name: HumbabaEnemyData 1
+  m_Name: HumbabaEnemyData
   m_EditorClassIdentifier: Assembly-CSharp::EntityData
   entityID: 1
   maxHealth: 200
@@ -27,6 +27,7 @@ MonoBehaviour:
   attackCooldown: 1
   attackSpeed: 10
   attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
+  soulPrefab: {fileID: 5831294142424740042, guid: beb8f8c7c2e5e8541994daa80a8c7fdd, type: 3}
   patrolSpeedMultiplier: 0.35
   patrolWaitTime: 1
   loseSightTime: 3
@@ -34,8 +35,7 @@ MonoBehaviour:
   jumpCheckDistance: 1
   jumpCooldown: 0.25
   attackWindup: 0.15
-  projectileRange: 4.5
-  projectileKeepsFlying: 0
+  projectileGravity: 10
   projectileLifetime: 1
   slashOriginOffset: {x: 0.2, y: 0}
   slashArcAngle: 140
@@ -56,6 +56,15 @@ MonoBehaviour:
   chargeSpeed: 14
   chargeDistance: 24
   chargeStunDuration: 3
+  flySpeed: 6
+  flyAcceleration: 20
+  flyPreferredDistance: 6
+  flyMinDistance: 3
+  flyMinAngle: 30
+  flyMaxAngle: 150
+  flyOrbitSpeed: 20
+  flyBobAmplitude: 0.25
+  flyBobFrequency: 2
   fallMultiplier: 2
   riseMultiplier: 1
   maxFallSpeed: 20

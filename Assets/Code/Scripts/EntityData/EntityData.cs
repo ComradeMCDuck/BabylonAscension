@@ -34,6 +34,10 @@ public class EntityData : ScriptableObject
     public float attackSpeed = 1f;
     public GameObject attackEffectPrefab;
 
+    [Header("Soul Drop")]
+    [Tooltip("Enemies: soul orb dropped where the enemy dies. Must have a Soul component; its value is set on the prefab. Empty = drops nothing.")]
+    public GameObject soulPrefab;
+
     [Header("Enemy AI")]
     [Tooltip("Patrol speed as a fraction of 'speed' (Controller - Movement Settings). Chasing uses the full speed.")]
     [Range(0f, 1f)] public float patrolSpeedMultiplier = 0.4f;
