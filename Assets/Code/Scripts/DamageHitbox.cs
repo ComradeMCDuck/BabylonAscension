@@ -64,8 +64,15 @@ public class DamageHitbox : MonoBehaviour
     }
 
     /// <summary>Enables the collider for a new attack. Targets hit by earlier attacks can be hit again.</summary>
-    public void Activate(float attackDamage)
+    public void Activate(float attackDamage) => Activate(attackDamage, 0);
+
+    /// <summary>
+    /// Like Activate, but this attack can also hit extraTargetLayers (e.g. "Enemy" for friendly fire).
+    /// The extra layers only last until the next Activate.
+    /// </summary>
+    public void Activate(float attackDamage, LayerMask extraTargetLayers)
     {
+        targetFilter.SetLayerMask(targetLayers | extraTargetLayers);
         damage = attackDamage;
         alreadyHit.Clear();
         hitbox.enabled = true;

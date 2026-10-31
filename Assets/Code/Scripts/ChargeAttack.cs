@@ -5,7 +5,8 @@ using UnityEngine;
 /// Optional bull charge for an enemy (Humbaba). EnemyBehavior starts it when the cooldown is ready and the player is
 /// in range, and drives the movement (windup, then a straight run at chargeSpeed). This component keeps the cooldown,
 /// the stun timer and owns the damage: while charging, a DamageHitbox in front of the enemy is enabled and hurts each
-/// target at most once, without stopping the charge. The charge ends after chargeDistance or at a ledge; running into
+/// target at most once, without stopping the charge. With chargeDamagesEnemies it also hurts other enemies it runs
+/// through (they never block the charge, because EnemyBehavior's wall check ignores the Enemy layer). The charge ends after chargeDistance or at a ledge; running into
 /// a wall ends it and stuns the enemy for chargeStunDuration. While the cooldown runs, the enemy falls back to its
 /// normal EnemyAttack. Settings live in EntityData ("Charge Attack").
 /// </summary>
@@ -56,7 +57,8 @@ public class ChargeAttack : MonoBehaviour
         if (hitbox == null) return;
 
         hitbox.transform.localPosition = new Vector3(hitboxLocalPosition.x * facingDirection, hitboxLocalPosition.y, hitboxLocalPosition.z);
-        hitbox.Activate(data.chargeDamage);
+        LayerMask extraLayers = data.chargeDamagesEnemies ? LayerMask.GetMask("Enemy") : 0;
+        hitbox.Activate(data.chargeDamage, extraLayers);
     }
 
     /// <summary>Ends the charge, disables the hitbox and starts the cooldown. hitWall also starts the stun.</summary>

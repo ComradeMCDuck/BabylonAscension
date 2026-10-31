@@ -98,6 +98,8 @@ public class EntityData : ScriptableObject
     [Min(0f)] public float chargeDistance = 12f;
     [Tooltip("Seconds the enemy is stunned (can't move or attack) after charging into a wall.")]
     [Min(0f)] public float chargeStunDuration = 3f;
+    [Tooltip("The charge also damages other enemies in its path (once each per charge, with chargeDamage).")]
+    public bool chargeDamagesEnemies = true;
 
     [Header("Flight (enemies with an EnemyFlight component)")]
     [Tooltip("Top flying speed.")]
