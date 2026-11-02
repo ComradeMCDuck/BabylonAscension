@@ -43,6 +43,11 @@ public class ArrowProjectile : MonoBehaviour
     private int remainingPenetrations;
     // Characters already hit by this projectile, so a penetrating shot can't hit the same one twice.
     private readonly HashSet<Transform> hitCharacters = new HashSet<Transform>();
+    // Armor this projectile pierced, so it isn't hit again while passing through.
+    private readonly HashSet<EnemyArmor> ignoredArmor = new HashSet<EnemyArmor>();
+    // Armor the arrow was just deflected off. A moving enemy can push its armor over the arrow on the next steps,
+    // so starting inside this armor is ignored until the arrow is out; after that it can deflect off it again.
+    private EnemyArmor escapingArmor;
     private GameObject owner;
     private LayerMask activeHitLayers;
     private bool launched;
@@ -149,6 +154,8 @@ public class ArrowProjectile : MonoBehaviour
         owner = shooter;
         direction = launchDirection.normalized;
         hitCharacters.Clear();
+        ignoredArmor.Clear();
+        escapingArmor = null;
 
         // Make the projectile's local X axis follow its travel direction.
         if (alignToDirection) transform.right = direction;
@@ -178,6 +185,10 @@ public class ArrowProjectile : MonoBehaviour
         Physics2D.CircleCast(position, radius, direction, filter, s_StepHits, step);
         s_StepHits.Sort((a, b) => a.distance.CompareTo(b.distance));
 
+        // Kept only while this step still starts inside it (set again below), or by a new deflection.
+        EnemyArmor escaping = escapingArmor;
+        escapingArmor = null;
+
         foreach (RaycastHit2D hit in s_StepHits)
         {
             if (IsOwner(hit.collider))
@@ -187,6 +198,26 @@ public class ArrowProjectile : MonoBehaviour
             {
                 HandleEnvironmentHit(hit);
                 return;
+            }
+
+            // Checked before hitCharacters: a deflected arrow may come back and hit the same enemy's unarmored side.
+            EnemyArmor armor = hit.collider.GetComponent<EnemyArmor>();
+            if (armor != null && armor.isActiveAndEnabled)
+            {
+                if (ignoredArmor.Contains(armor))
+                    continue;
+
+                // Still inside the armor it just deflected off (the enemy moved it over the arrow): let it fly out.
+                if (armor == escaping && hit.distance <= 0f)
+                {
+                    escapingArmor = armor;
+                    continue;
+                }
+
+                if (HandleArmorHit(hit, armor))
+                    return;
+
+                continue;
             }
 
             // Already hit by this projectile (its other colliders, or still overlapping after penetrating it).
@@ -234,8 +265,9 @@ public class ArrowProjectile : MonoBehaviour
     /// Damages and knocks back every target within ArrowData.explosionRadius.
     /// Damage and knockback fall off linearly from the center values to the edge values,
     /// measured to the closest point of each target's collider. Knockback pushes away from the center.
+    /// hitArmor is the armor the arrow exploded on, if any; its enemy takes reduced damage.
     /// </summary>
-    private void Explode(Vector2 center)
+    private void Explode(Vector2 center, EnemyArmor hitArmor = null)
     {
         // Destroy is deferred to the end of the frame; stop here so a second physics step can't explode again.
         launched = false;
@@ -286,7 +318,10 @@ public class ArrowProjectile : MonoBehaviour
 
             IDamageable target = FindDamageable(col);
             if (target != null)
-                target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff));
+            {
+                float armorMultiplier = hitArmor != null && pair.Key == hitArmor.Character ? hitArmor.ExplosionDamageMultiplier : 1f;
+                target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff) * armorMultiplier);
+            }
 
             float explosionKnockback = Mathf.Lerp(arrowData.explosionCenterKnockback, arrowData.explosionEdgeKnockback, falloff);
 
@@ -397,7 +432,46 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         remainingBounces--;
+        Deflect(hit);
+    }
 
+    /// <summary>
+    /// Player arrow hitting an enemy's armor. Explosive arrows explode (the armored enemy takes reduced damage),
+    /// arrows with penetrations left use one to pierce it, and everything else deflects without using a bounce.
+    /// Returns true if the projectile stopped or deflected (ending this step), false if it pierced and keeps flying.
+    /// </summary>
+    private bool HandleArmorHit(RaycastHit2D hit, EnemyArmor armor)
+    {
+        if (IsExplosive)
+        {
+            Explode(hit.centroid, armor);
+            return true;
+        }
+
+        if (remainingPenetrations > 0)
+        {
+            remainingPenetrations--;
+            ignoredArmor.Add(armor);
+            return false;
+        }
+
+        // Started the step inside the armor (e.g. shot point-blank): the cast has no real surface normal,
+        // so send the arrow straight back and let it leave the armor instead of bouncing inside it forever.
+        if (hit.distance <= 0f)
+        {
+            direction = -direction;
+            if (alignToDirection) transform.right = direction;
+            escapingArmor = armor;
+            return true;
+        }
+
+        Deflect(hit);
+        escapingArmor = armor;
+        return true;
+    }
+
+    private void Deflect(RaycastHit2D hit)
+    {
         // Mirror the direction around the surface normal, like a pool ball:
         // Example: hitting the ground at 30 degrees leaves it at 150 degrees.
         direction = Vector2.Reflect(direction, hit.normal).normalized;
