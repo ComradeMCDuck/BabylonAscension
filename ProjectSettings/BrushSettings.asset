@@ -25,30 +25,30 @@ MonoBehaviour:
   gridIndex: 2
   defaultBoxSize: {x: 2, y: 2, z: 2}
   rotationSnapDegrees: 15
-  newOperation: 0
+  newOperation: 1
   newModules: []
   newSides: 16
   newTessellation: 2
-  newStepHeight: 0
+  newStepHeight: 9.01
   newHollow: 0
-  newInnerRadius: 0
-  newStepThickness: 0
+  newInnerRadius: 15.72
+  newStepThickness: 10.06
   newCurveAngle: 90
-  newStepsPer360: 16
+  newStepsPer360: 234
   newCounterClockwise: 0
   newSlopedFloor: 0
   newSlopedCeiling: 0
   newWallThickness: 0
   newArchAngle: 180
-  newDoorWidth: 0
-  newDoorHeight: 0
-  newWindowWidth: 0
-  newWindowHeight: 0
-  newWindowSill: 0
+  newDoorWidth: 6
+  newDoorHeight: 10
+  newWindowWidth: 4
+  newWindowHeight: 4
+  newWindowSill: 12
   extrudeDistance: 1
   extrudeIndividual: 0
   defaultModelStaticFlags: 87
   defaultMaterial: {fileID: 2100000, guid: b0b92c31e47e90645ac7ed7fa12f7702, type: 2}
   showGenerated: 0
-  showCuts: 0
+  showCuts: 1
   snapToGrid: 1
