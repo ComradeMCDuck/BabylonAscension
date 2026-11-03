@@ -10,6 +10,8 @@ using UnityEngine;
 /// (e.g. a shooter) is this same brain with a different EntityData and EnemyAttack setup.
 /// Adding a JumpAttack component makes the enemy leap through the player whenever its cooldown is ready.
 /// Adding a ChargeAttack component makes it charge in a straight line instead, getting stunned if it runs into a wall.
+/// Adding an EnemyFlight component (Kilili) makes it take off when the player enters its attack range, fly around the
+/// player shooting from a distance, and fly back to where it took off and land once it has lost them.
 /// </summary>
 [RequireComponent(typeof(BasicMovementController2D))]
 public class EnemyBehavior : MonoBehaviour
@@ -21,7 +23,9 @@ public class EnemyBehavior : MonoBehaviour
         Attack,
         JumpAttack,
         Charge,
-        Stunned
+        Stunned,
+        Flying,
+        FlyingHome
     }
 
     // Extra distance the player has to move away before the enemy stops attacking, so it doesn't flicker between Chase and Attack.
@@ -85,6 +89,7 @@ public class EnemyBehavior : MonoBehaviour
     private EnemyAttack attack;
     private JumpAttack jumpAttack;
     private ChargeAttack chargeAttack;
+    private EnemyFlight flight;
     private EnemyHealth health;
     private Collider2D selfCollider;
     private Collider2D playerCollider;
@@ -176,6 +181,7 @@ public class EnemyBehavior : MonoBehaviour
         attack = GetComponent<EnemyAttack>();
         jumpAttack = GetComponent<JumpAttack>();
         chargeAttack = GetComponent<ChargeAttack>();
+        flight = GetComponent<EnemyFlight>();
         selfCollider = GetComponent<Collider2D>();
 
         // RequireComponent only adds missing components when EnemyBehavior is added,
@@ -217,6 +223,7 @@ public class EnemyBehavior : MonoBehaviour
 
         lastKnownPlayerPosition = playerCollider.bounds.center;
         lastSeenTime = Time.time;
+        if (flight != null) flight.RememberPlayerPosition(lastKnownPlayerPosition);
 
         if (currentState == EnemyState.Patrol) SetState(EnemyState.Chase);
     }
@@ -250,7 +257,9 @@ public class EnemyBehavior : MonoBehaviour
     {
         if (enemyData == null) return;
 
-        currentGround = movement.IsOnGround() ? GetGroundBelow(selfCollider.bounds, out _) : null;
+        // While flying the ground controller is switched off, so its ground check is stale.
+        bool isFlying = flight != null && flight.IsFlying;
+        currentGround = !isFlying && movement.IsOnGround() ? GetGroundBelow(selfCollider.bounds, out _) : null;
 
         // Player missing or destroyed: just keep patrolling.
         bool canSeePlayer = playerCollider != null && CanSeePlayer();
@@ -259,6 +268,7 @@ public class EnemyBehavior : MonoBehaviour
             lastKnownPlayerPosition = playerCollider.bounds.center;
             lastSeenTime = Time.time;
             RememberPlayerPlatform();
+            if (flight != null) flight.RememberPlayerPosition(lastKnownPlayerPosition);
         }
 
         ForgetOldPlatforms();
@@ -285,6 +295,12 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.Stunned:
                 Move(0f, 0f);
                 break;
+            case EnemyState.Flying:
+                FlyAtPlayer(canSeePlayer);
+                break;
+            case EnemyState.FlyingHome:
+                FlyHome();
+                break;
         }
     }
 
@@ -300,6 +316,7 @@ public class EnemyBehavior : MonoBehaviour
                 break;
 
             case EnemyState.Chase:
+                if (TryTakeOff(canSeePlayer, distanceToPlayer)) break;
                 // Special attacks take priority whenever their cooldown is ready; the basic attack covers the time in between.
                 if (TryStartCharge(canSeePlayer) || TryStartJumpAttack(canSeePlayer)) break;
                 if (canSeePlayer && distanceToPlayer <= enemyData.attackRange) SetState(EnemyState.Attack);
@@ -309,6 +326,7 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.Attack:
                 // Never cancel an attack halfway through its windup.
                 if (attack != null && attack.IsAttacking) break;
+                if (TryTakeOff(canSeePlayer, distanceToPlayer)) break;
                 if (TryStartCharge(canSeePlayer) || TryStartJumpAttack(canSeePlayer)) break;
                 if (!canSeePlayer || distanceToPlayer > enemyData.attackRange + AttackRangeTolerance) SetState(EnemyState.Chase);
                 break;
@@ -327,7 +345,52 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.Stunned:
                 if (chargeAttack == null || !chargeAttack.IsStunned) SetState(EnemyState.Chase);
                 break;
+
+            case EnemyState.Flying:
+                // Lost the player for loseSightTime: fly back and land.
+                if (!remembersPlayer) SetState(EnemyState.FlyingHome);
+                break;
+
+            case EnemyState.FlyingHome:
+                // Turn back if the player shows up in attack range again, or gives themselves away by hitting it.
+                if (remembersPlayer && (!canSeePlayer || distanceToPlayer <= enemyData.attackRange)) SetState(EnemyState.Flying);
+                break;
         }
+    }
+
+    /// <summary>
+    /// Enemies with an EnemyFlight component take off as soon as they see the player inside their attack range.
+    /// </summary>
+    private bool TryTakeOff(bool canSeePlayer, float distanceToPlayer)
+    {
+        if (flight == null || !canSeePlayer || distanceToPlayer > enemyData.attackRange) return false;
+
+        // Flying replaces the ground route.
+        hasRoute = false;
+        airborneOnRoute = false;
+
+        flight.TakeOff();
+        SetState(EnemyState.Flying);
+        return true;
+    }
+
+    /// <summary>
+    /// Flies around the player (or after them along their trail) and shoots whenever they are visible and in range.
+    /// </summary>
+    private void FlyAtPlayer(bool canSeePlayer)
+    {
+        flight.FlyTowardPlayer(lastKnownPlayerPosition, canSeePlayer, enemyData);
+        Face(canSeePlayer ? lastKnownPlayerPosition.x - transform.position.x : flight.Velocity.x);
+
+        if (attack == null || !canSeePlayer) return;
+        if (Physics2D.Distance(selfCollider, playerCollider).distance <= enemyData.attackRange)
+            attack.TryAttack(lastKnownPlayerPosition, enemyData);
+    }
+
+    private void FlyHome()
+    {
+        Face(flight.Velocity.x);
+        if (flight.FlyHome(enemyData)) SetState(EnemyState.Patrol);
     }
 
     /// <summary>

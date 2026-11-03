@@ -48,6 +48,14 @@ MonoBehaviour:
   jumpAttackMaxLungeSpeed: 16
   jumpAttackWindup: 0.3
   jumpAttackMaxHeightDifference: 1.5
+  chargeDamage: 40
+  chargeCooldown: 8
+  chargeRange: 7
+  chargeMaxHeightDifference: 1
+  chargeWindup: 0.6
+  chargeSpeed: 14
+  chargeDistance: 12
+  chargeStunDuration: 3
   fallMultiplier: 3
   riseMultiplier: 3
   maxFallSpeed: 30
@@ -66,13 +74,13 @@ MonoBehaviour:
   onLadderJumpForce: 0.4
   fallingJumpPaddingTime: 0.09
   willJumpPaddingTime: 0.15
-  canWallSlide: 1
+  canWallSlide: 0
   wallStickTime: 0.05
   wallSlideSpeedLoss: 0.05
   wallSlidingSpeedMax: 2
   canWallClimb: 0
   wallClimbSpeed: 2
-  canWallJump: 1
+  canWallJump: 0
   wallClimbForce: {x: 12, y: 16}
   wallOffForce: {x: 8, y: 15}
   wallLeapForce: {x: 18, y: 17}

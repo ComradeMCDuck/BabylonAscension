@@ -240,23 +240,25 @@ namespace DYP
         private InputBuffer m_InputBuffer = new InputBuffer();
 
         [Header("Settings")]
-        [Tooltip("Optional. When assigned, Movement, On Ladder, Jump, Wall Interaction and Recoil settings are taken from this asset.")]
+        [Tooltip("Movement, On Ladder, Jump, Wall Interaction and Recoil settings are taken from this asset.")]
         [SerializeField]
         private EntityData m_EntityData;
 
-        [SerializeField]
+        // Copies of the EntityData settings, filled in by applyEntityData(). Hidden because they are edited on the EntityData asset;
+        // still serialized so a controller without an EntityData keeps its values.
+        [SerializeField, HideInInspector]
         private MovementSettings m_MovementSettings;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private OnLadderSettings m_OnLadderSettings;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private Jump m_Jump;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private WallInteraction m_WallInteraction;
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private Recoil m_Recoil = new Recoil();
 
         [System.Serializable]
@@ -384,8 +386,6 @@ namespace DYP
 
         public event System.Action<MotorState> OnResetJumpCounter = delegate { };
         public event System.Action<int> OnFacingFlip = delegate { };
-
-        public event System.Action<int> OnArrowSelected = delegate { };  // int represent arrow index (0 = first arrow)
 
         public event System.Action<int> OnAction = delegate { };
         public event System.Action<float> OnActionStay = delegate { };
@@ -515,11 +515,6 @@ namespace DYP
         public void ReleaseJump(bool value)
         {
             m_InputBuffer.IsJumpReleased = value;
-        }
-
-        public void SelectArrow(int index)
-        {
-            OnArrowSelected.Invoke(index);
         }
 
         public void PressDash(bool value)
