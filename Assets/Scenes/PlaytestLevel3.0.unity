@@ -8138,18 +8138,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1092915365989289552, guid: 4e02000dfd38452469726c943b859026, type: 3}
-      propertyPath: m_Layer
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 1705944809059051592, guid: 4e02000dfd38452469726c943b859026, type: 3}
-      propertyPath: m_Layer
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 5886972676624661941, guid: 4e02000dfd38452469726c943b859026, type: 3}
-      propertyPath: m_Layer
-      value: 3
-      objectReference: {fileID: 0}
     - target: {fileID: 6433339575886944430, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalPosition.x
       value: -26
@@ -8190,25 +8178,9 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7651568361535852871, guid: 4e02000dfd38452469726c943b859026, type: 3}
-      propertyPath: m_Layer
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 8322367092843522644, guid: 4e02000dfd38452469726c943b859026, type: 3}
-      propertyPath: m_Layer
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 8416453697902978584, guid: 4e02000dfd38452469726c943b859026, type: 3}
-      propertyPath: m_Layer
-      value: 3
-      objectReference: {fileID: 0}
     - target: {fileID: 8824978788996705367, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_Name
       value: Adventurer
-      objectReference: {fileID: 0}
-    - target: {fileID: 8824978788996705367, guid: 4e02000dfd38452469726c943b859026, type: 3}
-      propertyPath: m_Layer
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -10840,7 +10812,7 @@ MonoBehaviour:
   boxColliders: 20
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0234
+  buildMilliseconds: 0.0429
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
