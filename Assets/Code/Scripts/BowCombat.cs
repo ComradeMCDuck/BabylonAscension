@@ -14,6 +14,8 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private SpriteRenderer bowRenderer;
     [Tooltip("Kinematic 2D controller. Recoil is applied through it when assigned.")]
     [SerializeField] private BasicMovementController2D movementController;
+    [SerializeField] private Animator animator;
+
 
     [Header("Arrows")]
     [Tooltip("The arrow fired until another one is picked at an altar. Each prefab carries its own ArrowData.")]
@@ -136,6 +138,9 @@ public class BowCombat : MonoBehaviour
 
         if (isCharging && Mouse.current.leftButton.wasReleasedThisFrame)
             ReleaseShot();
+
+        if (animator != null)
+            animator.SetBool("isCharging", IsCharging);
     }
 
     private void AimAtCursor()
@@ -230,6 +235,7 @@ public class BowCombat : MonoBehaviour
                 "Arrow prefab needs an ArrowProjectile component.",
                 arrowObject
             );
+            animator?.SetTrigger("Shoot");
 
             Destroy(arrowObject);
             return;
@@ -252,6 +258,7 @@ public class BowCombat : MonoBehaviour
             shooter,
             upgrades.Apply(BowStat.FullChargeArrowSpeed, 1f)
         );
+        animator?.SetTrigger("Shoot");
 
         // Push the player opposite the shot direction; weaker while grounded, none while sliding.
         if (movementController != null && !movementController.IsSliding)
@@ -291,3 +298,5 @@ public class BowCombat : MonoBehaviour
             bowRenderer.sprite = bowFrames[index];
     }
 }
+
+

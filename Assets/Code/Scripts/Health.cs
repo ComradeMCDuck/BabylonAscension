@@ -88,4 +88,7 @@ public class Health : MonoBehaviour, IDamageable
         }
         damageIndication = null;
     }
+
+    public float CurrentHP => currentHealth;   // read‑only public accessor
+    public float MaxHP => entityData.maxHealth;
 }
