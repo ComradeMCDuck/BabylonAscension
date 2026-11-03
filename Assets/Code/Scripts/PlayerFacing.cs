@@ -40,6 +40,10 @@ public class PlayerFacing : MonoBehaviour
 
     private void Update()
     {
+        // Paused or respawning (GameManager freezes time for both): keep the current facing.
+        if (Time.timeScale == 0f)
+            return;
+
         if (Mouse.current == null || aimCamera == null)
             return;
 

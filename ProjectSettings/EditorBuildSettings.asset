@@ -6,7 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/TOMASSRACKY/MAINMENU/MainMenu.unity
+    guid: 19d02c2f3065a9f4bb2046ecae88fbc9
+  - enabled: 1
     path: Assets/Scenes/PlaytestLevel3.0.unity
     guid: 37094f1f6be93f84fbf895c39f2302d3
+  - enabled: 0
+    path: Assets/TOMASSRACKY/tomasTEST.unity
+    guid: 1255058b0a76a8b4ba41d2fe1f02e139
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

@@ -9,6 +9,9 @@ using UnityEngine;
 /// and the attack itself is delegated to an EnemyAttack component. A different enemy type
 /// (e.g. a shooter) is this same brain with a different EntityData and EnemyAttack setup.
 /// Adding a JumpAttack component makes the enemy leap through the player whenever its cooldown is ready.
+/// Adding a ChargeAttack component makes it charge in a straight line instead, getting stunned if it runs into a wall.
+/// Adding an EnemyFlight component (Kilili) makes it take off when the player enters its attack range, fly around the
+/// player shooting from a distance, and fly back to where it took off and land once it has lost them.
 /// </summary>
 [RequireComponent(typeof(BasicMovementController2D))]
 public class EnemyBehavior : MonoBehaviour
@@ -18,7 +21,11 @@ public class EnemyBehavior : MonoBehaviour
         Patrol,
         Chase,
         Attack,
-        JumpAttack
+        JumpAttack,
+        Charge,
+        Stunned,
+        Flying,
+        FlyingHome
     }
 
     // Extra distance the player has to move away before the enemy stops attacking, so it doesn't flicker between Chase and Attack.
@@ -81,6 +88,8 @@ public class EnemyBehavior : MonoBehaviour
     private BasicMovementController2D movement;
     private EnemyAttack attack;
     private JumpAttack jumpAttack;
+    private ChargeAttack chargeAttack;
+    private EnemyFlight flight;
     private EnemyHealth health;
     private Collider2D selfCollider;
     private Collider2D playerCollider;
@@ -151,6 +160,11 @@ public class EnemyBehavior : MonoBehaviour
     private float jumpAttackGiveUpTime;
     private float nextJumpAttackCheckTime;
 
+    private int chargeDirection;
+    private bool chargeRunStarted;
+    private float chargeStartX;
+    private float chargeGiveUpTime;
+
     public EnemyState CurrentState => currentState;
     public int FacingDirection => facingDirection;
     public event Action<EnemyState> StateChanged;
@@ -166,6 +180,8 @@ public class EnemyBehavior : MonoBehaviour
         movement = GetComponent<BasicMovementController2D>();
         attack = GetComponent<EnemyAttack>();
         jumpAttack = GetComponent<JumpAttack>();
+        chargeAttack = GetComponent<ChargeAttack>();
+        flight = GetComponent<EnemyFlight>();
         selfCollider = GetComponent<Collider2D>();
 
         // RequireComponent only adds missing components when EnemyBehavior is added,
@@ -207,6 +223,7 @@ public class EnemyBehavior : MonoBehaviour
 
         lastKnownPlayerPosition = playerCollider.bounds.center;
         lastSeenTime = Time.time;
+        if (flight != null) flight.RememberPlayerPosition(lastKnownPlayerPosition);
 
         if (currentState == EnemyState.Patrol) SetState(EnemyState.Chase);
     }
@@ -240,7 +257,9 @@ public class EnemyBehavior : MonoBehaviour
     {
         if (enemyData == null) return;
 
-        currentGround = movement.IsOnGround() ? GetGroundBelow(selfCollider.bounds, out _) : null;
+        // While flying the ground controller is switched off, so its ground check is stale.
+        bool isFlying = flight != null && flight.IsFlying;
+        currentGround = !isFlying && movement.IsOnGround() ? GetGroundBelow(selfCollider.bounds, out _) : null;
 
         // Player missing or destroyed: just keep patrolling.
         bool canSeePlayer = playerCollider != null && CanSeePlayer();
@@ -249,6 +268,7 @@ public class EnemyBehavior : MonoBehaviour
             lastKnownPlayerPosition = playerCollider.bounds.center;
             lastSeenTime = Time.time;
             RememberPlayerPlatform();
+            if (flight != null) flight.RememberPlayerPosition(lastKnownPlayerPosition);
         }
 
         ForgetOldPlatforms();
@@ -269,6 +289,18 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.JumpAttack:
                 RunJumpAttack();
                 break;
+            case EnemyState.Charge:
+                RunCharge();
+                break;
+            case EnemyState.Stunned:
+                Move(0f, 0f);
+                break;
+            case EnemyState.Flying:
+                FlyAtPlayer(canSeePlayer);
+                break;
+            case EnemyState.FlyingHome:
+                FlyHome();
+                break;
         }
     }
 
@@ -284,8 +316,9 @@ public class EnemyBehavior : MonoBehaviour
                 break;
 
             case EnemyState.Chase:
-                // The jump attack takes priority whenever its cooldown is ready; the basic attack covers the time in between.
-                if (TryStartJumpAttack(canSeePlayer)) break;
+                if (TryTakeOff(canSeePlayer, distanceToPlayer)) break;
+                // Special attacks take priority whenever their cooldown is ready; the basic attack covers the time in between.
+                if (TryStartCharge(canSeePlayer) || TryStartJumpAttack(canSeePlayer)) break;
                 if (canSeePlayer && distanceToPlayer <= enemyData.attackRange) SetState(EnemyState.Attack);
                 else if (!remembersPlayer) SetState(EnemyState.Patrol);
                 break;
@@ -293,7 +326,8 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.Attack:
                 // Never cancel an attack halfway through its windup.
                 if (attack != null && attack.IsAttacking) break;
-                if (TryStartJumpAttack(canSeePlayer)) break;
+                if (TryTakeOff(canSeePlayer, distanceToPlayer)) break;
+                if (TryStartCharge(canSeePlayer) || TryStartJumpAttack(canSeePlayer)) break;
                 if (!canSeePlayer || distanceToPlayer > enemyData.attackRange + AttackRangeTolerance) SetState(EnemyState.Chase);
                 break;
 
@@ -301,7 +335,168 @@ public class EnemyBehavior : MonoBehaviour
                 // Runs until the enemy lands; afterwards Chase decides what's next.
                 if (jumpAttack == null || !jumpAttack.IsActive) SetState(EnemyState.Chase);
                 break;
+
+            case EnemyState.Charge:
+                // Runs until the charge ends; a wall hit stuns the enemy first.
+                if (chargeAttack == null || !chargeAttack.IsActive)
+                    SetState(chargeAttack != null && chargeAttack.IsStunned ? EnemyState.Stunned : EnemyState.Chase);
+                break;
+
+            case EnemyState.Stunned:
+                if (chargeAttack == null || !chargeAttack.IsStunned) SetState(EnemyState.Chase);
+                break;
+
+            case EnemyState.Flying:
+                // Lost the player for loseSightTime: fly back and land.
+                if (!remembersPlayer) SetState(EnemyState.FlyingHome);
+                break;
+
+            case EnemyState.FlyingHome:
+                // Turn back if the player shows up in attack range again, or gives themselves away by hitting it.
+                if (remembersPlayer && (!canSeePlayer || distanceToPlayer <= enemyData.attackRange)) SetState(EnemyState.Flying);
+                break;
         }
+    }
+
+    /// <summary>
+    /// Enemies with an EnemyFlight component take off as soon as they see the player inside their attack range.
+    /// </summary>
+    private bool TryTakeOff(bool canSeePlayer, float distanceToPlayer)
+    {
+        if (flight == null || !canSeePlayer || distanceToPlayer > enemyData.attackRange) return false;
+
+        // Flying replaces the ground route.
+        hasRoute = false;
+        airborneOnRoute = false;
+
+        flight.TakeOff();
+        SetState(EnemyState.Flying);
+        return true;
+    }
+
+    /// <summary>
+    /// Flies around the player (or after them along their trail) and shoots whenever they are visible and in range.
+    /// </summary>
+    private void FlyAtPlayer(bool canSeePlayer)
+    {
+        flight.FlyTowardPlayer(lastKnownPlayerPosition, canSeePlayer, enemyData);
+        Face(canSeePlayer ? lastKnownPlayerPosition.x - transform.position.x : flight.Velocity.x);
+
+        if (attack == null || !canSeePlayer) return;
+        if (Physics2D.Distance(selfCollider, playerCollider).distance <= enemyData.attackRange)
+            attack.TryAttack(lastKnownPlayerPosition, enemyData);
+    }
+
+    private void FlyHome()
+    {
+        Face(flight.Velocity.x);
+        if (flight.FlyHome(enemyData)) SetState(EnemyState.Patrol);
+    }
+
+    /// <summary>
+    /// Starts a charge if the cooldown is ready, the enemy stands on the ground and the player is in range at roughly
+    /// the same height. The direction is fixed when the windup starts, so the player can dodge it.
+    /// </summary>
+    private bool TryStartCharge(bool canSeePlayer)
+    {
+        if (chargeAttack == null || !chargeAttack.IsReady || !canSeePlayer || currentGround == null) return false;
+
+        Bounds self = selfCollider.bounds;
+        Bounds player = playerCollider.bounds;
+        float deltaX = player.center.x - self.center.x;
+        if (Mathf.Abs(deltaX) > enemyData.chargeRange) return false;
+        if (Mathf.Abs(player.min.y - Feet) > enemyData.chargeMaxHeightDifference) return false;
+
+        chargeDirection = deltaX >= 0f ? 1 : -1;
+        chargeRunStarted = false;
+
+        // The charge moves the enemy off its route; Chase replans from wherever it stops.
+        hasRoute = false;
+        airborneOnRoute = false;
+
+        chargeAttack.Begin(enemyData);
+        SetState(EnemyState.Charge);
+        return true;
+    }
+
+    /// <summary>
+    /// Stands still facing the player during the windup, then runs straight ahead at chargeSpeed, through the player.
+    /// Stops at a wall (stunned), at a ledge or after chargeDistance.
+    /// </summary>
+    private void RunCharge()
+    {
+        if (!chargeAttack.WindupFinished)
+        {
+            Move(0f, 0f);
+            Face(chargeDirection);
+            return;
+        }
+
+        if (!chargeRunStarted)
+        {
+            // Knocked off the ground during the windup: cancel instead of charging in mid-air.
+            if (currentGround == null)
+            {
+                chargeAttack.End(enemyData, false);
+                return;
+            }
+
+            chargeRunStarted = true;
+            chargeStartX = transform.position.x;
+            // Backup in case the enemy gets stuck on something that is neither a wall nor a ledge.
+            chargeGiveUpTime = Time.time + enemyData.chargeDistance / enemyData.chargeSpeed + 1f;
+            chargeAttack.StartCharge(chargeDirection, enemyData);
+        }
+
+        float step = enemyData.chargeSpeed * Time.fixedDeltaTime;
+
+        if (IsWallAhead(chargeDirection, step))
+        {
+            StopCharge(true);
+            return;
+        }
+
+        float remaining = enemyData.chargeDistance - Mathf.Abs(transform.position.x - chargeStartX);
+        bool atLedge = currentGround != null && IsGapAhead(chargeDirection, step + SkinWidth);
+
+        if (remaining <= 0f || atLedge || Time.time >= chargeGiveUpTime)
+        {
+            StopCharge(false);
+            return;
+        }
+
+        // Slow down for the last step, so the charge ends at exactly chargeDistance.
+        float speed = Mathf.Min(enemyData.chargeSpeed, remaining / Time.fixedDeltaTime);
+        Move(chargeDirection, speed / Mathf.Max(enemyData.speed, 0.01f));
+    }
+
+    private void StopCharge(bool hitWall)
+    {
+        Move(0f, 0f);
+        movement.StopHorizontalMomentum();
+        chargeAttack.End(enemyData, hitWall);
+    }
+
+    /// <summary>
+    /// True when a steep wall (anything the enemy can't walk up) is within distance in front of the enemy.
+    /// The check starts just above the feet, so the floor and gentle slopes don't count.
+    /// </summary>
+    private bool IsWallAhead(int direction, float distance)
+    {
+        Bounds self = selfCollider.bounds;
+        float bottom = Feet + 0.1f;
+        var center = new Vector2(self.center.x, (bottom + self.max.y) * 0.5f);
+        var size = new Vector2(self.size.x - SkinWidth * 2f, self.max.y - bottom - SkinWidth * 2f);
+
+        int count = Physics2D.BoxCast(center, size, 0f, Vector2.right * direction, groundFilter, castBuffer, distance + SkinWidth * 2f);
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit2D hit = castBuffer[i];
+            if (hit.collider == playerCollider) continue;
+            if (Mathf.Abs(hit.normal.x) >= WallNormalThreshold) return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -936,13 +1131,13 @@ public class EnemyBehavior : MonoBehaviour
     }
 
     /// <summary>
-    /// True when there is no ground just in front of the enemy's feet.
+    /// True when there is no ground lookAhead in front of the enemy's feet.
     /// </summary>
-    private bool IsGapAhead(int direction)
+    private bool IsGapAhead(int direction, float lookAhead = EdgeMargin)
     {
         Bounds self = selfCollider.bounds;
         float frontX = direction > 0 ? self.max.x : self.min.x;
-        Vector2 probe = new Vector2(frontX + direction * EdgeMargin, Feet + 0.1f);
+        Vector2 probe = new Vector2(frontX + direction * lookAhead, Feet + 0.1f);
 
         return Physics2D.Raycast(probe, Vector2.down, GapDepth, groundMask).collider == null;
     }

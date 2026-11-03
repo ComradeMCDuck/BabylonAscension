@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8889766612805912733}
   - component: {fileID: 4402861944666598241}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: BowPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -51,13 +51,8 @@ MonoBehaviour:
   arrowSpawn: {fileID: 3965774374420034426}
   bowRenderer: {fileID: 7292817614088652803}
   movementController: {fileID: 0}
-  arrowPrefab:
-  - {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
-  - {fileID: 6124286472832785063, guid: 3e9adc6afd7d7d44492c5c88b42bdd6f, type: 3}
-  - {fileID: 6124286472832785063, guid: d60d3030fcd54714bdc5c012594c470c, type: 3}
-  - {fileID: 6124286472832785063, guid: 2b46e268e0516284eba146d808a4ba56, type: 3}
-  - {fileID: 6124286472832785063, guid: c37fe457e75f483589041f57f9b2b8c4, type: 3}
-  selectedArrowIndex: 0
+  animator: {fileID: 7487572580236149384}
+  basicArrowPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
   bowFrames:
   - {fileID: -415446080585258355, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
   - {fileID: 1305767116, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
@@ -66,8 +61,10 @@ MonoBehaviour:
   - {fileID: 1047152348, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
   - {fileID: 1950325863, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
   maxChargeTime: 1.2
+  minDrawTime: 0.35
   spawnOffset: 0.15
   fireCooldown: 0.1
+  groundedRecoilMultiplier: 0.45
 --- !u!1 &1705944809059051592
 GameObject:
   m_ObjectHideFlags: 0
@@ -77,7 +74,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7664295490018543239}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Appearance
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -109,7 +106,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3965774374420034426}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: ArrowSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -141,7 +138,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1245336768785642657}
   - component: {fileID: 7327135185029443386}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -172,8 +169,8 @@ SpriteRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7651568361535852871}
   m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
@@ -189,7 +186,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: b18d0f7200353cc49992e13f1ac325d7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -233,7 +230,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2233092007229199044}
   - component: {fileID: 7292817614088652803}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: bow_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -324,7 +321,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7362350623775227887}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: CameraFollow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -365,7 +362,9 @@ GameObject:
   - component: {fileID: 6391775073961633728}
   - component: {fileID: 8089714174100080038}
   - component: {fileID: 7189589638907935899}
-  m_Layer: 8
+  - component: {fileID: 4242424242424242424}
+  - component: {fileID: 8319859182551271507}
+  m_Layer: 3
   m_Name: Adventurer
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -573,9 +572,9 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8824978788996705367}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: fe49df5b72ea9ee469b3dddda53d65bb, type: 2}
+  m_Controller: {fileID: 9100000, guid: c70c8605484c8dc40b7d72bada373279, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -604,11 +603,6 @@ MonoBehaviour:
   jumpActionReference: {fileID: 0}
   dashActionReference: {fileID: 0}
   crouchActionReference: {fileID: 0}
-  firstArrowActionReference: {fileID: 0}
-  secondArrowActionReference: {fileID: 0}
-  thirdArrowActionReference: {fileID: 0}
-  fourthArrowActionReference: {fileID: 0}
-  fifthArrowActionReference: {fileID: 0}
 --- !u!114 &6391775073961633728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -655,3 +649,30 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Health
   entityData: {fileID: 11400000, guid: b799efc2fe1ca5f499ba8c7469f85560, type: 2}
   spriteRenderer: {fileID: 0}
+--- !u!114 &4242424242424242424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8824978788996705367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb7d8772b76a47c8988cf100a178f4a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SoulInventory
+  souls: 0
+--- !u!114 &8319859182551271507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8824978788996705367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 328ad23224f2fb549815614cb24084aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimatorHelper
+  movementController: {fileID: 5143643343682009756}
+  animator: {fileID: 7487572580236149384}

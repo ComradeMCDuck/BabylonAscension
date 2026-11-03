@@ -3,10 +3,11 @@ using DYP;
 using UnityEngine;
 
 /// <summary>
-/// 2D projectile shared by the player's bow and ranged/melee enemies (just a sprite, no Rigidbody or Collider needed).
+/// 2D projectile shared by the player's bow and ranged enemies (just a sprite, no Rigidbody or Collider needed).
 /// It moves itself and sweeps a circle along its path every physics step, so it can't tunnel
 /// through thin colliders and also hits kinematic Rigidbody2Ds, which kinematic-vs-kinematic trigger callbacks would miss.
-/// The player launches it with a charge and its ArrowData; enemies launch it with their EntityData.
+/// Gravity pulls it into an arc. The player launches it with a charge and its ArrowData (gravity scales with the charge);
+/// enemies launch it with their EntityData and aim higher to make up for the drop.
 /// </summary>
 public class ArrowProjectile : MonoBehaviour
 {
@@ -35,13 +36,18 @@ public class ArrowProjectile : MonoBehaviour
 
     private Vector2 direction;
     private float speed;
+    private float gravity;
     private float damage;
     private float knockback;
     private int remainingBounces;
     private int remainingPenetrations;
     // Characters already hit by this projectile, so a penetrating shot can't hit the same one twice.
     private readonly HashSet<Transform> hitCharacters = new HashSet<Transform>();
-    private float remainingRange = float.PositiveInfinity;
+    // Armor this projectile pierced, so it isn't hit again while passing through.
+    private readonly HashSet<EnemyArmor> ignoredArmor = new HashSet<EnemyArmor>();
+    // Armor the arrow was just deflected off. A moving enemy can push its armor over the arrow on the next steps,
+    // so starting inside this armor is ignored until the arrow is out; after that it can deflect off it again.
+    private EnemyArmor escapingArmor;
     private GameObject owner;
     private LayerMask activeHitLayers;
     private bool launched;
@@ -72,12 +78,14 @@ public class ArrowProjectile : MonoBehaviour
     }
 
     /// <summary>
-    /// Bow shot: damage, speed and knockback scale with the charge (0..1) between ArrowData's min and max.
+    /// Bow shot: damage, speed, knockback and gravity scale with the charge (0..1) between ArrowData's min and max.
+    /// maxSpeedMultiplier scales ArrowData's max speed (bow upgrades), so a full charge gets the whole bonus.
     /// </summary>
     public void Launch(
         Vector3 direction,
         float charge,
-        GameObject shooter)
+        GameObject shooter,
+        float maxSpeedMultiplier = 1f)
     {
         if (arrowData == null)
         {
@@ -87,35 +95,58 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         damage = Mathf.Lerp(arrowData.minDamage, arrowData.maxDamage, charge);
-        speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed, charge);
+        speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed * maxSpeedMultiplier, charge);
         knockback = Mathf.Lerp(arrowData.minKnockback, arrowData.maxKnockback, charge);
+        gravity = Mathf.Lerp(arrowData.minChargeGravity, arrowData.maxChargeGravity, charge);
 
         // Copy the count so the shared ArrowData asset is never modified.
         remainingBounces = Mathf.Max(0, arrowData.bounces);
         remainingPenetrations = Mathf.Max(0, arrowData.penetrations);
-        remainingRange = float.PositiveInfinity;
         activeHitLayers = hitLayers;
 
         Begin(direction, shooter, lifetime);
     }
 
     /// <summary>
-    /// Enemy shot toward a target position, using the enemy's attack stats.
-    /// Unless projectileKeepsFlying is set, it disappears after projectileRange (that's how melee enemies use it).
+    /// Enemy shot at a target position, using the enemy's attack stats. The speed is fixed, so the enemy
+    /// aims higher to make up for projectileGravity.
     /// </summary>
     public void Launch(Vector2 targetPosition, EntityData data, GameObject shooter)
     {
         damage = data.attackDamage;
         speed = data.attackSpeed;
+        gravity = data.projectileGravity;
         knockback = 0f;
         remainingBounces = arrowData != null ? Mathf.Max(0, arrowData.bounces) : 0;
         remainingPenetrations = arrowData != null ? Mathf.Max(0, arrowData.penetrations) : 0;
-        remainingRange = data.projectileKeepsFlying ? float.PositiveInfinity : data.projectileRange;
         activeHitLayers = enemyShotHitLayers;
 
         // Direction is fixed once, at launch.
-        Vector2 toTarget = targetPosition - (Vector2)transform.position;
-        Begin(toTarget.sqrMagnitude > 0.0001f ? toTarget : Vector2.right, shooter, data.projectileLifetime);
+        Begin(GetAimDirection(targetPosition - (Vector2)transform.position), shooter, data.projectileLifetime);
+    }
+
+    /// <summary>
+    /// Launch direction that makes the arc pass through the target offset, using the flatter of the two angles that do.
+    /// Out of reach, it shoots at 45 degrees (the farthest-reaching angle) toward the target, so the arrow lands short.
+    /// </summary>
+    private Vector2 GetAimDirection(Vector2 toTarget)
+    {
+        if (toTarget.sqrMagnitude < 0.0001f) return Vector2.right;
+
+        float dx = Mathf.Abs(toTarget.x);
+        float dy = toTarget.y;
+        float side = toTarget.x < 0f ? -1f : 1f;
+
+        // No drop, or straight up/down: aim right at it.
+        if (gravity <= 0f || speed <= 0f || dx < 0.0001f) return toTarget;
+
+        // Projectile motion: tan(angle) = (v^2 - sqrt(v^4 - g(g dx^2 + 2 dy v^2))) / (g dx). The minus sign is the flat shot.
+        float v2 = speed * speed;
+        float discriminant = v2 * v2 - gravity * (gravity * dx * dx + 2f * dy * v2);
+        if (discriminant < 0f) return new Vector2(side, 1f);
+
+        float tanAngle = (v2 - Mathf.Sqrt(discriminant)) / (gravity * dx);
+        return new Vector2(side, tanAngle);
     }
 
     private void Begin(Vector2 launchDirection, GameObject shooter, float lifeSeconds)
@@ -123,6 +154,8 @@ public class ArrowProjectile : MonoBehaviour
         owner = shooter;
         direction = launchDirection.normalized;
         hitCharacters.Clear();
+        ignoredArmor.Clear();
+        escapingArmor = null;
 
         // Make the projectile's local X axis follow its travel direction.
         if (alignToDirection) transform.right = direction;
@@ -136,8 +169,11 @@ public class ArrowProjectile : MonoBehaviour
         if (!launched)
             return;
 
+        // Half the step's gravity before moving and half after, so the flight follows the exact arc enemies aim with.
+        ApplyGravity(Time.fixedDeltaTime * 0.5f);
+
         Vector2 position = transform.position;
-        float step = Mathf.Min(speed * Time.fixedDeltaTime, remainingRange);
+        float step = speed * Time.fixedDeltaTime;
 
         // Collect everything along this step (not just the first hit), so a penetrating
         // shot can pass through several targets and still find the wall behind them.
@@ -148,6 +184,10 @@ public class ArrowProjectile : MonoBehaviour
         s_StepHits.Clear();
         Physics2D.CircleCast(position, radius, direction, filter, s_StepHits, step);
         s_StepHits.Sort((a, b) => a.distance.CompareTo(b.distance));
+
+        // Kept only while this step still starts inside it (set again below), or by a new deflection.
+        EnemyArmor escaping = escapingArmor;
+        escapingArmor = null;
 
         foreach (RaycastHit2D hit in s_StepHits)
         {
@@ -160,6 +200,26 @@ public class ArrowProjectile : MonoBehaviour
                 return;
             }
 
+            // Checked before hitCharacters: a deflected arrow may come back and hit the same enemy's unarmored side.
+            EnemyArmor armor = hit.collider.GetComponent<EnemyArmor>();
+            if (armor != null && armor.isActiveAndEnabled)
+            {
+                if (ignoredArmor.Contains(armor))
+                    continue;
+
+                // Still inside the armor it just deflected off (the enemy moved it over the arrow): let it fly out.
+                if (armor == escaping && hit.distance <= 0f)
+                {
+                    escapingArmor = armor;
+                    continue;
+                }
+
+                if (HandleArmorHit(hit, armor))
+                    return;
+
+                continue;
+            }
+
             // Already hit by this projectile (its other colliders, or still overlapping after penetrating it).
             if (hitCharacters.Contains(GetCharacter(hit.collider)))
                 continue;
@@ -169,9 +229,17 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         MoveTo(position + direction * step);
+        ApplyGravity(Time.fixedDeltaTime * 0.5f);
+    }
 
-        remainingRange -= step;
-        if (remainingRange <= 0f) Destroy(gameObject);
+    private void ApplyGravity(float time)
+    {
+        if (gravity <= 0f) return;
+
+        Vector2 velocity = direction * speed + Vector2.down * (gravity * time);
+        speed = velocity.magnitude;
+        if (speed > 0.0001f) direction = velocity / speed;
+        if (alignToDirection) transform.right = direction;
     }
 
     // The character a collider belongs to: everything under the Rigidbody2D the collider is attached to.
@@ -197,8 +265,9 @@ public class ArrowProjectile : MonoBehaviour
     /// Damages and knocks back every target within ArrowData.explosionRadius.
     /// Damage and knockback fall off linearly from the center values to the edge values,
     /// measured to the closest point of each target's collider. Knockback pushes away from the center.
+    /// hitArmor is the armor the arrow exploded on, if any; its enemy takes reduced damage.
     /// </summary>
-    private void Explode(Vector2 center)
+    private void Explode(Vector2 center, EnemyArmor hitArmor = null)
     {
         // Destroy is deferred to the end of the frame; stop here so a second physics step can't explode again.
         launched = false;
@@ -231,6 +300,10 @@ public class ArrowProjectile : MonoBehaviour
             if (IsOwner(col))
                 continue;
 
+            // Walls shield targets behind them.
+            if (IsBlockedFromExplosion(center, col))
+                continue;
+
             float distance = Vector2.Distance(center, col.ClosestPoint(center));
             Transform character = GetCharacter(col);
 
@@ -245,26 +318,33 @@ public class ArrowProjectile : MonoBehaviour
 
             IDamageable target = FindDamageable(col);
             if (target != null)
-                target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff));
+            {
+                float armorMultiplier = hitArmor != null && pair.Key == hitArmor.Character ? hitArmor.ExplosionDamageMultiplier : 1f;
+                target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff) * armorMultiplier);
+            }
 
             float explosionKnockback = Mathf.Lerp(arrowData.explosionCenterKnockback, arrowData.explosionEdgeKnockback, falloff);
 
             if (explosionKnockback > 0f)
             {
-                BasicMovementController2D targetMovement =
-                    col.GetComponentInParent<BasicMovementController2D>();
+                Vector2 away = (Vector2)pair.Key.position - center;
+                Vector2 pushDirection = away.sqrMagnitude > 0.0001f ? away.normalized : direction;
 
-                if (targetMovement != null)
-                {
-                    Vector2 away = (Vector2)pair.Key.position - center;
-                    Vector2 pushDirection = away.sqrMagnitude > 0.0001f ? away.normalized : direction;
-
-                    targetMovement.ApplyKnockback(pushDirection * explosionKnockback);
-                }
+                ApplyKnockback(col, pushDirection * explosionKnockback);
             }
         }
 
         Destroy(gameObject);
+    }
+
+    /// <summary>
+    /// True if environment is in the way of both the collider's closest point and its center,
+    /// so a target peeking out from behind cover still gets hit.
+    /// </summary>
+    private bool IsBlockedFromExplosion(Vector2 center, Collider2D col)
+    {
+        return Physics2D.Linecast(center, col.ClosestPoint(center), environmentLayers).collider != null
+            && Physics2D.Linecast(center, col.bounds.center, environmentLayers).collider != null;
     }
 
     /// <summary>
@@ -287,15 +367,8 @@ public class ArrowProjectile : MonoBehaviour
         if (target != null)
             target.TakeDamage(damage);
 
-        // Characters move with the same 2D controller as the player, so knockback goes through it.
         if (knockback > 0f)
-        {
-            BasicMovementController2D targetMovement =
-                other.GetComponentInParent<BasicMovementController2D>();
-
-            if (targetMovement != null)
-                targetMovement.ApplyKnockback(direction * knockback);
-        }
+            ApplyKnockback(other, direction * knockback);
 
         // Damage over time; the ticks only deal damage, the knockback above happens once on the hit.
         if (target != null && arrowData != null && arrowData.IsPoisonous)
@@ -312,6 +385,24 @@ public class ArrowProjectile : MonoBehaviour
         launched = false;
         Destroy(gameObject);
         return true;
+    }
+
+    /// <summary>
+    /// Characters move with the same 2D controller as the player, so knockback normally goes through it.
+    /// A flying enemy has that controller switched off, so its flight takes the push instead.
+    /// </summary>
+    private static void ApplyKnockback(Collider2D target, Vector2 impulse)
+    {
+        EnemyFlight flight = target.GetComponentInParent<EnemyFlight>();
+        if (flight != null && flight.IsFlying)
+        {
+            flight.ApplyKnockback(impulse);
+            return;
+        }
+
+        BasicMovementController2D targetMovement = target.GetComponentInParent<BasicMovementController2D>();
+        if (targetMovement != null)
+            targetMovement.ApplyKnockback(impulse);
     }
 
     private bool IsOwner(Collider2D other)
@@ -332,18 +423,55 @@ public class ArrowProjectile : MonoBehaviour
     {
         if (remainingBounces <= 0)
         {
+            // Explode just off the surface, so the wall check doesn't start inside the wall that was hit.
             if (IsExplosive)
-                Explode(hit.centroid);
+                Explode(hit.centroid + hit.normal * BounceSkin);
             else
                 Destroy(gameObject);
             return;
         }
 
         remainingBounces--;
+        Deflect(hit);
+    }
 
-        // Range already travelled up to the surface.
-        remainingRange -= hit.distance;
+    /// <summary>
+    /// Player arrow hitting an enemy's armor. Explosive arrows explode (the armored enemy takes reduced damage),
+    /// arrows with penetrations left use one to pierce it, and everything else deflects without using a bounce.
+    /// Returns true if the projectile stopped or deflected (ending this step), false if it pierced and keeps flying.
+    /// </summary>
+    private bool HandleArmorHit(RaycastHit2D hit, EnemyArmor armor)
+    {
+        if (IsExplosive)
+        {
+            Explode(hit.centroid, armor);
+            return true;
+        }
 
+        if (remainingPenetrations > 0)
+        {
+            remainingPenetrations--;
+            ignoredArmor.Add(armor);
+            return false;
+        }
+
+        // Started the step inside the armor (e.g. shot point-blank): the cast has no real surface normal,
+        // so send the arrow straight back and let it leave the armor instead of bouncing inside it forever.
+        if (hit.distance <= 0f)
+        {
+            direction = -direction;
+            if (alignToDirection) transform.right = direction;
+            escapingArmor = armor;
+            return true;
+        }
+
+        Deflect(hit);
+        escapingArmor = armor;
+        return true;
+    }
+
+    private void Deflect(RaycastHit2D hit)
+    {
         // Mirror the direction around the surface normal, like a pool ball:
         // Example: hitting the ground at 30 degrees leaves it at 150 degrees.
         direction = Vector2.Reflect(direction, hit.normal).normalized;

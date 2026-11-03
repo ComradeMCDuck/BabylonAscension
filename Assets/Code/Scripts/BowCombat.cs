@@ -1,4 +1,6 @@
 
+using System;
+using System.Collections.Generic;
 using DYP;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,11 +14,12 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private SpriteRenderer bowRenderer;
     [Tooltip("Kinematic 2D controller. Recoil is applied through it when assigned.")]
     [SerializeField] private BasicMovementController2D movementController;
+    [SerializeField] private Animator animator;
+
 
     [Header("Arrows")]
-    [Tooltip("Element 0 is selected with key 1, element 1 with key 2, element 2 with key 3, element 3 with key 4, element 4 with key 5. Each prefab carries its own ArrowData.")]
-    [SerializeField] private GameObject[] arrowPrefab;
-    [SerializeField] private int selectedArrowIndex = 0;
+    [Tooltip("The arrow fired until another one is picked at an altar. Each prefab carries its own ArrowData.")]
+    [SerializeField] private GameObject basicArrowPrefab;
 
     [Header("Bow Animation")]
     [Tooltip("Frame 0 = idle, frames 1-5 = drawing.")]
@@ -25,6 +28,8 @@ public class BowCombat : MonoBehaviour
     [Header("Charge")]
     [Tooltip("Seconds of holding needed to reach full charge.")]
     [SerializeField] private float maxChargeTime = 1.2f;
+    [Tooltip("Seconds the bow must be drawn before releasing fires an arrow. Releasing earlier cancels the shot, so spam-clicking doesn't fire.")]
+    [SerializeField, Min(0f)] private float minDrawTime = 0.25f;
 
     [Header("Arrow Spawn")]
     [SerializeField] private float spawnOffset = 0.15f;
@@ -32,19 +37,32 @@ public class BowCombat : MonoBehaviour
 
     [Header("Firing")]
     [SerializeField] private float fireCooldown = 0.15f;
+    [Tooltip("Fraction of the arrow's recoil applied while standing on the ground. 1 = same as in the air.")]
+    [SerializeField, Range(0f, 1f)] private float groundedRecoilMultiplier = 0.8f;
 
     private float nextShotTime;
 
 
     private float chargeTimer;
     private bool isCharging;
+    private GameObject currentArrowPrefab;
+    private readonly BowUpgrades upgrades = new BowUpgrades();
+    // Arrows bought at altars (plus the basic arrow). Switching to an owned arrow is free.
+    private readonly HashSet<GameObject> ownedArrows = new HashSet<GameObject>();
+
+    /// <summary>Raised with the new arrow prefab whenever the fired arrow changes.</summary>
+    public event Action<GameObject> ArrowChanged;
 
     public bool IsCharging => isCharging;
-    public int SelectedArrowIndex => selectedArrowIndex;
+    public GameObject CurrentArrowPrefab => currentArrowPrefab;
+    /// <summary>Permanent upgrades picked at altars. Recreated with the bow, so they reset on death.</summary>
+    public BowUpgrades Upgrades => upgrades;
+    /// <summary>Max Charge Time with upgrades applied.</summary>
+    public float MaxChargeTime => Mathf.Max(0f, upgrades.Apply(BowStat.MaxChargeTime, maxChargeTime));
     public float Charge01 =>
-        maxChargeTime <= 0f
+        MaxChargeTime <= 0f
             ? 1f
-            : Mathf.Clamp01(chargeTimer / maxChargeTime);
+            : Mathf.Clamp01(chargeTimer / MaxChargeTime);
 
     private void Awake()
     {
@@ -60,37 +78,37 @@ public class BowCombat : MonoBehaviour
         if (aimCamera == null)
             Debug.LogError("BowCombat needs an aim camera.", this);
 
-        if (arrowPrefab == null || arrowPrefab.Length == 0)
-            Debug.LogError("Assign an arrow prefab to BowCombat.", this);
+        if (basicArrowPrefab == null)
+            Debug.LogError("Assign the basic arrow prefab to BowCombat.", this);
 
-        SelectArrow(selectedArrowIndex);
+        // A scene reload on death recreates the bow, so the pick resets to the basic arrow.
+        currentArrowPrefab = basicArrowPrefab;
+        if (basicArrowPrefab != null) ownedArrows.Add(basicArrowPrefab);
         SetBowFrame(0);
     }
 
-    private void OnEnable()
+    public bool OwnsArrow(GameObject prefab) => prefab != null && ownedArrows.Contains(prefab);
+
+    /// <summary>Marks an arrow as bought, so picking it later is free. Doesn't select it.</summary>
+    public void UnlockArrow(GameObject prefab)
     {
-        if (movementController != null)
-            movementController.OnArrowSelected += SelectArrow;
+        if (prefab != null) ownedArrows.Add(prefab);
     }
 
-    private void OnDisable()
+    /// <summary>Makes the bow fire the given arrow prefab, e.g. when the player picks one at an altar.</summary>
+    public void SetArrow(GameObject prefab)
     {
-        if (movementController != null)
-            movementController.OnArrowSelected -= SelectArrow;
-    }
-
-    public void SelectArrow(int index)
-    {
-        if (arrowPrefab == null || arrowPrefab.Length == 0)
-            return;
-
-        if (index < 0 || index >= arrowPrefab.Length || arrowPrefab[index] == null)
+        if (prefab == null)
         {
-            Debug.LogWarning($"No arrow prefab assigned at index {index}.", this);
+            Debug.LogWarning("Tried to give BowCombat an empty arrow prefab.", this);
             return;
         }
 
-        selectedArrowIndex = index;
+        if (prefab == currentArrowPrefab)
+            return;
+
+        currentArrowPrefab = prefab;
+        ArrowChanged?.Invoke(prefab);
     }
 
     private void Update()
@@ -114,12 +132,15 @@ public class BowCombat : MonoBehaviour
         if (isCharging && Mouse.current.leftButton.isPressed)
         {
             chargeTimer += Time.deltaTime;
-            chargeTimer = Mathf.Min(chargeTimer, maxChargeTime);
+            chargeTimer = Mathf.Min(chargeTimer, MaxChargeTime);
             UpdateBowAnimation();
         }
 
         if (isCharging && Mouse.current.leftButton.wasReleasedThisFrame)
             ReleaseShot();
+
+        if (animator != null)
+            animator.SetBool("isCharging", IsCharging);
     }
 
     private void AimAtCursor()
@@ -176,10 +197,15 @@ public class BowCombat : MonoBehaviour
         float charge = Charge01;
         isCharging = false;
 
-        if (arrowPrefab == null ||
-            selectedArrowIndex < 0 ||
-            selectedArrowIndex >= arrowPrefab.Length ||
-            arrowPrefab[selectedArrowIndex] == null)
+        // Released too early: cancel the shot instead of firing a weak arrow.
+        if (chargeTimer < minDrawTime)
+        {
+            chargeTimer = 0f;
+            SetBowFrame(0);
+            return;
+        }
+
+        if (currentArrowPrefab == null)
         {
             SetBowFrame(0);
             return;
@@ -195,7 +221,7 @@ public class BowCombat : MonoBehaviour
             arrowSpawn.position + direction * spawnOffset;
 
         GameObject arrowObject = Instantiate(
-            arrowPrefab[selectedArrowIndex],
+            currentArrowPrefab,
             spawnPosition,
             Quaternion.LookRotation(Vector3.forward, Vector3.up)
         );
@@ -209,6 +235,7 @@ public class BowCombat : MonoBehaviour
                 "Arrow prefab needs an ArrowProjectile component.",
                 arrowObject
             );
+            animator?.SetTrigger("Shoot");
 
             Destroy(arrowObject);
             return;
@@ -228,12 +255,17 @@ public class BowCombat : MonoBehaviour
         arrow.Launch(
             direction,
             charge,
-            shooter
+            shooter,
+            upgrades.Apply(BowStat.FullChargeArrowSpeed, 1f)
         );
+        animator?.SetTrigger("Shoot");
 
-        // Push the player opposite the shot direction only while airborne.
-        if (movementController != null && !movementController.IsOnGround() && !movementController.IsSliding)
+        // Push the player opposite the shot direction; weaker while grounded, none while sliding.
+        if (movementController != null && !movementController.IsSliding)
         {
+            if (movementController.IsOnGround())
+                recoil *= groundedRecoilMultiplier;
+
             movementController.AddImpulse(-(Vector2)direction * recoil);
         }
     }
@@ -266,3 +298,5 @@ public class BowCombat : MonoBehaviour
             bowRenderer.sprite = bowFrames[index];
     }
 }
+
+
