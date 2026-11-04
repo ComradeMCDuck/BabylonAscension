@@ -1230,6 +1230,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 245412422}
+  - component: {fileID: 245412423}
   m_Layer: 0
   m_Name: UI
   m_TagString: Untagged
@@ -1253,6 +1254,19 @@ Transform:
   - {fileID: 2097655055}
   m_Father: {fileID: 1823606511}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &245412423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245412421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 790f00996421334478c5a6c4c3bf8f8a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShopMenu
+  window: {fileID: 1334111927}
 --- !u!1 &252281190
 GameObject:
   m_ObjectHideFlags: 0
@@ -5706,7 +5720,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f5d45e5b14d71840b777ea97fae47e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopAltar
-  window: {fileID: 0}
   prompt: {fileID: 925254822}
 --- !u!1 &955002382
 GameObject:
@@ -11483,7 +11496,7 @@ MonoBehaviour:
   boxColliders: 20
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0174
+  buildMilliseconds: 0.0351
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
