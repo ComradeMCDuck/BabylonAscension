@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a66635207e3d9924a9fcfea7bccfaae6, type: 3}
+  m_Name: BlazingRoarData
+  m_EditorClassIdentifier: Assembly-CSharp::BlazingRoarData
+  minRange: 0
+  maxRange: 30
+  maxHeightDifference: 30
+  weight: 0.5
+  insideWeight: 5
+  requiresGround: 1
+  windup: 0.8
+  recovery: 0.6
+  cooldown: 9
+  damage: 20
+  roarOriginOffset: {x: 0, y: 1}
+  roarRadius: 5
+  pushForce: 14
+  pushUpForce: 6
+  roarEffectPrefab: {fileID: 0}
+  roarEffectDuration: 1
+  projectilePrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
+  hoverOffsets:
+  - {x: -2.5, y: 2}
+  - {x: 0, y: 2.5}
+  - {x: 2.5, y: 2}
+  conjureDelay: 0.2
+  conjureTime: 0.7
+  fireInterval: 0.5
+  projectileSpeed: 11
+  projectileDamage: 15
+  projectileLifetime: 4

@@ -495,7 +495,6 @@ GameObject:
   - component: {fileID: 7432008294033500260}
   - component: {fileID: 5150938209743507727}
   - component: {fileID: 2177014335127680306}
-  - component: {fileID: 3747405914932898914}
   - component: {fileID: 2070423413871693275}
   - component: {fileID: 8347343785819296506}
   - component: {fileID: 3733485465196266763}
@@ -641,21 +640,6 @@ MonoBehaviour:
   maxDropHeight: 8
   spriteRenderer: {fileID: 0}
   spriteFacesRight: 1
---- !u!114 &3747405914932898914
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5381662566538865667}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e74bef617939334d9577fee3f6e457e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  enemyData: {fileID: 11400000, guid: a0965558714e6c04189f2bee01398b14, type: 2}
-  spriteRenderer: {fileID: 0}
-  currentHealth: 0
 --- !u!114 &2070423413871693275
 MonoBehaviour:
   m_ObjectHideFlags: 0
