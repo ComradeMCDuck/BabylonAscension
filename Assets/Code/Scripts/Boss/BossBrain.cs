@@ -40,6 +40,10 @@ public class BossBrain : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private bool spriteFacesRight = true;
 
+    [Header("Gizmos")]
+    [Tooltip("With the boss selected, outline each attack's Max Range (and Min Range, fainter) in its own color, labelled with the attacks that use it. Ranges are gaps between colliders, so the outline is the boss's collider grown by the range: the player can be hit when their collider touches it.")]
+    [SerializeField] private bool showAttackRanges = true;
+
     private BasicMovementController2D movement;
     private Collider2D selfCollider;
     private Collider2D playerCollider;
@@ -444,5 +448,98 @@ public class BossBrain : MonoBehaviour
         float y = bounds.min.y + 0.05f;
         Gizmos.DrawLine(new Vector3(bounds.max.x, y), new Vector3(bounds.max.x + bossData.preferredDistance, y));
         Gizmos.DrawLine(new Vector3(bounds.min.x, y), new Vector3(bounds.min.x - bossData.preferredDistance, y));
+
+        if (showAttackRanges) DrawAttackRanges(bounds);
+    }
+
+    // Short to long: the attack with the smallest Max Range gets the first color.
+    private static readonly Color[] s_RangeGizmoColors =
+    {
+        new Color(0.2f, 1f, 0.3f),   // green
+        new Color(1f, 0.9f, 0.1f),   // yellow
+        new Color(1f, 0.5f, 0f),     // orange
+        new Color(1f, 0.2f, 0.2f),   // red
+        new Color(1f, 0.3f, 1f),     // magenta
+        new Color(0.4f, 0.6f, 1f)    // blue
+    };
+    // Segments per rounded corner of a range outline.
+    private const int RangeGizmoCornerSegments = 12;
+
+    /// <summary>
+    /// One outline per distinct Min/Max Range pair, shortest first, so attacks sharing a range (e.g. bite and tail
+    /// whip) share a label instead of drawing on top of each other.
+    /// </summary>
+    private void DrawAttackRanges(Bounds body)
+    {
+        var gizmoAttacks = new List<BossAttack>();
+        GetComponentsInChildren(true, gizmoAttacks);
+        gizmoAttacks.RemoveAll(a => a == null || a.BaseData == null || !a.enabled);
+        gizmoAttacks.Sort((a, b) => a.BaseData.maxRange != b.BaseData.maxRange
+            ? a.BaseData.maxRange.CompareTo(b.BaseData.maxRange)
+            : a.BaseData.minRange.CompareTo(b.BaseData.minRange));
+
+        int colorIndex = 0;
+        for (int i = 0; i < gizmoAttacks.Count; colorIndex++)
+        {
+            BossAttackData data = gizmoAttacks[i].BaseData;
+            string label = gizmoAttacks[i].GetType().Name.Replace("Attack", "");
+            int next = i + 1;
+            while (next < gizmoAttacks.Count
+                   && Mathf.Approximately(gizmoAttacks[next].BaseData.maxRange, data.maxRange)
+                   && Mathf.Approximately(gizmoAttacks[next].BaseData.minRange, data.minRange))
+            {
+                label += ", " + gizmoAttacks[next].GetType().Name.Replace("Attack", "");
+                next++;
+            }
+
+            Color color = s_RangeGizmoColors[colorIndex % s_RangeGizmoColors.Length];
+            Gizmos.color = color;
+            DrawGrownBounds(body, data.maxRange);
+            if (data.minRange > 0f)
+            {
+                Gizmos.color = new Color(color.r, color.g, color.b, 0.35f);
+                DrawGrownBounds(body, data.minRange);
+            }
+
+#if UNITY_EDITOR
+            // Stacked down the right side, so labels of nested outlines don't overlap.
+            var labelPosition = new Vector3(body.max.x + data.maxRange, body.center.y - colorIndex * 0.4f, transform.position.z);
+            var style = new GUIStyle(UnityEditor.EditorStyles.boldLabel) { normal = { textColor = color } };
+            UnityEditor.Handles.Label(labelPosition, $"{label} ({data.minRange:0.#}–{data.maxRange:0.#} m)", style);
+#endif
+            i = next;
+        }
+    }
+
+    /// <summary>Outline of every point within range of the box: the box grown by range, with round corners.</summary>
+    private void DrawGrownBounds(Bounds box, float range)
+    {
+        float z = transform.position.z;
+        Vector2 min = box.min;
+        Vector2 max = box.max;
+        // Corners counter-clockwise from top right; corner c covers the angles c*90° to (c+1)*90°.
+        Vector2[] corners = { new Vector2(max.x, max.y), new Vector2(min.x, max.y), new Vector2(min.x, min.y), new Vector2(max.x, min.y) };
+
+        Vector3 first = default;
+        Vector3 previous = default;
+        bool hasPrevious = false;
+
+        for (int c = 0; c < corners.Length; c++)
+        {
+            for (int s = 0; s <= RangeGizmoCornerSegments; s++)
+            {
+                float angle = (c + s / (float)RangeGizmoCornerSegments) * 90f * Mathf.Deg2Rad;
+                Vector2 point = corners[c] + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * range;
+                var current = new Vector3(point.x, point.y, z);
+
+                if (hasPrevious) Gizmos.DrawLine(previous, current);
+                else first = current;
+
+                previous = current;
+                hasPrevious = true;
+            }
+        }
+
+        Gizmos.DrawLine(previous, first);
     }
 }

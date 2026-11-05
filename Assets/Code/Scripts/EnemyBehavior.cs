@@ -172,7 +172,20 @@ public class EnemyBehavior : MonoBehaviour
     private void Reset()
     {
         sightBlockingLayers = LayerMask.GetMask("Environment");
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        spriteRenderer = FindBodySprite();
+    }
+
+    /// <summary>
+    /// The first SpriteRenderer under the enemy that isn't a DamageHitbox debug sprite.
+    /// </summary>
+    private SpriteRenderer FindBodySprite()
+    {
+        foreach (SpriteRenderer sprite in GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (sprite.GetComponentInParent<DamageHitbox>(true) == null) return sprite;
+        }
+
+        return null;
     }
 
     private void Awake()
@@ -183,6 +196,14 @@ public class EnemyBehavior : MonoBehaviour
         chargeAttack = GetComponent<ChargeAttack>();
         flight = GetComponent<EnemyFlight>();
         selfCollider = GetComponent<Collider2D>();
+
+        // Reset only fills this in when EnemyBehavior is first added, which may be before the sprite existed.
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = FindBodySprite();
+            if (spriteRenderer == null)
+                Debug.LogWarning($"{name}: No SpriteRenderer found for EnemyBehavior, the enemy won't flip.", this);
+        }
 
         // RequireComponent only adds missing components when EnemyBehavior is added,
         // not to objects that already had it, so check explicitly.

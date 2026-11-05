@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BiteData
   m_EditorClassIdentifier: Assembly-CSharp::BiteData
   minRange: 2
-  maxRange: 4
+  maxRange: 6
   maxHeightDifference: 2.5
   weight: 1
   insideWeight: 0
@@ -22,10 +22,10 @@ MonoBehaviour:
   recovery: 0.5
   cooldown: 3
   damage: 30
-  startOffset: {x: 2, y: 4.5}
+  startOffset: {x: 2, y: 6.07}
   endOffset: {x: 4.5, y: 0.4}
   aimAtPlayer: 1
-  maxReach: 4.5
+  maxReach: 8
   aimOvershoot: 0.3
   minAimAngle: -70
   maxAimAngle: 30

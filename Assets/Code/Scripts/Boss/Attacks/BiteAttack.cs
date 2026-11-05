@@ -17,6 +17,14 @@ public class BiteAttack : BossAttack<BiteData>
     [Tooltip("Optional sprite stretched from the start point to the head while biting. Hidden otherwise. It deals no damage.")]
     [SerializeField] private SpriteRenderer neckVisual;
 
+    [Header("Head Visual")]
+    [Tooltip("True if the head's sprites (children of the Head Hitbox) are drawn facing right. The head object is mirrored on X to face the way the boss faces, because it sits outside the Visual Root.")]
+    [SerializeField] private bool headSpriteFacesRight = true;
+    [Tooltip("Between bites, keep the head at the start point on the side the boss faces, so it follows when the boss turns around.")]
+    [SerializeField] private bool restHeadAtStart = true;
+
+    private float headScaleX = 1f;
+
     protected override void Awake()
     {
         base.Awake();
@@ -28,7 +36,30 @@ public class BiteAttack : BossAttack<BiteData>
             return;
         }
 
+        headScaleX = Mathf.Abs(headHitbox.transform.localScale.x);
         if (neckVisual != null) neckVisual.enabled = false;
+    }
+
+    private void FixedUpdate()
+    {
+        if (headHitbox == null || Boss == null) return;
+
+        FaceHead();
+        // While biting, Perform places the head itself.
+        if (restHeadAtStart && !IsRunning) SetHead(FromFeet(data.startOffset), FromFeet(data.startOffset));
+    }
+
+    /// <summary>
+    /// Mirrors the head object (sprite, debug sprite and collider) toward the boss's facing. A circle collider is
+    /// unaffected by the mirroring; it only matters for the sprites.
+    /// </summary>
+    private void FaceHead()
+    {
+        Transform t = headHitbox.transform;
+        bool flip = headSpriteFacesRight ? Boss.FacingDirection < 0 : Boss.FacingDirection > 0;
+        Vector3 scale = t.localScale;
+        scale.x = flip ? -headScaleX : headScaleX;
+        t.localScale = scale;
     }
 
     protected override IEnumerator Perform(BossTargetInfo target)
@@ -37,6 +68,7 @@ public class BiteAttack : BossAttack<BiteData>
         Vector2 start = FromFeet(data.startOffset);
         Vector2 end = data.aimAtPlayer ? GetAimedEnd(start, target.PlayerCenter) : FromFeet(data.endOffset);
 
+        FaceHead();
         SetHead(start, start);
         if (neckVisual != null) neckVisual.enabled = true;
         headHitbox.Activate(data.damage);

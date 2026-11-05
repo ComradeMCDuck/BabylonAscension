@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11a770b403f80a64ba9949e77a960887, type: 3}
   m_Name: BossChargeData
   m_EditorClassIdentifier: Assembly-CSharp::BossChargeData
-  minRange: 4
-  maxRange: 20
+  minRange: 6
+  maxRange: 30
   maxHeightDifference: 1
   weight: 1
   insideWeight: 0
@@ -23,7 +23,7 @@ MonoBehaviour:
   cooldown: 6
   damage: 40
   chargeSpeed: 14
-  chargeDistance: 12
+  chargeDistance: 50
   overshoot: 3
   wallStunDuration: 2.5
   minRunwayLength: 2

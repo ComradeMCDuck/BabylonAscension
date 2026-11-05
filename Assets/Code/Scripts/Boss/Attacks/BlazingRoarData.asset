@@ -23,16 +23,17 @@ MonoBehaviour:
   cooldown: 9
   damage: 20
   roarOriginOffset: {x: 0, y: 1}
-  roarRadius: 5
+  roarRadius: 8
+  roarExpandTime: 0.35
   pushForce: 14
   pushUpForce: 6
   roarEffectPrefab: {fileID: 0}
   roarEffectDuration: 1
   projectilePrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
   hoverOffsets:
-  - {x: -2.5, y: 2}
-  - {x: 0, y: 2.5}
-  - {x: 2.5, y: 2}
+  - {x: -2.5, y: 5}
+  - {x: 0, y: 6}
+  - {x: 2.5, y: 5}
   conjureDelay: 0.2
   conjureTime: 0.7
   fireInterval: 0.5

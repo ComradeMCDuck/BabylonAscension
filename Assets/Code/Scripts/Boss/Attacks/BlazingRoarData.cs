@@ -4,6 +4,7 @@ using UnityEngine;
 /// Settings for BlazingRoarAttack: a roar that damages and pushes away everything around the boss, followed by dark
 /// energy projectiles that hover above it and fire at the player one by one. The base Damage is the roar's damage.
 /// Usable at any distance; give it a high Inside Weight so it is the answer to the player standing inside the boss.
+/// The roar is a shockwave that spreads from its center out to roarRadius over roarExpandTime.
 /// </summary>
 [CreateAssetMenu(fileName = "BlazingRoarData", menuName = "Scriptable Objects/Boss/Attacks/Blazing Roar")]
 public class BlazingRoarData : BossAttackData
@@ -13,6 +14,8 @@ public class BlazingRoarData : BossAttackData
     public Vector2 roarOriginOffset = new Vector2(0f, 1.2f);
     [Tooltip("Everything within this distance (to the closest point of its collider) is damaged and pushed away.")]
     [Min(0f)] public float roarRadius = 4f;
+    [Tooltip("Seconds the roar's shockwave takes to spread from its center out to Roar Radius. Targets are hit when the wave reaches them. 0 = everything in the radius is hit at once.")]
+    [Min(0f)] public float roarExpandTime = 0.35f;
     [Tooltip("Horizontal push away from the boss. Big enough to throw a player out of the boss's body.")]
     [Min(0f)] public float pushForce = 14f;
     [Tooltip("Upward push added to the knockback.")]
