@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8889766612805912733}
   - component: {fileID: 4402861944666598241}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: BowPivot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -51,6 +51,7 @@ MonoBehaviour:
   arrowSpawn: {fileID: 3965774374420034426}
   bowRenderer: {fileID: 7292817614088652803}
   movementController: {fileID: 0}
+  animator: {fileID: 7487572580236149384}
   basicArrowPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
   bowFrames:
   - {fileID: -415446080585258355, guid: a73205c4b3f439448a984e1fb80ba3df, type: 3}
@@ -73,7 +74,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7664295490018543239}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Appearance
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -105,7 +106,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3965774374420034426}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: ArrowSpawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -137,7 +138,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1245336768785642657}
   - component: {fileID: 7327135185029443386}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -229,7 +230,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2233092007229199044}
   - component: {fileID: 7292817614088652803}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: bow_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -320,7 +321,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7362350623775227887}
-  m_Layer: 8
+  m_Layer: 3
   m_Name: CameraFollow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -362,7 +363,8 @@ GameObject:
   - component: {fileID: 8089714174100080038}
   - component: {fileID: 7189589638907935899}
   - component: {fileID: 4242424242424242424}
-  m_Layer: 8
+  - component: {fileID: 8319859182551271507}
+  m_Layer: 3
   m_Name: Adventurer
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -570,9 +572,9 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8824978788996705367}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: fe49df5b72ea9ee469b3dddda53d65bb, type: 2}
+  m_Controller: {fileID: 9100000, guid: c70c8605484c8dc40b7d72bada373279, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -660,3 +662,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoulInventory
   souls: 0
+--- !u!114 &8319859182551271507
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8824978788996705367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 328ad23224f2fb549815614cb24084aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimatorHelper
+  movementController: {fileID: 5143643343682009756}
+  animator: {fileID: 7487572580236149384}

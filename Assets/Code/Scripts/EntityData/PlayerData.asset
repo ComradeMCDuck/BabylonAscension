@@ -27,6 +27,7 @@ MonoBehaviour:
   attackCooldown: 5
   attackSpeed: 1
   attackEffectPrefab: {fileID: 0}
+  soulPrefab: {fileID: 0}
   patrolSpeedMultiplier: 0.4
   patrolWaitTime: 1
   loseSightTime: 2
@@ -34,8 +35,7 @@ MonoBehaviour:
   jumpCheckDistance: 1
   jumpCooldown: 0.5
   attackWindup: 0.2
-  projectileRange: 2
-  projectileKeepsFlying: 0
+  projectileGravity: 10
   projectileLifetime: 5
   slashOriginOffset: {x: 0.2, y: 0.3}
   slashArcAngle: 140
@@ -56,6 +56,16 @@ MonoBehaviour:
   chargeSpeed: 14
   chargeDistance: 12
   chargeStunDuration: 3
+  chargeDamagesEnemies: 1
+  flySpeed: 6
+  flyAcceleration: 20
+  flyPreferredDistance: 6
+  flyMinDistance: 3
+  flyMinAngle: 30
+  flyMaxAngle: 150
+  flyOrbitSpeed: 20
+  flyBobAmplitude: 0.25
+  flyBobFrequency: 2
   fallMultiplier: 3
   riseMultiplier: 3
   maxFallSpeed: 30
@@ -90,7 +100,7 @@ MonoBehaviour:
   recoilGroundDeceleration: 70
   recoilAirAcceleration: 25
   recoilAirDeceleration: 2
-  recoilMaxPlanarSpeed: 18
+  recoilMaxPlanarSpeed: 20
   cancelFallingOnUpwardImpulse: 1
   knockbackStunTime: 0.3
   knockbackLift: 4
