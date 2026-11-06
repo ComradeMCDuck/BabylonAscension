@@ -38,6 +38,8 @@ MonoBehaviour:
   newCounterClockwise: 0
   newSlopedFloor: 0
   newSlopedCeiling: 0
+  newSupportUnderSteps: 1
+  newGridSnap: 0
   newWallThickness: 0
   newArchAngle: 180
   newDoorWidth: 6
@@ -51,4 +53,7 @@ MonoBehaviour:
   defaultMaterial: {fileID: 2100000, guid: b0b92c31e47e90645ac7ed7fa12f7702, type: 2}
   showGenerated: 0
   showCuts: 0
+  showDimensions: 1
+  shapeHandles: 1
+  shapeEditSelection: 0
   snapToGrid: 1
