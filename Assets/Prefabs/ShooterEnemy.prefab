@@ -172,7 +172,7 @@ MonoBehaviour:
   trailMemoryTime: 10
   platformSearchRange: 8
   maxDropHeight: 8
-  spriteRenderer: {fileID: 0}
+  spriteRenderer: {fileID: 6386867014952640289}
   spriteFacesRight: 1
 --- !u!114 &-2325959678832883612
 MonoBehaviour:

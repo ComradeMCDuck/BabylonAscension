@@ -26,8 +26,8 @@ Transform:
   m_GameObject: {fileID: 5134951269536716660}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 2, z: 1}
+  m_LocalPosition: {x: -0.5, y: 0.574, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6675077669277327910}
@@ -81,7 +81,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9edd64f1890fe234c89b100cfc84403c, type: 3}
   m_Color: {r: 0.81886786, g: 0.7881421, b: 0.30128145, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -173,7 +173,7 @@ MonoBehaviour:
   trailMemoryTime: 10
   platformSearchRange: 8
   maxDropHeight: 8
-  spriteRenderer: {fileID: 0}
+  spriteRenderer: {fileID: 6386867014952640289}
   spriteFacesRight: 1
 --- !u!114 &-2325959678832883612
 MonoBehaviour:
@@ -355,6 +355,11 @@ MonoBehaviour:
     KnockbackStunTimer: 0
     HorizontalActive: 0
     VerticalActive: 0
+  m_Crouch:
+    SpeedMultiplier: 0.35
+    SlideStartSpeed: 9
+    SlideEndSpeed: 3
+    SlideFriction: 5
   m_Dash:
     Module: {fileID: 0}
     WillDashPaddingTime: 0.15

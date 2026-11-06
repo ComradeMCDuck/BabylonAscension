@@ -356,6 +356,12 @@ namespace DYP
         private Vector3 m_Velocity;
         public Vector3 InputVelocity { get { return m_Velocity; } }
 
+        /// <summary>
+        /// Horizontal speed for a full movement input (EntityData.speed). AI that wants an exact speed (e.g. a boss charge)
+        /// passes speed / MoveSpeed to InputMovement.
+        /// </summary>
+        public float MoveSpeed => m_MovementSettings.Speed;
+
         float IHas2DAxisMovement.MovementSpeed => throw new NotImplementedException();
 
         private float m_VelocityXSmoothing;

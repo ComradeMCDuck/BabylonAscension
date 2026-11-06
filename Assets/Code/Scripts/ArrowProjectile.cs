@@ -126,6 +126,29 @@ public class ArrowProjectile : MonoBehaviour
     }
 
     /// <summary>
+    /// Enemy shot with explicit stats, for attacks that keep their tuning outside EntityData (boss attacks).
+    /// It flies along launchDirection; with shotGravity 0 that is a straight line.
+    /// </summary>
+    public void LaunchInDirection(
+        Vector2 launchDirection,
+        float shotSpeed,
+        float shotDamage,
+        float lifeSeconds,
+        GameObject shooter,
+        float shotGravity = 0f)
+    {
+        damage = shotDamage;
+        speed = shotSpeed;
+        gravity = shotGravity;
+        knockback = 0f;
+        remainingBounces = arrowData != null ? Mathf.Max(0, arrowData.bounces) : 0;
+        remainingPenetrations = arrowData != null ? Mathf.Max(0, arrowData.penetrations) : 0;
+        activeHitLayers = enemyShotHitLayers;
+
+        Begin(launchDirection.sqrMagnitude > 0.0001f ? launchDirection : Vector2.right, shooter, lifeSeconds);
+    }
+
+    /// <summary>
     /// Launch direction that makes the arc pass through the target offset, using the flatter of the two angles that do.
     /// Out of reach, it shoots at 45 degrees (the farthest-reaching angle) toward the target, so the arrow lands short.
     /// </summary>
@@ -390,9 +413,17 @@ public class ArrowProjectile : MonoBehaviour
     /// <summary>
     /// Characters move with the same 2D controller as the player, so knockback normally goes through it.
     /// A flying enemy has that controller switched off, so its flight takes the push instead.
+    /// A boss decides itself how much of the push it takes (BossData.knockbackMultiplier).
     /// </summary>
     private static void ApplyKnockback(Collider2D target, Vector2 impulse)
     {
+        BossBrain boss = target.GetComponentInParent<BossBrain>();
+        if (boss != null)
+        {
+            boss.ApplyKnockback(impulse);
+            return;
+        }
+
         EnemyFlight flight = target.GetComponentInParent<EnemyFlight>();
         if (flight != null && flight.IsFlying)
         {

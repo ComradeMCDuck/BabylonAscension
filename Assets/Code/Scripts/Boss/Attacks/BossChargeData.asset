@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11a770b403f80a64ba9949e77a960887, type: 3}
+  m_Name: BossChargeData
+  m_EditorClassIdentifier: Assembly-CSharp::BossChargeData
+  minRange: 6
+  maxRange: 30
+  maxHeightDifference: 1
+  weight: 1
+  insideWeight: 0
+  requiresGround: 1
+  windup: 0.7
+  recovery: 0.5
+  cooldown: 6
+  damage: 40
+  chargeSpeed: 14
+  chargeDistance: 50
+  overshoot: 3
+  wallStunDuration: 2.5
+  minRunwayLength: 2
