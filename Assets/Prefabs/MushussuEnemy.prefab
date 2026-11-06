@@ -119,8 +119,8 @@ Transform:
   m_GameObject: {fileID: 2274377800680995805}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.25, y: 1, z: 0}
-  m_LocalScale: {x: 0.5, y: 3, z: 1}
+  m_LocalPosition: {x: 3.25, y: 1.5, z: 0}
+  m_LocalScale: {x: 0.5, y: 4, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5755324257697483462}
@@ -395,6 +395,7 @@ GameObject:
   - component: {fileID: 8940888914051350034}
   - component: {fileID: 6391920292439144656}
   - component: {fileID: 2324345203836220836}
+  - component: {fileID: 227483865676033909}
   m_Layer: 10
   m_Name: MushussuEnemy
   m_TagString: Untagged
@@ -724,6 +725,21 @@ MonoBehaviour:
   areaLineWidth: 0.06
   waveLineWidth: 0.18
   circleSortingOrder: 100
+--- !u!114 &227483865676033909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 137699a92ae474f4ab67c4d1cabd7e2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MotionInterpolator
+  smoothedChildren:
+  - {fileID: 4761527087450355294}
+  snapDistance: 3
 --- !u!1 &5413771681801352755
 GameObject:
   m_ObjectHideFlags: 0

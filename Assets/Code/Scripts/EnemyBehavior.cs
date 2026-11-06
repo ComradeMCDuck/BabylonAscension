@@ -104,6 +104,8 @@ public class EnemyBehavior : MonoBehaviour
     private int patrolDirection = 1;
     private float patrolWaitEndTime;
     private Vector2 lastKnownPlayerPosition;
+    // Cached so TryAttack can read the position later (see EnemyAttack.aimAtWindupEnd) without allocating every call.
+    private Func<Vector2> getLastKnownPlayerPosition;
     private float lastSeenTime = float.NegativeInfinity;
     private int facingDirection = 1;
 
@@ -192,6 +194,7 @@ public class EnemyBehavior : MonoBehaviour
     {
         movement = GetComponent<BasicMovementController2D>();
         attack = GetComponent<EnemyAttack>();
+        getLastKnownPlayerPosition = () => lastKnownPlayerPosition;
         jumpAttack = GetComponent<JumpAttack>();
         chargeAttack = GetComponent<ChargeAttack>();
         flight = GetComponent<EnemyFlight>();
@@ -405,7 +408,7 @@ public class EnemyBehavior : MonoBehaviour
 
         if (attack == null || !canSeePlayer) return;
         if (Physics2D.Distance(selfCollider, playerCollider).distance <= enemyData.attackRange)
-            attack.TryAttack(lastKnownPlayerPosition, enemyData);
+            attack.TryAttack(getLastKnownPlayerPosition, enemyData);
     }
 
     private void FlyHome()
@@ -1200,7 +1203,7 @@ public class EnemyBehavior : MonoBehaviour
         if (attack != null && attack.IsAttacking) return;
 
         Face(lastKnownPlayerPosition.x - transform.position.x);
-        if (attack != null) attack.TryAttack(lastKnownPlayerPosition, enemyData);
+        if (attack != null) attack.TryAttack(getLastKnownPlayerPosition, enemyData);
     }
 
     /// <summary>
