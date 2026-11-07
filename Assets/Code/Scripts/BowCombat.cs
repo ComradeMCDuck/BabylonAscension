@@ -11,7 +11,8 @@ public class BowCombat : MonoBehaviour
     [SerializeField] private Camera aimCamera;
     [SerializeField] private Transform bowPivot;
     [SerializeField] private Transform arrowSpawn;
-    [SerializeField] private SpriteRenderer bowRenderer;
+    [Tooltip("Where the aim line starts. With UpperBodyAimRig, use the bow arm's shoulder bone so shots follow the same line the arm does. Empty = BowPivot.")]
+    [SerializeField] private Transform aimOrigin;
     [Tooltip("Kinematic 2D controller. Recoil is applied through it when assigned.")]
     [SerializeField] private BasicMovementController2D movementController;
     [SerializeField] private Animator animator;
@@ -20,10 +21,6 @@ public class BowCombat : MonoBehaviour
     [Header("Arrows")]
     [Tooltip("The arrow fired until another one is picked at an altar. Each prefab carries its own ArrowData.")]
     [SerializeField] private GameObject basicArrowPrefab;
-
-    [Header("Bow Animation")]
-    [Tooltip("Frame 0 = idle, frames 1-5 = drawing.")]
-    [SerializeField] private Sprite[] bowFrames = new Sprite[6];
 
     [Header("Charge")]
     [Tooltip("Seconds of holding needed to reach full charge.")]
@@ -42,6 +39,14 @@ public class BowCombat : MonoBehaviour
 
     private float nextShotTime;
 
+    // Shorter aim vectors than this give no usable direction; the last one is kept.
+    private const float MinAimSqrDistance = 0.0001f;
+
+    // Cached by AimAtCursor. Shots use these instead of a transform's rotation, because the
+    // spawn point may sit on a mirrored or IK-driven bone whose +X isn't the aim.
+    private Vector3 cursorWorld;
+    private Vector2 aimDirection = Vector2.right;
+    private bool hasCursor;
 
     private float chargeTimer;
     private bool isCharging;
@@ -72,9 +77,6 @@ public class BowCombat : MonoBehaviour
         if (aimCamera == null)
             aimCamera = Camera.main;
 
-        if (bowRenderer == null && bowPivot != null)
-            bowRenderer = bowPivot.GetComponentInChildren<SpriteRenderer>();
-
         if (aimCamera == null)
             Debug.LogError("BowCombat needs an aim camera.", this);
 
@@ -84,7 +86,6 @@ public class BowCombat : MonoBehaviour
         // A scene reload on death recreates the bow, so the pick resets to the basic arrow.
         currentArrowPrefab = basicArrowPrefab;
         if (basicArrowPrefab != null) ownedArrows.Add(basicArrowPrefab);
-        SetBowFrame(0);
     }
 
     public bool OwnsArrow(GameObject prefab) => prefab != null && ownedArrows.Contains(prefab);
@@ -117,7 +118,6 @@ public class BowCombat : MonoBehaviour
         {
             isCharging = false;
             chargeTimer = 0f;
-            SetBowFrame(0);
             return;
         }
 
@@ -133,7 +133,6 @@ public class BowCombat : MonoBehaviour
         {
             chargeTimer += Time.deltaTime;
             chargeTimer = Mathf.Min(chargeTimer, MaxChargeTime);
-            UpdateBowAnimation();
         }
 
         if (isCharging && Mouse.current.leftButton.wasReleasedThisFrame)
@@ -158,14 +157,18 @@ public class BowCombat : MonoBehaviour
         if (!aimPlane.Raycast(ray, out float distance))
             return;
 
-        Vector3 cursorWorld = ray.GetPoint(distance);
-        Vector3 aimVector = cursorWorld - bowPivot.position;
-        aimVector.z = 0f;
+        cursorWorld = ray.GetPoint(distance);
+        hasCursor = true;
 
-        if (aimVector.sqrMagnitude < 0.0001f)
+        // Aiming from the shoulder keeps the direction right even when the cursor is
+        // closer than the bow hand (which sits on the shoulder-to-cursor line).
+        Vector3 origin = aimOrigin != null ? aimOrigin.position : bowPivot.position;
+        Vector2 aimVector = cursorWorld - origin;
+
+        if (aimVector.sqrMagnitude < MinAimSqrDistance)
             return;
 
-        Vector2 aimDirection = aimVector.normalized;
+        aimDirection = aimVector.normalized;
 
         // Rotate the bow around the Z axis.
         float angle = Mathf.Atan2(
@@ -177,6 +180,24 @@ public class BowCombat : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Straight from the spawn point to the cursor, so the shot starts on the line through the
+    /// cursor even when the spawn point (the bow hand) isn't exactly on the shoulder's aim line.
+    /// When the cursor is between the shoulder and the hand, that line would point backward,
+    /// so the shoulder's aim direction is used instead.
+    /// </summary>
+    private Vector2 GetShotDirection()
+    {
+        if (!hasCursor)
+            return aimDirection;
+
+        Vector2 fromSpawn = cursorWorld - arrowSpawn.position;
+        if (fromSpawn.sqrMagnitude < MinAimSqrDistance || Vector2.Dot(fromSpawn, aimDirection) <= 0f)
+            return aimDirection;
+
+        return fromSpawn.normalized;
+    }
+
     private void StartCharging()
     {
         if (isCharging) return;
@@ -184,8 +205,6 @@ public class BowCombat : MonoBehaviour
 
         isCharging = true;
         chargeTimer = 0f;
-
-        UpdateBowAnimation();
     }
 
 
@@ -201,21 +220,15 @@ public class BowCombat : MonoBehaviour
         if (chargeTimer < minDrawTime)
         {
             chargeTimer = 0f;
-            SetBowFrame(0);
             return;
         }
 
         if (currentArrowPrefab == null)
-        {
-            SetBowFrame(0);
             return;
-        }
 
         nextShotTime = Time.time + fireCooldown;
 
-        SetBowFrame(0);
-
-        Vector3 direction = arrowSpawn.right.normalized;
+        Vector3 direction = GetShotDirection();
 
         Vector3 spawnPosition =
             arrowSpawn.position + direction * spawnOffset;
@@ -268,34 +281,6 @@ public class BowCombat : MonoBehaviour
 
             movementController.AddImpulse(-(Vector2)direction * recoil);
         }
-    }
-
-    private void UpdateBowAnimation()
-    {
-        if (bowFrames == null || bowFrames.Length == 0)
-            return;
-
-        // Frame 0 is idle; frames 1-5 show the draw.
-        int frame = Mathf.Clamp(
-            1 + Mathf.FloorToInt(Charge01 * 5f),
-            1,
-            5
-        );
-
-        SetBowFrame(frame);
-    }
-
-    private void SetBowFrame(int index)
-    {
-        if (bowRenderer == null ||
-            bowFrames == null ||
-            bowFrames.Length == 0)
-            return;
-
-        index = Mathf.Clamp(index, 0, bowFrames.Length - 1);
-
-        if (bowFrames[index] != null)
-            bowRenderer.sprite = bowFrames[index];
     }
 }
 
