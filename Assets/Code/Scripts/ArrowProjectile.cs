@@ -29,6 +29,8 @@ public class ArrowProjectile : MonoBehaviour
     [SerializeField] private LayerMask enemyShotHitLayers;
     [Tooltip("Layers the projectile bounces off (or stops on when out of bounces). Defaults to \"Environment\" if left empty.")]
     [SerializeField] private LayerMask environmentLayers;
+    [Tooltip("Extra layers checked only for ArrowTarget components (shootable lamps, switches). Anything else on them is ignored. Defaults to \"Ignore Raycast\" if left empty.")]
+    [SerializeField] private LayerMask arrowTargetLayers;
     [Tooltip("Radius of the circle swept along the projectile's path.")]
     [SerializeField] private float radius = 0.1f;
     [Tooltip("Rotate the sprite so its local X axis points along the flight direction.")]
@@ -48,8 +50,11 @@ public class ArrowProjectile : MonoBehaviour
     // Armor the arrow was just deflected off. A moving enemy can push its armor over the arrow on the next steps,
     // so starting inside this armor is ignored until the arrow is out; after that it can deflect off it again.
     private EnemyArmor escapingArmor;
+    // ArrowTargets this projectile already passed, so one that doesn't stop it isn't hit again on later steps.
+    private readonly HashSet<ArrowTarget> hitArrowTargets = new HashSet<ArrowTarget>();
     private GameObject owner;
     private LayerMask activeHitLayers;
+    private bool firedByPlayer;
     private bool launched;
 
     // Reused buffers for explosions, to avoid allocating every time one goes off.
@@ -75,6 +80,9 @@ public class ArrowProjectile : MonoBehaviour
 
         if (environmentLayers.value == 0)
             environmentLayers = LayerMask.GetMask("Environment");
+
+        if (arrowTargetLayers.value == 0)
+            arrowTargetLayers = LayerMask.GetMask("Ignore Raycast");
     }
 
     /// <summary>
@@ -103,6 +111,7 @@ public class ArrowProjectile : MonoBehaviour
         remainingBounces = Mathf.Max(0, arrowData.bounces);
         remainingPenetrations = Mathf.Max(0, arrowData.penetrations);
         activeHitLayers = hitLayers;
+        firedByPlayer = true;
 
         Begin(direction, shooter, lifetime);
     }
@@ -120,6 +129,7 @@ public class ArrowProjectile : MonoBehaviour
         remainingBounces = arrowData != null ? Mathf.Max(0, arrowData.bounces) : 0;
         remainingPenetrations = arrowData != null ? Mathf.Max(0, arrowData.penetrations) : 0;
         activeHitLayers = enemyShotHitLayers;
+        firedByPlayer = false;
 
         // Direction is fixed once, at launch.
         Begin(GetAimDirection(targetPosition - (Vector2)transform.position), shooter, data.projectileLifetime);
@@ -144,6 +154,7 @@ public class ArrowProjectile : MonoBehaviour
         remainingBounces = arrowData != null ? Mathf.Max(0, arrowData.bounces) : 0;
         remainingPenetrations = arrowData != null ? Mathf.Max(0, arrowData.penetrations) : 0;
         activeHitLayers = enemyShotHitLayers;
+        firedByPlayer = false;
 
         Begin(launchDirection.sqrMagnitude > 0.0001f ? launchDirection : Vector2.right, shooter, lifeSeconds);
     }
@@ -178,6 +189,7 @@ public class ArrowProjectile : MonoBehaviour
         direction = launchDirection.normalized;
         hitCharacters.Clear();
         ignoredArmor.Clear();
+        hitArrowTargets.Clear();
         escapingArmor = null;
 
         // Make the projectile's local X axis follow its travel direction.
@@ -201,7 +213,7 @@ public class ArrowProjectile : MonoBehaviour
         // Collect everything along this step (not just the first hit), so a penetrating
         // shot can pass through several targets and still find the wall behind them.
         ContactFilter2D filter = new ContactFilter2D();
-        filter.SetLayerMask(activeHitLayers);
+        filter.SetLayerMask(activeHitLayers.value | arrowTargetLayers.value);
         filter.useTriggers = Physics2D.queriesHitTriggers;
 
         s_StepHits.Clear();
@@ -215,6 +227,18 @@ public class ArrowProjectile : MonoBehaviour
         foreach (RaycastHit2D hit in s_StepHits)
         {
             if (IsOwner(hit.collider))
+                continue;
+
+            if (hit.collider.TryGetComponent(out ArrowTarget arrowTarget) && hitArrowTargets.Add(arrowTarget)
+                && arrowTarget.TryHit(this, firedByPlayer) && arrowTarget.StopsArrow)
+            {
+                StopAt(hit);
+                return;
+            }
+
+            // Arrow-target layers are only there for ArrowTargets; a target on a normal hit layer
+            // (e.g. Environment) still gets the usual bounce or damage below.
+            if ((activeHitLayers.value & (1 << hit.collider.gameObject.layer)) == 0)
                 continue;
 
             if (IsEnvironment(hit.collider))
@@ -434,6 +458,20 @@ public class ArrowProjectile : MonoBehaviour
         BasicMovementController2D targetMovement = target.GetComponentInParent<BasicMovementController2D>();
         if (targetMovement != null)
             targetMovement.ApplyKnockback(impulse);
+    }
+
+    /// <summary>Ends the flight on an ArrowTarget that stops arrows. Explosive arrows explode there.</summary>
+    private void StopAt(RaycastHit2D hit)
+    {
+        if (IsExplosive)
+        {
+            Explode(hit.centroid);
+            return;
+        }
+
+        // Destroy is deferred to the end of the frame; stop here so a second physics step can't hit again.
+        launched = false;
+        Destroy(gameObject);
     }
 
     private bool IsOwner(Collider2D other)

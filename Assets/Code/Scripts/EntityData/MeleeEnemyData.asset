@@ -56,6 +56,7 @@ MonoBehaviour:
   chargeSpeed: 14
   chargeDistance: 12
   chargeStunDuration: 3
+  chargeDamagesEnemies: 1
   flySpeed: 6
   flyAcceleration: 20
   flyPreferredDistance: 6
@@ -77,7 +78,7 @@ MonoBehaviour:
   lockFacingToRight: 1
   hasVariableJumpHeight: 1
   airJumpAllowed: 1
-  maxJumpHeight: 7
+  maxJumpHeight: 9
   minJumpHeight: 1
   timeToApex: 0.4
   onLadderJumpForce: 0.4

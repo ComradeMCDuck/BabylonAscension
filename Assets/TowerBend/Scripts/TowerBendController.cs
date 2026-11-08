@@ -13,7 +13,7 @@ public class TowerBendController : MonoBehaviour
     public static TowerBendController Active { get; private set; }
 
     [Header("Tower")]
-    [Tooltip("The bend origin follows this camera's X, so the player always stands at the front of the tower.")]
+    [Tooltip("The bend origin follows this camera's X, so the player always stands at the front of the tower. Empty = the camera tagged MainCamera (needed on the GameManager prefab, which can't reference a scene camera).")]
     public Camera gameCamera;
     [Min(0.01f)] public float radius = 20f;
     [Tooltip("Flat-world Z of the gameplay plane. Lengths are preserved exactly on this plane.")]
@@ -46,11 +46,34 @@ public class TowerBendController : MonoBehaviour
     Vector4 m_PrevGameBend;
     bool m_HasPrevGameBend;
     readonly List<Camera> m_CamerasWithCullingOverride = new List<Camera>();
+    // Main Camera found when gameCamera is empty. Kept apart from the serialized field so that, with
+    // ExecuteAlways, the lookup never gets saved into the scene as a prefab override.
+    Camera m_FallbackCamera;
+    bool m_WarnedNoCamera;
+
+    /// <summary>
+    /// The assigned camera, or else the Main Camera. Looked up lazily, so it also works when the camera is
+    /// created or replaced after this component wakes up.
+    /// </summary>
+    public Camera GameCamera
+    {
+        get
+        {
+            if (gameCamera) return gameCamera;
+            if (!m_FallbackCamera) m_FallbackCamera = Camera.main;
+            if (!m_FallbackCamera && Application.isPlaying && !m_WarnedNoCamera)
+            {
+                m_WarnedNoCamera = true;
+                Debug.LogWarning("TowerBendController: no Game Camera assigned and no camera tagged MainCamera; the bend stays centred on X = 0.", this);
+            }
+            return m_FallbackCamera;
+        }
+    }
 
     /// <summary>Bend parameters as seen by the game camera this frame.</summary>
     public TowerBendParams Params => new TowerBendParams
     {
-        originX = gameCamera ? gameCamera.transform.position.x : 0f,
+        originX = GameCamera ? GameCamera.transform.position.x : 0f,
         radius = radius,
         surfaceZ = surfaceZ,
         enabled = isActiveAndEnabled,
@@ -95,7 +118,7 @@ public class TowerBendController : MonoBehaviour
         Vector4 bendVec = p.ToShaderVector();
 
         Vector4 prev = bendVec;
-        if (cam == gameCamera && m_HasPrevGameBend)
+        if (cam == GameCamera && m_HasPrevGameBend)
             prev = m_PrevGameBend;
 
         Shader.SetGlobalVector(BendId, bendVec);
@@ -124,7 +147,7 @@ public class TowerBendController : MonoBehaviour
     {
         TowerBendTransform.RestoreAll();
 
-        if (cam == gameCamera)
+        if (cam == GameCamera)
         {
             m_PrevGameBend = Params.ToShaderVector();
             m_HasPrevGameBend = true;

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8770752013676417620}
   - component: {fileID: 1643484921470733320}
   - component: {fileID: 6866620899458589148}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: PenetrationArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54,6 +54,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   environmentLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  arrowTargetLayers:
     serializedVersion: 2
     m_Bits: 0
   radius: 0.1
