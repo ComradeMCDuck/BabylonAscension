@@ -48,6 +48,12 @@ This started as the open-source 2D Platformer Hunter controller, but the team ha
   - Optional special attacks: `JumpAttack` (leap), `ChargeAttack` (Humbaba's bull charge, which stuns the enemy if it hits a wall), and `EnemyFlight` (Kilili). `EnemyFlight` switches off the ground controller and moves the enemy itself.
 - `EnemyHealth` (implements `IDamageable`) sits on a **child** of the enemy. It raises `Damaged` and destroys the root that has the `EnemyBehavior`.
 
+**Bosses** (`Assets/Code/Scripts/Boss/`), kept separate from `EnemyBehavior` on purpose:
+- `BossBrain` is the state machine (Idle, Repositioning, Attacking, Stunned, Dead). It uses the same `BasicMovementController2D`, whose `EntityData` only supplies walking and gravity. Its tuning lives in `BossData`, not `EntityData`.
+- The attack bank is every `BossAttack` component on the boss. The brain picks a ready one by weight, depending on the gap between colliders (`minRange`/`maxRange`), or uses `insideWeight` when the player overlaps the boss. Each attack derives from `BossAttack<TData>` and has its own `BossAttackData` asset. The attacks are `BossSlashAttack`, `TailWhipAttack`, `BiteAttack`, `BossChargeAttack` and `BlazingRoarAttack`. A new attack only overrides `Perform` and `Cleanup`.
+- `BossHealth` (IDamageable) reads from `BossData`. `BossEncounter` handles the start trigger (no intro yet), the arena gates and victory.
+- `ArrowProjectile` sends knockback to `BossBrain.ApplyKnockback` (scaled by `BossData.knockbackMultiplier`), and `LaunchInDirection` fires shots with explicit stats.
+
 **Combat plumbing:**
 - `IDamageable.TakeDamage(float)` (declared in `Health.cs`) is how anything takes damage. To find a target from a collider, try `GetComponentInParent`, and if that fails, try `GetComponentInChildren` under the attached Rigidbody2D.
 - `ArrowProjectile` is used by both the player and enemies. It has no Rigidbody or collider. Each FixedUpdate it moves itself with a circle cast along its path, so thin walls can't be skipped and kinematic bodies still get hit. It handles bounces (Environment layer), penetration, explosions with falloff and cover checks, poison, and knockback. Enemy shots use `enemyShotHitLayers` and calculate a ballistic launch angle.

@@ -282,6 +282,7 @@ GameObject:
   - component: {fileID: 2030542639133342930}
   - component: {fileID: 3372981164428329525}
   - component: {fileID: 8679851885319885245}
+  - component: {fileID: 2456503444326359665}
   m_Layer: 8
   m_Name: Altar
   m_TagString: Untagged
@@ -364,7 +365,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fee5815459de49a79c1b7ad38d68820, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Digital.Dream.GameDevForBeginners::GameDevForBeginners.Trigger2D
-  filterTags: []
+  filterTags:
+  - Player
   onTriggerEnter:
     m_PersistentCalls:
       m_Calls:
@@ -395,3 +397,16 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &2456503444326359665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3492432605559372951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f5d45e5b14d71840b777ea97fae47e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShopAltar
+  prompt: {fileID: 1200643429644220665}

@@ -104,6 +104,8 @@ public class EnemyBehavior : MonoBehaviour
     private int patrolDirection = 1;
     private float patrolWaitEndTime;
     private Vector2 lastKnownPlayerPosition;
+    // Cached so TryAttack can read the position later (see EnemyAttack.aimAtWindupEnd) without allocating every call.
+    private Func<Vector2> getLastKnownPlayerPosition;
     private float lastSeenTime = float.NegativeInfinity;
     private int facingDirection = 1;
 
@@ -172,17 +174,39 @@ public class EnemyBehavior : MonoBehaviour
     private void Reset()
     {
         sightBlockingLayers = LayerMask.GetMask("Environment");
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        spriteRenderer = FindBodySprite();
+    }
+
+    /// <summary>
+    /// The first SpriteRenderer under the enemy that isn't a DamageHitbox debug sprite.
+    /// </summary>
+    private SpriteRenderer FindBodySprite()
+    {
+        foreach (SpriteRenderer sprite in GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (sprite.GetComponentInParent<DamageHitbox>(true) == null) return sprite;
+        }
+
+        return null;
     }
 
     private void Awake()
     {
         movement = GetComponent<BasicMovementController2D>();
         attack = GetComponent<EnemyAttack>();
+        getLastKnownPlayerPosition = () => lastKnownPlayerPosition;
         jumpAttack = GetComponent<JumpAttack>();
         chargeAttack = GetComponent<ChargeAttack>();
         flight = GetComponent<EnemyFlight>();
         selfCollider = GetComponent<Collider2D>();
+
+        // Reset only fills this in when EnemyBehavior is first added, which may be before the sprite existed.
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = FindBodySprite();
+            if (spriteRenderer == null)
+                Debug.LogWarning($"{name}: No SpriteRenderer found for EnemyBehavior, the enemy won't flip.", this);
+        }
 
         // RequireComponent only adds missing components when EnemyBehavior is added,
         // not to objects that already had it, so check explicitly.
@@ -384,7 +408,7 @@ public class EnemyBehavior : MonoBehaviour
 
         if (attack == null || !canSeePlayer) return;
         if (Physics2D.Distance(selfCollider, playerCollider).distance <= enemyData.attackRange)
-            attack.TryAttack(lastKnownPlayerPosition, enemyData);
+            attack.TryAttack(getLastKnownPlayerPosition, enemyData);
     }
 
     private void FlyHome()
@@ -1179,7 +1203,7 @@ public class EnemyBehavior : MonoBehaviour
         if (attack != null && attack.IsAttacking) return;
 
         Face(lastKnownPlayerPosition.x - transform.position.x);
-        if (attack != null) attack.TryAttack(lastKnownPlayerPosition, enemyData);
+        if (attack != null) attack.TryAttack(getLastKnownPlayerPosition, enemyData);
     }
 
     /// <summary>
