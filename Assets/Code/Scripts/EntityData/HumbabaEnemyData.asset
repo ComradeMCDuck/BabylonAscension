@@ -52,7 +52,7 @@ MonoBehaviour:
   chargeCooldown: 8
   chargeRange: 7
   chargeMaxHeightDifference: 1
-  chargeWindup: 0.6
+  chargeWindup: 1.2
   chargeSpeed: 14
   chargeDistance: 24
   chargeStunDuration: 3
