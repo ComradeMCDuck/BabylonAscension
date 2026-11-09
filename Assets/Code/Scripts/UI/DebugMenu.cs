@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
@@ -103,6 +105,14 @@ public class DebugMenu : MonoBehaviour
     {
         AddSection("Level");
         AddButton("Respawn Killed Enemies", RespawnKilledEnemies);
+        AddButton("Add 1 Soul", AddSoul);
+
+        AddSection("Go To Level");
+        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+        {
+            string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+            AddButton(Path.GetFileNameWithoutExtension(scenePath), () => GoToScene(scenePath));
+        }
 
         AddSection("Player Data");
 
@@ -210,6 +220,38 @@ public class DebugMenu : MonoBehaviour
         }
 
         Debug.Log("Debug menu: respawned " + respawned + " killed enem" + (respawned == 1 ? "y" : "ies") + ".");
+    }
+
+    private void AddSoul()
+    {
+        // Looked up on click, because the player is recreated with every scene load.
+        SoulInventory inventory = FindAnyObjectByType<SoulInventory>();
+
+        if (inventory == null)
+        {
+            Debug.LogWarning("Debug menu: no SoulInventory in the scene, so no soul was added.");
+            return;
+        }
+
+        inventory.Add(1);
+    }
+
+    /// <summary>
+    /// Loads a scene from the Build Profiles list through the SceneLoader, so souls and progress carry over
+    /// the same way as through a level exit. The player arrives at the scene's default spawn.
+    /// </summary>
+    private void GoToScene(string scenePath)
+    {
+        if (SceneLoader.Instance == null)
+        {
+            Debug.LogWarning("Debug menu: this scene has no SceneLoader, so it can't change levels.");
+            return;
+        }
+
+        if (SceneLoader.Instance.TryLoadScene(scenePath, null))
+        {
+            debugPanel.SetActive(false);
+        }
     }
 
     private void OnDestroy()
