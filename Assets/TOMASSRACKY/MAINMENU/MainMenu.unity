@@ -1386,7 +1386,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bc29971119a5624fadcfc6b81511ff1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SceneSwitcher
-  nextSceneName: PlaytestLevel3.0
+  nextSceneName: MIKY LEVEL 1
   delay: 4
 --- !u!4 &1580017582
 Transform:
