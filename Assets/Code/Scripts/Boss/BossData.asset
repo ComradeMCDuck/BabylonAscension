@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a858e9f2ae9ea44691661e725c07a92, type: 3}
   m_Name: BossData
   m_EditorClassIdentifier: Assembly-CSharp::BossData
-  maxHealth: 1500
+  maxHealth: 1000
   damageIndicationDuration: 0.15
   soulPrefab: {fileID: 0}
   deathRemoveDelay: 1.5
