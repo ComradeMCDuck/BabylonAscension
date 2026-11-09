@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// A bow upgrade icon in the altar window. Clicking it buys the upgrade with souls for the rest of this life.
+/// A bow upgrade icon in the altar window. Clicking it buys the upgrade with souls for the rest of the run.
 /// Not-owned upgrades are greyed out, owned ones are lit; clicking an owned upgrade does nothing.
 /// </summary>
 public class UpgradePickButton : AltarShopButton

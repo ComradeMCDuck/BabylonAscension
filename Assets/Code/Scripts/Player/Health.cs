@@ -46,6 +46,20 @@ public class Health : MonoBehaviour, IDamageable
         }
     }
 
+    /// <summary>Sets health directly, clamped to 1..max, e.g. to carry the player's health into the next scene.</summary>
+    public void SetHealth(float value)
+    {
+        if (IsDead) return;
+        currentHealth = Mathf.Clamp(value, 1f, MaxHealth);
+    }
+
+    /// <summary>Adds health, never above max. Does nothing once dead, so a pickup can't undo a death.</summary>
+    public void Heal(float amount)
+    {
+        if (IsDead || amount <= 0f) return;
+        currentHealth = Mathf.Min(MaxHealth, currentHealth + amount);
+    }
+
     public void TakeDamage(float damage)
     {
         if (IsDead || damage <= 0f) return;

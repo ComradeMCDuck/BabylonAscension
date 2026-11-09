@@ -68,6 +68,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        // Runs before other scripts' Start (execution order -2000), so UI reading the player sees the carried values.
+        PlayerProgress.Apply(playerRoot);
         MoveToSpawn();
     }
 
@@ -99,6 +101,9 @@ public class GameManager : MonoBehaviour
 
     private void OnTransitionStarted()
     {
+        // Carry souls and upgrades into the next scene. Health only when alive: after death it comes back full.
+        PlayerProgress.Capture(playerRoot, keepHealth: !playerHealth.IsDead);
+
         // SceneLoader has frozen time and owns it until the next scene fades in, so drop the pause state
         // without restoring the time scale.
         IsPaused = false;

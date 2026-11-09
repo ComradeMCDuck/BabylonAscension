@@ -122,7 +122,12 @@ public class SceneLoader : MonoBehaviour
         TryLoadScene(SceneUtility.GetScenePathByBuildIndex(next), null);
     }
 
-    public void LoadMainMenu() => TryLoadScene(mainMenuScene, null);
+    /// <summary>Goes to the main menu and forgets the run's progress, so starting again begins fresh.</summary>
+    public void LoadMainMenu()
+    {
+        // Cleared after TryLoadScene, because its TransitionStarted makes GameManager capture the progress.
+        if (TryLoadScene(mainMenuScene, null)) PlayerProgress.Clear();
+    }
 
     public void QuitGame()
     {

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// A soul orb dropped by a dead enemy. The player collects it by touching it.
+/// A soul orb dropped by a dead enemy. The player collects it by touching it, which adds souls and heals a little.
 /// Needs a trigger collider and a layer that touches the player's layer (e.g. "Triggers", like the altar).
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
@@ -9,6 +9,8 @@ public class Soul : MonoBehaviour
 {
     [Tooltip("Souls added to the player's inventory when collected.")]
     [SerializeField, Min(1)] private int value = 1;
+    [Tooltip("Health given to the player when collected, never above their max. 0 = no healing.")]
+    [SerializeField, Min(0f)] private float healAmount = 10f;
 
     [Header("Hover")]
     [Tooltip("Height above the ground the soul floats at.")]
@@ -68,6 +70,12 @@ public class Soul : MonoBehaviour
         // Several player colliders can enter in the same step; only count the soul once.
         collected = true;
         inventory.Add(value);
+
+        // Health can sit on the player's root or on a child next to the inventory.
+        Health health = inventory.GetComponentInParent<Health>();
+        if (health == null) health = inventory.GetComponentInChildren<Health>();
+        if (health != null) health.Heal(healAmount);
+
         Destroy(gameObject);
     }
 }

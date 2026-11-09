@@ -60,8 +60,10 @@ public class BowCombat : MonoBehaviour
 
     public bool IsCharging => isCharging;
     public GameObject CurrentArrowPrefab => currentArrowPrefab;
-    /// <summary>Permanent upgrades picked at altars. Recreated with the bow, so they reset on death.</summary>
+    /// <summary>Permanent upgrades picked at altars. PlayerProgress carries them across scene loads and death.</summary>
     public BowUpgrades Upgrades => upgrades;
+    /// <summary>Arrows bought at altars, plus the basic arrow.</summary>
+    public IReadOnlyCollection<GameObject> OwnedArrows => ownedArrows;
     /// <summary>Max Charge Time with upgrades applied.</summary>
     public float MaxChargeTime => Mathf.Max(0f, upgrades.Apply(BowStat.MaxChargeTime, maxChargeTime));
     public float Charge01 =>
@@ -83,7 +85,7 @@ public class BowCombat : MonoBehaviour
         if (basicArrowPrefab == null)
             Debug.LogError("Assign the basic arrow prefab to BowCombat.", this);
 
-        // A scene reload on death recreates the bow, so the pick resets to the basic arrow.
+        // Start on the basic arrow; PlayerProgress restores bought arrows and the last pick after a scene load.
         currentArrowPrefab = basicArrowPrefab;
         if (basicArrowPrefab != null) ownedArrows.Add(basicArrowPrefab);
     }

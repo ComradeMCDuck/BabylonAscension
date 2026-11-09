@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 
 /// <summary>
-/// The bow upgrades the player owns. Lives on BowCombat, so the scene reload on death clears it.
+/// The bow upgrades the player owns. Lives on BowCombat, which every scene load recreates;
+/// <see cref="PlayerProgress"/> carries the upgrades into the next scene and through death.
 /// </summary>
 public class BowUpgrades
 {

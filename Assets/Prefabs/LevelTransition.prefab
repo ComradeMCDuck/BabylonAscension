@@ -124,5 +124,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1469bad69c1a44969f9a7c5b53bc5b76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelExit
-  targetScene: Sofi LEVEL
+  targetScene: 
   targetSpawnId: From MIKY LEVEL 2

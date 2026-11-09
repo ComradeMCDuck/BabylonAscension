@@ -2,8 +2,8 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// The souls the player has collected, spent at altars. Lives on the player,
-/// so the scene reload on death resets it to 0.
+/// The souls the player has collected, spent at altars. Lives on the player, which every scene load recreates;
+/// <see cref="PlayerProgress"/> carries the count into the next scene and through death.
 /// </summary>
 public class SoulInventory : MonoBehaviour
 {
@@ -16,6 +16,15 @@ public class SoulInventory : MonoBehaviour
     public int Souls => souls;
 
     public bool CanAfford(int cost) => souls >= cost;
+
+    /// <summary>Replaces the count, e.g. with the souls carried over from the previous scene.</summary>
+    public void SetSouls(int amount)
+    {
+        amount = Mathf.Max(0, amount);
+        if (amount == souls) return;
+        souls = amount;
+        Changed?.Invoke(souls);
+    }
 
     public void Add(int amount)
     {
