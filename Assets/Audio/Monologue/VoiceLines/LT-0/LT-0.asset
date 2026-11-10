@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb22299b1541e184bbaaba69206c4d2d, type: 3}
+  m_Name: LT-0
+  m_EditorClassIdentifier: Assembly-CSharp::MonologueLines
+  textLines:
+  - The temple greeted the priestess with a cold embrace.
+  - She was still in the dark. Deep within the tower.
+  - Doubts started to creep and crawl all over her.
+  - What if she won't be able to reach the top?
+  - What if Ereshkigal won't hear her?
+  - Or worse, straight up refuse her.
+  - The priestess yelped on a dry throat.
+  - She has to try at least.
+  audioLines:
+  - {fileID: 8300000, guid: 42a3c55741aebe4429c524a2d5a11ea9, type: 3}
+  - {fileID: 8300000, guid: 80546fe086d51c94593fd325c8fa5561, type: 3}
+  - {fileID: 8300000, guid: 9d9cbcde31b8d1d4aa8cd84242025c3d, type: 3}
+  - {fileID: 8300000, guid: d297ee280f343a34ab27b9a74a98f319, type: 3}
+  - {fileID: 8300000, guid: d5573c87b05837a4bb2addcf2b552c69, type: 3}
+  - {fileID: 8300000, guid: 5a6de8e3a74c54c4fa7b0de5cac2ac26, type: 3}
+  - {fileID: 8300000, guid: 7bc24df019ab65041a23f8fd574d5acb, type: 3}
+  - {fileID: 8300000, guid: 1b995ee17bd6a624a9c471115a6cbe49, type: 3}

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb22299b1541e184bbaaba69206c4d2d, type: 3}
+  m_Name: LT-1
+  m_EditorClassIdentifier: Assembly-CSharp::MonologueLines
+  textLines:
+  - Those pots.
+  - Their pattern reminds the priestess of the time she lived inside one.
+  - Living off of scraps she found in a small town.
+  - It was Her, an administrator of the town, that dragged the priestess out of the slums.
+  - The priestess was immediately taken aback by her beauty.
+  - All she asked the priestess to do in return was continue praying at her temple.
+  - She gave the priestess back her purpose.
+  audioLines:
+  - {fileID: 8300000, guid: ca7dabf14efa4364f9c51dbc4d7f99e4, type: 3}
+  - {fileID: 8300000, guid: 3c9def886bc851548b85b0f164388e41, type: 3}
+  - {fileID: 8300000, guid: 32c79baacabd3f1408aebcce9aaa6563, type: 3}
+  - {fileID: 8300000, guid: a3cb73dfa211fdb4ca046ccc80ba161c, type: 3}
+  - {fileID: 8300000, guid: c686164bf9e038c44b0fa86cf856d7a2, type: 3}
+  - {fileID: 8300000, guid: 83f0241ba36e16d42adeefd21d17ddde, type: 3}
+  - {fileID: 8300000, guid: ecb6e051b49db2e43bd4d7cca8184269, type: 3}
