@@ -8,6 +8,7 @@ TagManager:
   - UpperLedgeCollider
   - WallCollider
   - Altar
+  - AOE
   layers:
   - Default
   - TransparentFX

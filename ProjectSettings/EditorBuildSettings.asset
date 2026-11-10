@@ -9,25 +9,25 @@ EditorBuildSettings:
     path: Assets/TOMASSRACKY/MAINMENU/MainMenu.unity
     guid: 19d02c2f3065a9f4bb2046ecae88fbc9
   - enabled: 1
-    path: Assets/Scenes/MIKY LEVEL 1.unity
+    path: Assets/Scenes/Levels/MIKY LEVEL 1.unity
     guid: 86d2828c606a62c4694e5c99cd463e1b
   - enabled: 1
-    path: Assets/Scenes/MIKY LEVEL 2.unity
+    path: Assets/Scenes/Levels/MIKY LEVEL 2.unity
     guid: c5b0fbf09ac885f4e93cc20d3546a6f2
   - enabled: 1
-    path: Assets/Scenes/MIKY LEVEL 3.unity
+    path: Assets/Scenes/Levels/MIKY LEVEL 3.unity
     guid: 460fbc9765a0b044d8c2b3c202102ff4
   - enabled: 1
-    path: Assets/Scenes/Sofi LEVEL 5.unity
+    path: Assets/Scenes/Levels/Sofi LEVEL 5.unity
     guid: 2b8ad4606b04e1d4a9789bfe135a6c99
   - enabled: 1
-    path: Assets/Scenes/Viki LEVEL 7.unity
+    path: Assets/Scenes/Levels/Viki LEVEL 7.unity
     guid: e3266e06df651e04da7c19fc77bff719
   - enabled: 1
-    path: Assets/Scenes/Sofi LEVEL 8.unity
+    path: Assets/Scenes/Levels/Sofi LEVEL 8.unity
     guid: 980e68ac55f17db468af1fe6ef60df1c
   - enabled: 1
-    path: Assets/Scenes/Viki_BossRoom.unity
+    path: Assets/Scenes/Levels/Viki_BossRoom.unity
     guid: a40c83ead4819b24ea23112ff0ff8be3
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

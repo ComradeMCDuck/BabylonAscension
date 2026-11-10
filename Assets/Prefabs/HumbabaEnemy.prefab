@@ -209,7 +209,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DamageHitbox
   targetLayers:
     serializedVersion: 2
-    m_Bits: 264
+    m_Bits: 1288
   showDebugSprite: 1
   debugSprite: {fileID: 2746067973201767142}
 --- !u!1 &2710669626181752983
@@ -812,6 +812,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChargeAttack
   hitbox: {fileID: 5314340281813076973}
+--- !u!114 &6318274059172648316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a80ef0de82643028ab96b2d2e1c9a51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimator
+  animator: {fileID: 2915255685171726295}
+  movement: {fileID: 0}
+  moveXParameter: MoveX
+  dampTime: 0.1
+  idleThreshold: 0.1
+  chargeAttack: {fileID: 7825818485458410642}
+  chargingParameter: Charging
 --- !u!1 &5413771681801352755
 GameObject:
   m_ObjectHideFlags: 0
@@ -1065,22 +1084,3 @@ Transform:
   - {fileID: 6260034779283220294}
   m_Father: {fileID: 6675077669277327910}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6318274059172648316
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5381662566538865667}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a80ef0de82643028ab96b2d2e1c9a51, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimator
-  animator: {fileID: 2915255685171726295}
-  movement: {fileID: 0}
-  moveXParameter: MoveX
-  dampTime: 0.1
-  idleThreshold: 0.1
-  chargeAttack: {fileID: 7825818485458410642}
-  chargingParameter: Charging

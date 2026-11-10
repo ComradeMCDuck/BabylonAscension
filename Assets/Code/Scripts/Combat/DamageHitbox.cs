@@ -2,17 +2,42 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// A damage area for melee attacks: put it on a child object with a Collider2D (e.g. a BoxCollider2D) and size the
-/// collider in the scene. The collider is only enabled between Activate and Deactivate, and while active it damages
-/// every target it overlaps once per activation, so one attack can never hit the same target twice.
+/// A damage area: put it on an object with a Collider2D (e.g. a BoxCollider2D) and size the collider in the scene.
+/// The collider is only enabled between Activate and Deactivate. While active it damages the targets it overlaps,
+/// either once per activation (melee attacks: one swing can never hit the same target twice) or repeatedly, with a
+/// cooldown per target (hazards like spikes or fire). With activeOnEnable it switches itself on, so a level hazard
+/// needs no attack script.
 /// Hits are found with overlap checks every physics step instead of trigger callbacks, because the player and
 /// enemies both use kinematic Rigidbody2Ds, which don't send trigger events to each other.
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class DamageHitbox : MonoBehaviour
 {
-    [Tooltip("Layers that can be damaged. Defaults to \"Player\" and \"Triggers\" (the Adventurer's layer) if left empty.")]
+    public enum HitMode
+    {
+        /// <summary>Each target is hit at most once between Activate and Deactivate.</summary>
+        OncePerActivation,
+        /// <summary>Each target is hit again every rehitInterval seconds while it stays inside.</summary>
+        Repeating,
+    }
+
+    [Tooltip("Layers that can be damaged. Defaults to \"Player\" and \"Triggers\" (the Adventurer's layer) if left empty. Add \"Enemy\" to hurt enemies too.")]
     [SerializeField] private LayerMask targetLayers;
+
+    [Tooltip("Once Per Activation: each target is hit once per attack (slashes, charges).\nRepeating: each target is hit again every Rehit Interval while it stays inside (hazards).")]
+    [SerializeField] private HitMode hitMode = HitMode.OncePerActivation;
+
+    [Tooltip("Repeating only: seconds before the same target can be hit again. The cooldown keeps running when the target leaves, so stepping out and back in doesn't give an extra hit.")]
+    [Min(0.02f)]
+    [SerializeField] private float rehitInterval = 0.5f;
+
+    [Header("Standalone (level hazards)")]
+    [Tooltip("Activates by itself whenever this object is enabled, using Damage below. Use for hazards with no attack script. Attack hitboxes (slash, charge...) leave this off; their attack activates them.")]
+    [SerializeField] private bool activeOnEnable;
+
+    [Tooltip("Damage per hit when Active On Enable is used. Attacks pass their own damage to Activate instead.")]
+    [Min(0f)]
+    [SerializeField] private float damage = 1f;
 
     [Header("Debug")]
     [Tooltip("Shows the debug sprite while the hitbox is active.")]
@@ -21,13 +46,17 @@ public class DamageHitbox : MonoBehaviour
     [SerializeField] private SpriteRenderer debugSprite;
 
     private readonly List<Collider2D> overlaps = new List<Collider2D>();
+    // OncePerActivation: targets already hit by this activation.
     private readonly HashSet<IDamageable> alreadyHit = new HashSet<IDamageable>();
+    // Repeating: the time each target can be hit again.
+    private readonly Dictionary<IDamageable, float> nextHitTime = new Dictionary<IDamageable, float>();
     private Collider2D hitbox;
     private ContactFilter2D targetFilter;
     private Transform owner;
-    private float damage;
+    private float currentDamage;
 
     public bool IsActive { get; private set; }
+    public HitMode Mode => hitMode;
 
     private void Reset()
     {
@@ -58,12 +87,19 @@ public class DamageHitbox : MonoBehaviour
         if (player != null && (targetLayers.value & (1 << player.layer)) == 0)
             Debug.LogWarning($"{name}: Target Layers doesn't include the player's layer \"{LayerMask.LayerToName(player.layer)}\", so this hitbox can't damage the player.", this);
 
-        // The character this hitbox belongs to, so it never damages itself.
+        // The character this hitbox belongs to, so it never damages itself. A standalone hazard has no owner:
+        // falling back to transform.root would make it ignore everything under its level parent (e.g. enemies).
         Rigidbody2D body = GetComponentInParent<Rigidbody2D>();
-        owner = body != null ? body.transform : transform.root;
+        if (body != null) owner = body.transform;
+        else if (!activeOnEnable) owner = transform.root;
     }
 
-    /// <summary>Enables the collider for a new attack. Targets hit by earlier attacks can be hit again.</summary>
+    private void OnEnable()
+    {
+        if (activeOnEnable) Activate(damage);
+    }
+
+    /// <summary>Enables the collider for a new attack. Targets hit by earlier activations can be hit again.</summary>
     public void Activate(float attackDamage) => Activate(attackDamage, 0);
 
     /// <summary>
@@ -73,8 +109,9 @@ public class DamageHitbox : MonoBehaviour
     public void Activate(float attackDamage, LayerMask extraTargetLayers)
     {
         targetFilter.SetLayerMask(targetLayers | extraTargetLayers);
-        damage = attackDamage;
+        currentDamage = attackDamage;
         alreadyHit.Clear();
+        nextHitTime.Clear();
         hitbox.enabled = true;
         IsActive = true;
         SetDebugSpriteVisible(true);
@@ -99,8 +136,8 @@ public class DamageHitbox : MonoBehaviour
     }
 
     /// <summary>
-    /// Damages new targets overlapping the hitbox right now. Runs every physics step while active;
-    /// call it after moving the hitbox to check its new position straight away.
+    /// Damages targets overlapping the hitbox right now that are allowed to be hit (see HitMode). Runs every physics
+    /// step while active; call it after moving the hitbox to check its new position straight away.
     /// </summary>
     public void CheckHits()
     {
@@ -114,13 +151,29 @@ public class DamageHitbox : MonoBehaviour
 
         foreach (Collider2D other in overlaps)
         {
-            if (other.transform.IsChildOf(owner)) continue;
+            if (owner != null && other.transform.IsChildOf(owner)) continue;
 
             IDamageable target = FindDamageable(other);
-            if (target == null || !alreadyHit.Add(target)) continue;
+            if (target == null || !CanHit(target)) continue;
 
-            target.TakeDamage(damage);
+            target.TakeDamage(currentDamage);
         }
+    }
+
+    /// <summary>
+    /// Checks whether target may be hit now and, if so, records the hit. A character with several colliders
+    /// overlapping is still hit only once per step, because the first collider records it.
+    /// </summary>
+    private bool CanHit(IDamageable target)
+    {
+        if (hitMode == HitMode.OncePerActivation)
+            return alreadyHit.Add(target);
+
+        if (nextHitTime.TryGetValue(target, out float readyTime) && Time.time < readyTime)
+            return false;
+
+        nextHitTime[target] = Time.time + rehitInterval;
+        return true;
     }
 
     private static IDamageable FindDamageable(Collider2D other)
