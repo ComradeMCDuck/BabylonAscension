@@ -40,6 +40,8 @@ public class ArrowProjectile : MonoBehaviour
     private float speed;
     private float gravity;
     private float damage;
+    // The bow's charge multiplier, also applied to explosion and poison damage. 1 for enemy shots.
+    private float damageMultiplier = 1f;
     private float knockback;
     private int remainingBounces;
     private int remainingPenetrations;
@@ -86,14 +88,17 @@ public class ArrowProjectile : MonoBehaviour
     }
 
     /// <summary>
-    /// Bow shot: damage, speed, knockback and gravity scale with the charge (0..1) between ArrowData's min and max.
+    /// Bow shot: speed, knockback and gravity scale with the charge (0..1) between ArrowData's min and max.
+    /// Damage is ArrowData's base damage times damageMultiplier, which the bow works out from how long it was held;
+    /// explosion and poison damage get the same multiplier.
     /// maxSpeedMultiplier scales ArrowData's max speed (bow upgrades), so a full charge gets the whole bonus.
     /// </summary>
     public void Launch(
         Vector3 direction,
         float charge,
         GameObject shooter,
-        float maxSpeedMultiplier = 1f)
+        float maxSpeedMultiplier = 1f,
+        float damageMultiplier = 1f)
     {
         if (arrowData == null)
         {
@@ -102,7 +107,8 @@ public class ArrowProjectile : MonoBehaviour
             return;
         }
 
-        damage = Mathf.Lerp(arrowData.minDamage, arrowData.maxDamage, charge);
+        this.damageMultiplier = Mathf.Max(0f, damageMultiplier);
+        damage = arrowData.baseDamage * this.damageMultiplier;
         speed = Mathf.Lerp(arrowData.minArrowSpeed, arrowData.maxArrowSpeed * maxSpeedMultiplier, charge);
         knockback = Mathf.Lerp(arrowData.minKnockback, arrowData.maxKnockback, charge);
         gravity = Mathf.Lerp(arrowData.minChargeGravity, arrowData.maxChargeGravity, charge);
@@ -123,6 +129,7 @@ public class ArrowProjectile : MonoBehaviour
     public void Launch(Vector2 targetPosition, EntityData data, GameObject shooter)
     {
         damage = data.attackDamage;
+        damageMultiplier = 1f;
         speed = data.attackSpeed;
         gravity = data.projectileGravity;
         knockback = 0f;
@@ -148,6 +155,7 @@ public class ArrowProjectile : MonoBehaviour
         float shotGravity = 0f)
     {
         damage = shotDamage;
+        damageMultiplier = 1f;
         speed = shotSpeed;
         gravity = shotGravity;
         knockback = 0f;
@@ -367,7 +375,8 @@ public class ArrowProjectile : MonoBehaviour
             if (target != null)
             {
                 float armorMultiplier = hitArmor != null && pair.Key == hitArmor.Character ? hitArmor.ExplosionDamageMultiplier : 1f;
-                target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff) * armorMultiplier);
+                target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff)
+                                  * armorMultiplier * damageMultiplier);
             }
 
             float explosionKnockback = Mathf.Lerp(arrowData.explosionCenterKnockback, arrowData.explosionEdgeKnockback, falloff);
@@ -419,7 +428,7 @@ public class ArrowProjectile : MonoBehaviour
 
         // Damage over time; the ticks only deal damage, the knockback above happens once on the hit.
         if (target != null && arrowData != null && arrowData.IsPoisonous)
-            PoisonEffect.Apply(target, arrowData.poisonDamage, arrowData.poisonTime, arrowData.poisonInterval);
+            PoisonEffect.Apply(target, arrowData.poisonDamage * damageMultiplier, arrowData.poisonTime, arrowData.poisonInterval);
 
         // Penetrate: use one and keep flying.
         if (remainingPenetrations > 0)
