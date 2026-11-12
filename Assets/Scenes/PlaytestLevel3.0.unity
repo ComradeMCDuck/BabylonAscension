@@ -1541,6 +1541,10 @@ PrefabInstance:
       propertyPath: patrolPointB
       value: 
       objectReference: {fileID: 784727186}
+    - target: {fileID: 4953655553050175690, guid: c608b269c241db646a83c90898bf1a21, type: 3}
+      propertyPath: id
+      value: 28363d86c2d849ec9471aa4ca8bfc1c0
+      objectReference: {fileID: 0}
     - target: {fileID: 5381662566538865667, guid: c608b269c241db646a83c90898bf1a21, type: 3}
       propertyPath: m_Name
       value: HumbabaEnemy
@@ -2988,6 +2992,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 611814771480174827, guid: 6f7e2b810bdc91479905825222059ed3, type: 3}
+      propertyPath: id
+      value: 504e8a49617c4987b78694c63b2bcf53
+      objectReference: {fileID: 0}
     - target: {fileID: 2177014335127680306, guid: 6f7e2b810bdc91479905825222059ed3, type: 3}
       propertyPath: patrolPointA
       value: 
@@ -3084,6 +3092,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 611814771480174827, guid: 6f7e2b810bdc91479905825222059ed3, type: 3}
+      propertyPath: id
+      value: 45d9917e86b64a6fb2c855212302d026
+      objectReference: {fileID: 0}
     - target: {fileID: 2177014335127680306, guid: 6f7e2b810bdc91479905825222059ed3, type: 3}
       propertyPath: patrolPointA
       value: 
@@ -3989,6 +4001,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1792380390205754269, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: id
+      value: a69c8a0eec6c41478fadb529270c5cae
+      objectReference: {fileID: 0}
     - target: {fileID: 2177014335127680306, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
       propertyPath: patrolPointA
       value: 
@@ -6323,7 +6339,7 @@ MonoBehaviour:
   boxColliders: 20
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0167
+  buildMilliseconds: 0.0169
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
@@ -6809,6 +6825,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1792380390205754269, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
+      propertyPath: id
+      value: b4ddb09adf1041408580c90ee906f79e
+      objectReference: {fileID: 0}
     - target: {fileID: 2177014335127680306, guid: 5addd898433e8014591c1d5110bfedaf, type: 3}
       propertyPath: patrolPointA
       value: 

@@ -210,6 +210,10 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 1288
+  hitMode: 0
+  rehitInterval: 0.5
+  activeOnEnable: 0
+  damage: 1
   showDebugSprite: 1
   debugSprite: {fileID: 2746067973201767142}
 --- !u!1 &2710669626181752983
@@ -525,6 +529,7 @@ GameObject:
   - component: {fileID: 4625639512983076096}
   - component: {fileID: 7825818485458410642}
   - component: {fileID: 6318274059172648316}
+  - component: {fileID: 4953655553050175690}
   m_Layer: 10
   m_Name: HumbabaEnemy
   m_TagString: Untagged
@@ -738,6 +743,8 @@ MonoBehaviour:
     CanWallClimb: 0
     WallClimbSpeed: 2
     CanWallJump: 1
+    WallJumpsAllowed: 1
+    WallJumpCounter: 0
     ClimbForce: {x: 12, y: 16}
     OffForce: {x: 8, y: 15}
     LeapForce: {x: 18, y: 17}
@@ -831,6 +838,24 @@ MonoBehaviour:
   idleThreshold: 0.1
   chargeAttack: {fileID: 7825818485458410642}
   chargingParameter: Charging
+--- !u!114 &4953655553050175690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cf5d27ae794ebd4983be8f3847ea24e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DontRespawn
+  rememberWhenRemoved: 1
+  removeOnLoad: 1
+  onLoadedRemembered:
+    m_PersistentCalls:
+      m_Calls: []
+  id: 
 --- !u!1 &5413771681801352755
 GameObject:
   m_ObjectHideFlags: 0
@@ -1050,6 +1075,10 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 264
+  hitMode: 0
+  rehitInterval: 0.5
+  activeOnEnable: 0
+  damage: 1
   showDebugSprite: 1
   debugSprite: {fileID: 2389234578771282184}
 --- !u!1 &7671933259282294577

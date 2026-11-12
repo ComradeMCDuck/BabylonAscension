@@ -157,6 +157,8 @@ public class EntityData : ScriptableObject
     public bool canWallClimb = false;
     [Min(0f)] public float wallClimbSpeed = 2f;
     public bool canWallJump = true;
+    [Tooltip("How many wall jumps are allowed per airtime. Once they are used up, wall slide and wall jump stay disabled until the character lands (or grabs a ladder or ledge). 0 disables wall sliding and wall jumping entirely.")]
+    [Min(0)] public int wallJumpsAllowed = 1;
     public Vector2 wallClimbForce = new Vector2(12f, 16f);
     public Vector2 wallOffForce = new Vector2(8f, 15f);
     public Vector2 wallLeapForce = new Vector2(18f, 17f);
