@@ -5,8 +5,9 @@ using UnityEngine.Serialization;
 public class ArrowData : ScriptableObject
 {
     [Header("Shop")]
-    [Tooltip("Souls needed to unlock this arrow at an altar. Once bought, switching back to it is free until death.")]
-    [Min(0)] public int soulCost = 1;
+    [Tooltip("Genii needed to unlock this arrow at an altar. Once bought, switching back to it is free until death.")]
+    [UnityEngine.Serialization.FormerlySerializedAs("soulCost")]
+    [Min(0)] public int geniiCost = 1;
 
     [Header("Shot")]
     [Tooltip("Damage of a bow shot before the bow's charge multiplier (BowCombat's Damage Charge settings). " +

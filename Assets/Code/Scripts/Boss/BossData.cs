@@ -13,8 +13,9 @@ public class BossData : ScriptableObject
     [Min(1f)] public float maxHealth = 1500f;
     [Tooltip("Seconds the sprite takes to flash red and back when hit.")]
     [Min(0.01f)] public float damageIndicationDuration = 0.15f;
-    [Tooltip("Soul orb dropped where the boss dies. Must have a Soul component. Empty = drops nothing.")]
-    public GameObject soulPrefab;
+    [Tooltip("Genii orb dropped where the boss dies. Must have a Genii component. Empty = drops nothing.")]
+    [UnityEngine.Serialization.FormerlySerializedAs("soulPrefab")]
+    public GameObject geniiPrefab;
     [Tooltip("Seconds between dying and the boss being removed, for a death animation.")]
     [Min(0f)] public float deathRemoveDelay = 1.5f;
 

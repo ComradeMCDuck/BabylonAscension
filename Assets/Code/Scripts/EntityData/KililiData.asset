@@ -27,7 +27,7 @@ MonoBehaviour:
   attackCooldown: 2
   attackSpeed: 18
   attackEffectPrefab: {fileID: 6124286472832785063, guid: cc1f129752c79a043a767e091e560a31, type: 3}
-  soulPrefab: {fileID: 5831294142424740042, guid: beb8f8c7c2e5e8541994daa80a8c7fdd, type: 3}
+  geniiPrefab: {fileID: 5831294142424740042, guid: beb8f8c7c2e5e8541994daa80a8c7fdd, type: 3}
   patrolSpeedMultiplier: 0.5
   patrolWaitTime: 1.5
   loseSightTime: 2

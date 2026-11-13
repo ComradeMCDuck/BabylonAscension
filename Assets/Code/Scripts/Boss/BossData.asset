@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BossData
   maxHealth: 1000
   damageIndicationDuration: 0.15
-  soulPrefab: {fileID: 0}
+  geniiPrefab: {fileID: 0}
   deathRemoveDelay: 1.5
   approachSpeedMultiplier: 0.6
   retreatSpeedMultiplier: 0.5

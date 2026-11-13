@@ -1,25 +1,25 @@
 using UnityEngine;
 
 /// <summary>
-/// A soul orb dropped by a dead enemy. The player collects it by touching it, which adds souls and heals a little.
+/// A genii orb dropped by a dead enemy. The player collects it by touching it, which adds genii and heals a little.
 /// Needs a trigger collider and a layer that touches the player's layer (e.g. "Triggers", like the altar).
 /// </summary>
 [RequireComponent(typeof(Collider2D))]
-public class Soul : MonoBehaviour
+public class Genii : MonoBehaviour
 {
-    [Tooltip("Souls added to the player's inventory when collected.")]
+    [Tooltip("Genii added to the player's inventory when collected.")]
     [SerializeField, Min(1)] private int value = 1;
     [Tooltip("Health given to the player when collected, never above their max. 0 = no healing.")]
     [SerializeField, Min(0f)] private float healAmount = 10f;
 
     [Header("Hover")]
-    [Tooltip("Height above the ground the soul floats at.")]
+    [Tooltip("Height above the ground the genii floats at.")]
     [SerializeField, Min(0f)] private float hoverHeight = 0.75f;
-    [Tooltip("Speed (units per second) the soul sinks or rises to its hover height after spawning. 0 = jump there instantly.")]
+    [Tooltip("Speed (units per second) the genii sinks or rises to its hover height after spawning. 0 = jump there instantly.")]
     [SerializeField, Min(0f)] private float settleSpeed = 4f;
-    [Tooltip("How far below the spawn point to look for ground. If none is found, the soul stays where it spawned.")]
+    [Tooltip("How far below the spawn point to look for ground. If none is found, the genii stays where it spawned.")]
     [SerializeField, Min(0f)] private float maxGroundDistance = 30f;
-    [Tooltip("Layers the soul hovers above. Empty = Environment.")]
+    [Tooltip("Layers the genii hovers above. Empty = Environment.")]
     [SerializeField] private LayerMask groundLayers;
 
     private bool collected;
@@ -32,7 +32,7 @@ public class Soul : MonoBehaviour
         var trigger = GetComponent<Collider2D>();
         if (!trigger.isTrigger)
         {
-            Debug.LogWarning("Soul's collider should be a trigger; making it one.", this);
+            Debug.LogWarning("Genii's collider should be a trigger; making it one.", this);
             trigger.isTrigger = true;
         }
 
@@ -42,7 +42,7 @@ public class Soul : MonoBehaviour
 
     private void Start()
     {
-        // Find the ground under the spawn point once; enemies dying in the air (e.g. Kilili) drop their soul to it.
+        // Find the ground under the spawn point once; enemies dying in the air (e.g. Kilili) drop their genii to it.
         hoverPosition = transform.position;
         RaycastHit2D ground = Physics2D.Raycast(transform.position, Vector2.down, maxGroundDistance, groundLayers);
         if (ground.collider != null)
@@ -62,12 +62,12 @@ public class Soul : MonoBehaviour
     {
         if (collected) return;
 
-        var inventory = other.GetComponentInParent<SoulInventory>();
+        var inventory = other.GetComponentInParent<GeniiInventory>();
         if (inventory == null && other.attachedRigidbody != null)
-            inventory = other.attachedRigidbody.GetComponent<SoulInventory>();
+            inventory = other.attachedRigidbody.GetComponent<GeniiInventory>();
         if (inventory == null) return;
 
-        // Several player colliders can enter in the same step; only count the soul once.
+        // Several player colliders can enter in the same step; only count the genii once.
         collected = true;
         inventory.Add(value);
 

@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// The boss's health, set up from BossData instead of EntityData. Like EnemyHealth it can sit on the boss or a child,
 /// because arrows and hitboxes look for an IDamageable in the whole character. It doesn't remove the boss itself:
-/// BossBrain listens to Died, cancels attacks, drops the soul and removes the boss after BossData.deathRemoveDelay.
+/// BossBrain listens to Died, cancels attacks, drops the genii and removes the boss after BossData.deathRemoveDelay.
 /// </summary>
 public class BossHealth : MonoBehaviour, IDamageable
 {

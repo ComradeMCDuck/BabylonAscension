@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// What the player keeps between scenes: health, souls, bow upgrades and bought arrows. The player is part of each
+/// What the player keeps between scenes: health, genii, bow upgrades and bought arrows. The player is part of each
 /// scene and is recreated on every load, so this static store carries the values across. GameManager captures
 /// them when a scene change starts and applies them to the new player in Start.
-/// After death only health is dropped, so the player comes back at full health but keeps souls and upgrades.
+/// After death only health is dropped, so the player comes back at full health but keeps genii and upgrades.
 /// Starting a level straight from the Editor (nothing captured yet) uses the player's Inspector values.
 /// </summary>
 public static class PlayerProgress
@@ -14,7 +14,7 @@ public static class PlayerProgress
     private static bool hasData;
     // NaN = no saved health (after death or at the start of a run): the player starts at full health.
     private static float health = float.NaN;
-    private static int souls;
+    private static int genii;
     private static readonly List<BowUpgrade> upgrades = new List<BowUpgrade>();
     private static readonly List<GameObject> ownedArrows = new List<GameObject>();
     private static GameObject selectedArrow;
@@ -29,7 +29,7 @@ public static class PlayerProgress
     {
         hasData = false;
         health = float.NaN;
-        souls = 0;
+        genii = 0;
         upgrades.Clear();
         ownedArrows.Clear();
         selectedArrow = null;
@@ -47,8 +47,8 @@ public static class PlayerProgress
         Health playerHealth = player.GetComponentInChildren<Health>();
         health = keepHealth && playerHealth != null && !playerHealth.IsDead ? playerHealth.CurrentHealth : float.NaN;
 
-        SoulInventory inventory = player.GetComponentInChildren<SoulInventory>();
-        if (inventory != null) souls = inventory.Souls;
+        GeniiInventory inventory = player.GetComponentInChildren<GeniiInventory>();
+        if (inventory != null) genii = inventory.Count;
 
         BowCombat bow = player.GetComponentInChildren<BowCombat>();
         if (bow != null)
@@ -69,8 +69,8 @@ public static class PlayerProgress
         Health playerHealth = player.GetComponentInChildren<Health>();
         if (playerHealth != null && !float.IsNaN(health)) playerHealth.SetHealth(health);
 
-        SoulInventory inventory = player.GetComponentInChildren<SoulInventory>();
-        if (inventory != null) inventory.SetSouls(souls);
+        GeniiInventory inventory = player.GetComponentInChildren<GeniiInventory>();
+        if (inventory != null) inventory.SetCount(genii);
 
         BowCombat bow = player.GetComponentInChildren<BowCombat>();
         if (bow != null)

@@ -108,8 +108,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
         Debug.Log($"{body.name} died!");
 
-        if (enemyData != null && enemyData.soulPrefab != null)
-            Instantiate(enemyData.soulPrefab, body.transform.position, Quaternion.identity);
+        if (enemyData != null && enemyData.geniiPrefab != null)
+            Instantiate(enemyData.geniiPrefab, body.transform.position, Quaternion.identity);
 
         Destroy(body);
     }

@@ -3386,7 +3386,7 @@ GameObject:
   - component: {fileID: 3465284152199857731}
   - component: {fileID: 7733404311518300342}
   m_Layer: 5
-  m_Name: HealthAndSouls
+  m_Name: HealthAndGenii
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3687,7 +3687,7 @@ GameObject:
   - component: {fileID: 5891433069497259169}
   - component: {fileID: 8614183329398090018}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Geni_Txt
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3823,9 +3823,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6ccf207f476f69742ae5d96ca5ef5679, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SoulCounter
+  m_EditorClassIdentifier: Assembly-CSharp::GeniiCounter
   label: {fileID: 5891433069497259169}
-  format: 'Souls: {0}'
+  format: 'Genii: {0}'
 --- !u!1 &5004384759431590235
 GameObject:
   m_ObjectHideFlags: 0
@@ -6676,7 +6676,7 @@ GameObject:
   - component: {fileID: 8415959777572548364}
   - component: {fileID: 3013447237479574951}
   m_Layer: 5
-  m_Name: SoulCounter_Panel
+  m_Name: Genii_Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

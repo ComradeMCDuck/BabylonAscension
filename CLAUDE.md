@@ -29,7 +29,7 @@ This started as the open-source 2D Platformer Hunter controller, but the team ha
 - Ladders use `Ladder`, `LadderZoneSetter` and `Area2D`, with reference scenes in the package's `Samples/`.
 
 ## Game code (`Assets/Code/Scripts`)
-Folders: `Core/` (GameManager, SceneLoader, MotionInterpolator, CameraTargetProxy), `Level/` (LevelExit, SpawnPoint, ArrowTarget, ShopAltar, Soul), `Player/` (BowCombat, Health + `IDamageable`, PlayerProgress, SoulInventory, facing/aim rig, dash module), `BowAndArrows/` (ArrowProjectile, upgrades, `ArrowData/` and `Upgrades/` assets), `Combat/` (DamageHitbox, PoisonEffect), `Enemies/` (EnemyBehavior and the enemy attack components), `Boss/`, `UI/` (HUD, debug menu, shop window and buttons), `EntityData/` (own assembly, see above).
+Folders: `Core/` (GameManager, SceneLoader, MotionInterpolator, CameraTargetProxy), `Level/` (LevelExit, SpawnPoint, ArrowTarget, ShopAltar, Genii), `Player/` (BowCombat, Health + `IDamageable`, PlayerProgress, GeniiInventory, facing/aim rig, dash module), `BowAndArrows/` (ArrowProjectile, upgrades, `ArrowData/` and `Upgrades/` assets), `Combat/` (DamageHitbox, PoisonEffect), `Enemies/` (EnemyBehavior and the enemy attack components), `Boss/`, `UI/` (HUD, debug menu, shop window and buttons), `EntityData/` (own assembly, see above).
 
 **Data (ScriptableObjects, tuned in the Inspector):**
 - `EntityData` holds every tunable number for a character: health, the controller's movement, jump, wall and recoil settings, enemy AI, and the per-attack sections (Slash, Jump Attack, Charge, Flight). Each field has a tooltip. Assets: `PlayerData`, `MeleeEnemyData`, `ShooterEnemyData`, `HumbabaEnemyData 1`, `KililiData`. Add new character tuning values here, with a `[Tooltip]`.

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4700359667200740733}
   - component: {fileID: -6273787246619164690}
   m_Layer: 8
-  m_Name: Soul
+  m_Name: Genii
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -141,7 +141,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6fa14ddef8e3c9240b7d9b1f27ed93d7, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Soul
+  m_EditorClassIdentifier: Assembly-CSharp::Genii
   value: 1
   hoverHeight: 0.75
   settleSpeed: 8
