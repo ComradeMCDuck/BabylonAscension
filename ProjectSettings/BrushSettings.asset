@@ -52,7 +52,7 @@ MonoBehaviour:
   defaultModelStaticFlags: 87
   defaultMaterial: {fileID: 2100000, guid: b0b92c31e47e90645ac7ed7fa12f7702, type: 2}
   showGenerated: 0
-  showCuts: 0
+  showCuts: 1
   showDimensions: 1
   shapeHandles: 1
   shapeEditSelection: 0
