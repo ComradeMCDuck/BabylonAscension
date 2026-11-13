@@ -84,13 +84,13 @@ MonoBehaviour:
   onLadderJumpForce: 0.4
   fallingJumpPaddingTime: 0.09
   willJumpPaddingTime: 0.15
-  canWallSlide: 0
+  canWallSlide: 1
   wallStickTime: 0.05
   wallSlideSpeedLoss: 0.05
   wallSlidingSpeedMax: 2
   canWallClimb: 0
   wallClimbSpeed: 2
-  canWallJump: 0
+  canWallJump: 1
   wallClimbForce: {x: 12, y: 16}
   wallOffForce: {x: 8, y: 15}
   wallLeapForce: {x: 18, y: 17}

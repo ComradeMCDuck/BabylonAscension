@@ -84,7 +84,7 @@ MonoBehaviour:
   animator: {fileID: 7487572580236149384}
   basicArrowPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
   maxChargeTime: 1.2
-  minDrawTime: 0.35
+  minDrawTime: 0.2
   spawnOffset: 0.15
   fireCooldown: 0.1
   groundedRecoilMultiplier: 0.45
@@ -460,7 +460,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6418181647898953217}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.5358643, w: 0.8443042}
+  m_LocalRotation: {x: -0, y: -0, z: -0.53586394, w: 0.84430444}
   m_LocalPosition: {x: 1.214, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1063,7 +1063,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2412350510101065090, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.000000214712
+      value: -0.0000001991648
       objectReference: {fileID: 0}
     - target: {fileID: 5838552553471336640, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

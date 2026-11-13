@@ -67,7 +67,12 @@ public class SceneLoader : MonoBehaviour
     /// </summary>
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (!IsTransitioning || mode != LoadSceneMode.Single) return;
+        if (mode != LoadSceneMode.Single) return;
+        // A fresh scene starts with nothing removed yet. Covers scenes loaded without a SceneLoader, and objects
+        // that scripts switch off in Awake while the scene sets itself up.
+        LevelMemory.DiscardPending();
+
+        if (!IsTransitioning) return;
         if (Instance != null && Instance.gameObject.scene == scene) return;
 
         Debug.LogWarning($"Scene '{scene.name}' has no SceneLoader, so it was shown without a fade-in. Add the GameManager prefab or a SceneLoader to it.");
@@ -126,7 +131,11 @@ public class SceneLoader : MonoBehaviour
     public void LoadMainMenu()
     {
         // Cleared after TryLoadScene, because its TransitionStarted makes GameManager capture the progress.
-        if (TryLoadScene(mainMenuScene, null)) PlayerProgress.Clear();
+        if (TryLoadScene(mainMenuScene, null))
+        {
+            PlayerProgress.Clear();
+            LevelMemory.Clear();
+        }
     }
 
     public void QuitGame()
@@ -171,9 +180,34 @@ public class SceneLoader : MonoBehaviour
         if (blackScreenDuration > 0f)
             yield return new WaitForSecondsRealtime(blackScreenDuration);
 
+        // Reaching a later level keeps what the player removed in this one (DontRespawn). Dying (a reload) or
+        // going back to an earlier level drops it, so this level is full again on the next visit.
+        if (IsLaterInBuildList(scene)) LevelMemory.Commit();
+        else LevelMemory.DiscardPending();
+
         ArrivalSpawnId = string.IsNullOrEmpty(spawnId) ? null : spawnId;
         loadIssued = true;
         SceneManager.LoadScene(scene, LoadSceneMode.Single);
+    }
+
+    /// <summary>
+    /// True if <paramref name="scene"/> (a name or an asset path) comes after the current scene in the Build
+    /// Profiles scene list, i.e. the player is moving forward through the game.
+    /// </summary>
+    private bool IsLaterInBuildList(string scene)
+    {
+        int current = gameObject.scene.buildIndex;
+        if (current < 0) return false;
+
+        int target = SceneUtility.GetBuildIndexByScenePath(scene);
+        // Given a bare scene name: match it against the file names in the list.
+        for (int i = 0; target < 0 && i < SceneManager.sceneCountInBuildSettings; i++)
+        {
+            string path = SceneUtility.GetScenePathByBuildIndex(i);
+            if (System.IO.Path.GetFileNameWithoutExtension(path) == scene) target = i;
+        }
+
+        return target > current;
     }
 
     private IEnumerator FinishArrival()

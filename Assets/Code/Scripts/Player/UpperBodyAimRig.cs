@@ -107,6 +107,8 @@ public class UpperBodyAimRig : MonoBehaviour
     private UpperBodyAimRigPostIK postIK;
 
     private Vector3 aimPoint;
+    // Shoulder-to-cursor direction; aimDirection is this turned by BowCombat's overdraw sway.
+    private Vector2 cursorDirection = Vector2.right;
     private Vector2 aimDirection = Vector2.right;
     private float facing = 1f;
     private float pitch;
@@ -114,7 +116,7 @@ public class UpperBodyAimRig : MonoBehaviour
     private float drawAmount;
     private bool hasAim;
 
-    /// <summary>World-space direction from the bow shoulder to the cursor.</summary>
+    /// <summary>World-space direction the bow arm points: from the bow shoulder to the cursor, turned by overdraw sway.</summary>
     public Vector2 AimDirection => aimDirection;
     /// <summary>Cursor position on the player's XY plane.</summary>
     public Vector3 AimPoint => aimPoint;
@@ -223,7 +225,10 @@ public class UpperBodyAimRig : MonoBehaviour
         // The shoulder has moved with the lean, so aim from where it is now.
         Vector2 toCursor = aimPoint - shoulder.position;
         if (toCursor.sqrMagnitude > MinAimSqrDistance)
-            aimDirection = toCursor.normalized;
+            cursorDirection = toCursor.normalized;
+
+        // Holding past the full-draw bonus makes the bow arm swing up and down around the cursor line.
+        aimDirection = bowCombat != null ? Rotate(cursorDirection, bowCombat.SwayAngle) : cursorDirection;
 
         UpdateDrawAmount();
         PlaceTargets(shoulder.position);

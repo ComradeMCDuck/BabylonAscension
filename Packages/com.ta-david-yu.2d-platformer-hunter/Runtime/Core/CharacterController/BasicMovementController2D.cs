@@ -72,6 +72,11 @@ namespace DYP
             public float WallClimbSpeed = 2;
 
             public bool CanWallJump = true;
+            public int WallJumpsAllowed = 1;
+            // wall jumps used this airtime; once it reaches WallJumpsAllowed, wall slide (and so wall jump)
+            // is blocked until landing, a ladder or a ledge
+            [HideInInspector]
+            public int WallJumpCounter = 0;
             public Vector2 ClimbForce = new Vector2(12, 16);
             public Vector2 OffForce = new Vector2(8, 15);
             public Vector2 LeapForce = new Vector2(18, 17);
@@ -295,6 +300,7 @@ namespace DYP
             m_Recoil.HorizontalActive = false;
             m_Recoil.VerticalActive = false;
             m_WallInteraction.WallStickTimer = 0f;
+            m_WallInteraction.WallJumpCounter = 0;
             m_OnLadderState = new OnLadderState();
             m_ApplyGravity = true;
             IsCrouching = false;
@@ -908,6 +914,7 @@ namespace DYP
             m_WallInteraction.CanWallClimb = m_EntityData.canWallClimb;
             m_WallInteraction.WallClimbSpeed = m_EntityData.wallClimbSpeed;
             m_WallInteraction.CanWallJump = m_EntityData.canWallJump;
+            m_WallInteraction.WallJumpsAllowed = m_EntityData.wallJumpsAllowed;
             m_WallInteraction.ClimbForce = m_EntityData.wallClimbForce;
             m_WallInteraction.OffForce = m_EntityData.wallOffForce;
             m_WallInteraction.LeapForce = m_EntityData.wallLeapForce;
@@ -1300,6 +1307,7 @@ namespace DYP
                             changeState(MotorState.OnLedge);
 
                             m_AirJumpCounter = 0;
+                            m_WallInteraction.WallJumpCounter = 0;
                             OnResetJumpCounter.Invoke(MotorState.OnLedge);
 
                             // check if still sticking to wall
@@ -1328,8 +1336,9 @@ namespace DYP
 
                     }
 
-                    // wall sliding logic
-                    if (!isGrabbingLedge && m_WallInteraction.CanWallSlide)
+                    // wall sliding logic (blocked for the rest of the airtime once the wall jumps are used up)
+                    bool wallJumpSpent = m_WallInteraction.WallJumpCounter >= m_WallInteraction.WallJumpsAllowed;
+                    if (!isGrabbingLedge && m_WallInteraction.CanWallSlide && !wallJumpSpent)
                     {
                         // is OnGround, press against wall and jump
                         if (IsOnGround())
@@ -1715,6 +1724,7 @@ namespace DYP
             OnWallJump.Invoke(jumpVec);
 
             m_Velocity = jumpVec;
+            m_WallInteraction.WallJumpCounter++;
         }
 
         /// <summary>
@@ -1879,6 +1889,7 @@ namespace DYP
             changeState(MotorState.OnLadder);
 
             m_AirJumpCounter = 0;
+            m_WallInteraction.WallJumpCounter = 0;
             OnResetJumpCounter.Invoke(MotorState.OnLadder);
             m_ApplyGravity = false;
         }
@@ -1930,6 +1941,7 @@ namespace DYP
             if (IsState(MotorState.OnGround))
             {
                 m_AirJumpCounter = 0;
+                m_WallInteraction.WallJumpCounter = 0;
                 OnResetJumpCounter.Invoke(MotorState.OnGround);
 
                 if (prevState != MotorState.Frozen)

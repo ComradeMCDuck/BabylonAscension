@@ -64,6 +64,8 @@ Folders: `Core/` (GameManager, SceneLoader, MotionInterpolator, CameraTargetProx
 
 **Other:**
 - `GameManager` (execution order -2000): Escape pauses (`timeScale = 0`). When the player dies, the screen fades out, the scene reloads (resetting enemies), and the screen fades back in. Gameplay scripts check `Time.timeScale == 0f` to ignore input while paused.
+- `DontRespawn` (`Level/`) + static `LevelMemory` (`Core/`): an object with `DontRespawn` that is destroyed or deactivated during play is remembered by a per-scene id (auto-generated in `OnValidate`, stored on the scene instance), and deactivates itself in `Awake` on later loads. Removals are pending until `SceneLoader` loads a scene with a higher build index (`LevelMemory.Commit`); a reload (death) or going back to an earlier scene discards them. In memory only; cleared by `SceneLoader.LoadMainMenu`.
+- `LevelExit` (prefab `LevelTransition`) detects the player in its own trigger and loads its target scene when E is pressed (`requireInteract`). `UI/InteractPrompt` on the HUD Canvas shows the shared "Press E" hint; level objects call the static `InteractPrompt.Show(owner, text)` / `Hide(owner)`.
 - `DebugMenu`: Tab toggles a runtime panel, built in code with legacy UGUI, for editing `PlayerData` values. It also respawns enemies that were killed, from snapshots taken in `Start`. Add rows with `AddSection`, `AddFloatRow`, `AddIntRow`, `AddBoolRow` and `AddButton`.
 - `BasicDashModule` (namespace `DYP`) is a ScriptableObject dash module that follows a speed curve.
 - `Assets/TowerBend/` contains `TowerBendController` and the shaders that curve the flat level into a cylinder for display only. `Assets/Code/Shaders/` holds `Curving.shader`, a sprite shadow shader graph, and the URP renderer assets.

@@ -105,6 +105,7 @@ public class DebugMenu : MonoBehaviour
     {
         AddSection("Level");
         AddButton("Respawn Killed Enemies", RespawnKilledEnemies);
+        AddButton("Forget Removed Objects", ForgetRemovedObjects);
         AddButton("Add 1 Soul", AddSoul);
 
         AddSection("Go To Level");
@@ -155,6 +156,7 @@ public class DebugMenu : MonoBehaviour
         AddBoolRow("Can Wall Climb", () => d.canWallClimb, v => d.canWallClimb = v);
         AddFloatRow("Wall Climb Speed", () => d.wallClimbSpeed, v => d.wallClimbSpeed = v);
         AddBoolRow("Can Wall Jump", () => d.canWallJump, v => d.canWallJump = v);
+        AddIntRow("Wall Jumps Allowed", () => d.wallJumpsAllowed, v => d.wallJumpsAllowed = v, 0, 100);
         AddFloatRow("Climb Force X", () => d.wallClimbForce.x, v => d.wallClimbForce.x = v, -MaxValue);
         AddFloatRow("Climb Force Y", () => d.wallClimbForce.y, v => d.wallClimbForce.y = v, -MaxValue);
         AddFloatRow("Off Force X", () => d.wallOffForce.x, v => d.wallOffForce.x = v, -MaxValue);
@@ -214,12 +216,25 @@ public class DebugMenu : MonoBehaviour
             // Destroyed objects compare equal to null in Unity.
             if (spawn.Instance != null) continue;
 
+            // A killed enemy with DontRespawn is noted as gone. The respawned copy is alive again, so drop the note.
+            DontRespawn marker = spawn.Template.GetComponentInChildren<DontRespawn>(true);
+            if (marker != null) marker.Forget();
+
             spawn.Instance = Instantiate(spawn.Template, spawn.Parent, false);
             spawn.Instance.name = spawn.Name;
             respawned++;
         }
 
         Debug.Log("Debug menu: respawned " + respawned + " killed enem" + (respawned == 1 ? "y" : "ies") + ".");
+    }
+
+    /// <summary>
+    /// Clears the list of DontRespawn objects, so enemies and puzzles in every level are back on the next load.
+    /// </summary>
+    private void ForgetRemovedObjects()
+    {
+        LevelMemory.Clear();
+        Debug.Log("Debug menu: forgot all removed objects. They come back the next time a level loads.");
     }
 
     private void AddSoul()

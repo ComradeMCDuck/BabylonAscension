@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 2948731175527631967}
   - component: {fileID: 566255764140674756}
   - component: {fileID: 4815162342108765432}
+  - component: {fileID: 611814771480174827}
   m_Layer: 10
   m_Name: Kilili
   m_TagString: Untagged
@@ -360,6 +361,8 @@ MonoBehaviour:
     CanWallClimb: 0
     WallClimbSpeed: 2
     CanWallJump: 1
+    WallJumpsAllowed: 1
+    WallJumpCounter: 0
     ClimbForce: {x: 12, y: 16}
     OffForce: {x: 8, y: 15}
     LeapForce: {x: 18, y: 17}
@@ -436,3 +439,21 @@ MonoBehaviour:
   obstacleLayers:
     serializedVersion: 2
     m_Bits: 64
+--- !u!114 &611814771480174827
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cf5d27ae794ebd4983be8f3847ea24e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DontRespawn
+  rememberWhenRemoved: 1
+  removeOnLoad: 1
+  onLoadedRemembered:
+    m_PersistentCalls:
+      m_Calls: []
+  id: 

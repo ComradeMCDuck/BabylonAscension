@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "ArrowData", menuName = "Scriptable Objects/ArrowData")]
 public class ArrowData : ScriptableObject
@@ -8,8 +9,10 @@ public class ArrowData : ScriptableObject
     [Min(0)] public int soulCost = 1;
 
     [Header("Shot")]
-    [SerializeField] public float minDamage = 5f;
-    [SerializeField] public float maxDamage = 30f;
+    [Tooltip("Damage of a bow shot before the bow's charge multiplier (BowCombat's Damage Charge settings). " +
+             "Explosion and poison damage are multiplied by the same multiplier.")]
+    [FormerlySerializedAs("maxDamage")]
+    [Min(0f)] public float baseDamage = 30f;
     [SerializeField] public float minArrowSpeed = 12f;
     [SerializeField] public float maxArrowSpeed = 24f;
     [Tooltip("Downward acceleration of the arrow at no charge. Higher = drops faster. 0 = flies straight.")]
