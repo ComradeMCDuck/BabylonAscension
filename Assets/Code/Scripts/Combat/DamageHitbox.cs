@@ -156,7 +156,9 @@ public class DamageHitbox : MonoBehaviour
             IDamageable target = FindDamageable(other);
             if (target == null || !CanHit(target)) continue;
 
-            target.TakeDamage(currentDamage);
+            // No owner means a level hazard, not someone's attack.
+            if (owner == null && target is IHazardDamageable hazardTarget) hazardTarget.TakeHazardDamage(currentDamage);
+            else target.TakeDamage(currentDamage);
         }
     }
 

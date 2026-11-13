@@ -78,7 +78,7 @@ MonoBehaviour:
   lockFacingToRight: 1
   hasVariableJumpHeight: 1
   airJumpAllowed: 1
-  maxJumpHeight: 9
+  maxJumpHeight: 3.5
   minJumpHeight: 1
   timeToApex: 0.4
   onLadderJumpForce: 0.4
