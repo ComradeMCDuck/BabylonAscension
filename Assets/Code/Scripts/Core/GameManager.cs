@@ -75,8 +75,11 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            SetPaused(!IsPaused);
+        if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
+
+        // An open UI window (the shop, ...) takes Escape first: it closes, and the pause menu stays hidden.
+        if (!IsPaused && EscapeCloseStack.CloseTop()) return;
+        SetPaused(!IsPaused);
     }
 
     /// <summary>For a pause menu's Resume button.</summary>
@@ -85,6 +88,8 @@ public class GameManager : MonoBehaviour
     public void SetPaused(bool paused)
     {
         if (IsRespawning || IsPaused == paused) return;
+        // Never pause on top of an open UI window; this also covers callers other than the Escape key.
+        if (paused && EscapeCloseStack.HasOpenWindow) return;
         IsPaused = paused;
         if (paused) FreezeTime();
         else RestoreTime();
