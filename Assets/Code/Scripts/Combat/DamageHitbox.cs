@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DYP;
 using UnityEngine;
 
 /// <summary>
@@ -54,6 +55,8 @@ public class DamageHitbox : MonoBehaviour
     private ContactFilter2D targetFilter;
     private Transform owner;
     private float currentDamage;
+    // Sideways push for the player when this activation hits. 0 for hazards and attacks without knockback.
+    private float currentKnockback;
 
     public bool IsActive { get; private set; }
     public HitMode Mode => hitMode;
@@ -100,16 +103,23 @@ public class DamageHitbox : MonoBehaviour
     }
 
     /// <summary>Enables the collider for a new attack. Targets hit by earlier activations can be hit again.</summary>
-    public void Activate(float attackDamage) => Activate(attackDamage, 0);
+    public void Activate(float attackDamage) => Activate(attackDamage, 0f, default);
 
     /// <summary>
     /// Like Activate, but this attack can also hit extraTargetLayers (e.g. "Enemy" for friendly fire).
     /// The extra layers only last until the next Activate.
     /// </summary>
-    public void Activate(float attackDamage, LayerMask extraTargetLayers)
+    public void Activate(float attackDamage, LayerMask extraTargetLayers) => Activate(attackDamage, 0f, extraTargetLayers);
+
+    /// <summary>
+    /// Like Activate, but a hit also pushes the player sideways, away from the attacker, with the given knockback.
+    /// Only for attacks: a standalone hazard has no attacker to push away from, so it never knocks back.
+    /// </summary>
+    public void Activate(float attackDamage, float knockback, LayerMask extraTargetLayers)
     {
         targetFilter.SetLayerMask(targetLayers | extraTargetLayers);
         currentDamage = attackDamage;
+        currentKnockback = knockback;
         alreadyHit.Clear();
         nextHitTime.Clear();
         hitbox.enabled = true;
@@ -159,7 +169,23 @@ public class DamageHitbox : MonoBehaviour
             // No owner means a level hazard, not someone's attack.
             if (owner == null && target is IHazardDamageable hazardTarget) hazardTarget.TakeHazardDamage(currentDamage);
             else target.TakeDamage(currentDamage);
+
+            if (owner != null && currentKnockback > 0f) KnockBackPlayer(other);
         }
+    }
+
+    /// <summary>
+    /// Pushes the player sideways, away from the attacker. Only the player: enemies caught by friendly fire
+    /// (e.g. a charge) take the damage without being thrown around.
+    /// </summary>
+    private void KnockBackPlayer(Collider2D other)
+    {
+        BasicMovementController2D targetMovement = other.GetComponentInParent<BasicMovementController2D>();
+        if (targetMovement == null || !targetMovement.CompareTag("Player")) return;
+
+        // Exactly on top of the attacker counts as right of it, so the push always has a direction.
+        float side = other.bounds.center.x >= owner.position.x ? 1f : -1f;
+        targetMovement.ApplyKnockback(new Vector2(side * currentKnockback, 0f));
     }
 
     /// <summary>

@@ -58,7 +58,7 @@ public class ChargeAttack : MonoBehaviour
 
         hitbox.transform.localPosition = new Vector3(hitboxLocalPosition.x * facingDirection, hitboxLocalPosition.y, hitboxLocalPosition.z);
         LayerMask extraLayers = data.chargeDamagesEnemies ? LayerMask.GetMask("Enemy") : 0;
-        hitbox.Activate(data.chargeDamage, extraLayers);
+        hitbox.Activate(data.chargeDamage, data.chargeKnockback, extraLayers);
     }
 
     /// <summary>Ends the charge, disables the hitbox and starts the cooldown. hitWall also starts the stun.</summary>

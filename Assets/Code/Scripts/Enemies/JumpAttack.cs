@@ -48,7 +48,7 @@ public class JumpAttack : MonoBehaviour
         if (hitbox == null) return;
 
         hitbox.transform.localPosition = new Vector3(hitboxLocalPosition.x * facingDirection, hitboxLocalPosition.y, hitboxLocalPosition.z);
-        hitbox.Activate(data.jumpAttackDamage);
+        hitbox.Activate(data.jumpAttackDamage, data.jumpAttackKnockback, default);
     }
 
     /// <summary>Ends the attack, disables the hitbox and starts the cooldown.</summary>

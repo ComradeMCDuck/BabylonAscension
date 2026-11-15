@@ -2048,11 +2048,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6675077669277327910, guid: 9a8f7fe76f8688447bafd3e7ff14331a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.5
+      value: 17.5
       objectReference: {fileID: 0}
     - target: {fileID: 6675077669277327910, guid: 9a8f7fe76f8688447bafd3e7ff14331a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -5.5
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 6675077669277327910, guid: 9a8f7fe76f8688447bafd3e7ff14331a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -2096,12 +2096,17 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6496444140915452365, guid: 9a8f7fe76f8688447bafd3e7ff14331a, type: 3}
   m_PrefabInstance: {fileID: 1128688606}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1128688608}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3e863c17777c7d43a8f2e4c0c0e3eff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossBrain
+--- !u!1 &1128688608 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5381662566538865667, guid: 9a8f7fe76f8688447bafd3e7ff14331a, type: 3}
+  m_PrefabInstance: {fileID: 1128688606}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1146061128
 GameObject:
   m_ObjectHideFlags: 9
@@ -4222,7 +4227,7 @@ MonoBehaviour:
   boxColliders: 17
   meshColliders: 0
   triggerVolumes: 0
-  buildMilliseconds: 0.0427
+  buildMilliseconds: 0.0394
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
@@ -4763,6 +4768,7 @@ MonoBehaviour:
   activeDuringFight:
   - {fileID: 1738592888}
   - {fileID: 1018340030}
+  - {fileID: 1128688608}
   activateOnVictory: []
 --- !u!61 &1965715922
 BoxCollider2D:

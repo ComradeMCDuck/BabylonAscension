@@ -44,7 +44,7 @@ public class BossSlashAttack : BossAttack<BossSlashData>
         float endAngle = aimAngle - halfArc * facing;
 
         SetAngle(startAngle);
-        hitbox.Activate(data.damage);
+        hitbox.Activate(data.damage, data.knockback, default);
 
         float elapsed = 0f;
         while (elapsed < data.swingDuration)

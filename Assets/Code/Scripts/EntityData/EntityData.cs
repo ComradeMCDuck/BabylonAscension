@@ -67,9 +67,13 @@ public class EntityData : ScriptableObject
     [Range(0f, 360f)] public float slashArcAngle = 140f;
     [Tooltip("Seconds the swing takes. The hitbox is active for this long.")]
     [Min(0.01f)] public float slashDuration = 0.25f;
+    [Tooltip("Sideways push the player gets when the slash hits, away from this enemy. The player's own Knockback Lift and Stun Time apply on top. 0 = no knockback.")]
+    [Min(0f)] public float slashKnockback = 8f;
 
     [Header("Jump Attack (enemies with a JumpAttack component)")]
     public float jumpAttackDamage = 30f;
+    [Tooltip("Sideways push the player gets when the jump attack hits, away from this enemy. 0 = no knockback.")]
+    [Min(0f)] public float jumpAttackKnockback = 12f;
     [Tooltip("Seconds after a jump attack before the next one. The basic attack is used in the meantime.")]
     [Min(0f)] public float jumpAttackCooldown = 6f;
     [Tooltip("Max horizontal distance to the player at which the enemy starts a jump attack.")]
@@ -87,6 +91,8 @@ public class EntityData : ScriptableObject
 
     [Header("Charge Attack (enemies with a ChargeAttack component)")]
     public float chargeDamage = 40f;
+    [Tooltip("Sideways push the player gets when the charge hits, away from this enemy. Other enemies hit by the charge are not pushed. 0 = no knockback.")]
+    [Min(0f)] public float chargeKnockback = 16f;
     [Tooltip("Seconds after a charge ends before the next one. The basic attack is used in the meantime.")]
     [Min(0f)] public float chargeCooldown = 8f;
     [Tooltip("Max horizontal distance to the player at which the enemy starts a charge.")]
@@ -157,6 +163,8 @@ public class EntityData : ScriptableObject
     [Min(0f)] public float wallStickTime = 0.15f;
     [Min(0f)] public float wallSlideSpeedLoss = 0.05f;
     [Min(0f)] public float wallSlidingSpeedMax = 2f;
+    [Tooltip("Longest the character can wall slide, in seconds, before dropping off. Time adds up across slides and is refilled by a wall jump, landing, or grabbing a ladder or ledge. Once it runs out, wall slide stays disabled until one of those. 0 = no limit.")]
+    [Min(0f)] public float wallSlideTimeMax = 2f;
     public bool canWallClimb = false;
     [Min(0f)] public float wallClimbSpeed = 2f;
     public bool canWallJump = true;

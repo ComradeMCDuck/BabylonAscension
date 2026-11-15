@@ -71,7 +71,7 @@ public class BiteAttack : BossAttack<BiteData>
         FaceHead();
         SetHead(start, start);
         if (neckVisual != null) neckVisual.enabled = true;
-        headHitbox.Activate(data.damage);
+        headHitbox.Activate(data.damage, data.knockback, default);
 
         // Snap out (ease out), hold, then pull back without damage.
         float elapsed = 0f;
