@@ -20,6 +20,13 @@ public class MotionInterpolator : MonoBehaviour
 
     private Vector3[] restLocalPositions;
     private Vector3 previousPosition;
+    private Vector3 visualOffset;
+
+    /// <summary>
+    /// World-space offset the smoothed children currently have from their real position. Things that are
+    /// not children but should line up with the visuals (the blob shadow) add this to the root position.
+    /// </summary>
+    public Vector3 VisualOffset => visualOffset;
 
     private void Awake()
     {
@@ -70,6 +77,7 @@ public class MotionInterpolator : MonoBehaviour
         // The children have to sit (1 - t) of the last step behind the root.
         Vector3 worldOffset = (previousPosition - current) * (1f - t);
         Vector3 localOffset = transform.InverseTransformVector(worldOffset);
+        visualOffset = worldOffset;
 
         for (int i = 0; i < smoothedChildren.Length; i++)
         {
@@ -79,6 +87,7 @@ public class MotionInterpolator : MonoBehaviour
 
     private void RestoreChildren()
     {
+        visualOffset = Vector3.zero;
         if (restLocalPositions == null) return;
 
         for (int i = 0; i < smoothedChildren.Length; i++)

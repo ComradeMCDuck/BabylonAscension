@@ -396,6 +396,7 @@ GameObject:
   - component: {fileID: 6391920292439144656}
   - component: {fileID: 2324345203836220836}
   - component: {fileID: 227483865676033909}
+  - component: {fileID: 7306152839461527301}
   m_Layer: 10
   m_Name: MushussuEnemy
   m_TagString: Untagged
@@ -1455,3 +1456,15 @@ MonoBehaviour:
     m_Bits: 264
   showDebugSprite: 1
   debugSprite: {fileID: 7866992302930292094}
+--- !u!114 &7306152839461527301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f3a9c1e84b7452d9e0c5a7b21d4f836, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

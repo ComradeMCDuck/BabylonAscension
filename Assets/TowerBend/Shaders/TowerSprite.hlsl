@@ -35,4 +35,13 @@ half2 TowerFlatLightingUV()
     return half2(ComputeScreenPos(flatCS / flatCS.w).xy);
 }
 
+// World normal of the sprite card at the vertex being finished, after the bend.
+// Built from the object's -Z axis (sprites face the camera) instead of the mesh
+// normal, because sprite meshes carry no normal stream.
+half3 TowerSpriteNormalWS()
+{
+    float3 flatNormalWS = TransformObjectToWorldNormal(float3(0.0, 0.0, -1.0));
+    return half3(TowerBendNormal(flatNormalWS, _TowerFlatPositionWS, _TowerBend));
+}
+
 #endif // TOWER_SPRITE_INCLUDED
