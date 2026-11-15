@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Shared logic for a buyable item button in the altar window (arrows, bow upgrades).
-/// Clicking an item the player doesn't own buys it with souls if they can afford it; clicking an owned item uses it.
+/// Clicking an item the player doesn't own buys it with genii if they can afford it; clicking an owned item uses it.
 /// Every image and text on the button is greyed out unless the subclass says the item is lit.
 /// </summary>
 [RequireComponent(typeof(Button))]
@@ -16,7 +16,7 @@ public abstract class AltarShopButton : MonoBehaviour
     [Header("Price")]
     [Tooltip("Optional text showing the price. It isn't greyed out with the rest of the button.")]
     [SerializeField] private TMP_Text priceText;
-    [Tooltip("{0} is replaced by the soul cost.")]
+    [Tooltip("{0} is replaced by the genii cost.")]
     [SerializeField] private string priceFormat = "{0}";
     [Tooltip("Shown instead of the price once the item is owned. Empty hides the price text.")]
     [SerializeField] private string ownedLabel = "";
@@ -29,7 +29,7 @@ public abstract class AltarShopButton : MonoBehaviour
     private Color priceColor;
 
     protected BowCombat Bow { get; private set; }
-    protected SoulInventory Souls { get; private set; }
+    protected GeniiInventory Inventory { get; private set; }
 
     protected abstract int Cost { get; }
     protected abstract bool IsOwned { get; }
@@ -53,28 +53,28 @@ public abstract class AltarShopButton : MonoBehaviour
         if (priceText != null) priceColor = priceText.color;
 
         Bow = FindAnyObjectByType<BowCombat>();
-        Souls = FindAnyObjectByType<SoulInventory>();
-        if (Bow == null || Souls == null)
+        Inventory = FindAnyObjectByType<GeniiInventory>();
+        if (Bow == null || Inventory == null)
         {
-            Debug.LogError($"{GetType().Name} needs the player's BowCombat and SoulInventory.", this);
+            Debug.LogError($"{GetType().Name} needs the player's BowCombat and GeniiInventory.", this);
             enabled = false;
         }
     }
 
     protected virtual void OnEnable()
     {
-        if (Bow == null || Souls == null || !IsValid) return;
+        if (Bow == null || Inventory == null || !IsValid) return;
         button.onClick.AddListener(OnClick);
-        Souls.Changed += OnSoulsChanged;
+        Inventory.Changed += OnGeniiChanged;
         Subscribe(true);
         Refresh();
     }
 
     protected virtual void OnDisable()
     {
-        if (Bow == null || Souls == null || !IsValid) return;
+        if (Bow == null || Inventory == null || !IsValid) return;
         button.onClick.RemoveListener(OnClick);
-        Souls.Changed -= OnSoulsChanged;
+        Inventory.Changed -= OnGeniiChanged;
         Subscribe(false);
     }
 
@@ -82,14 +82,14 @@ public abstract class AltarShopButton : MonoBehaviour
     {
         if (!IsOwned)
         {
-            if (!Souls.TrySpend(Cost)) return;
+            if (!Inventory.TrySpend(Cost)) return;
             Unlock();
         }
         Use();
         Refresh();
     }
 
-    private void OnSoulsChanged(int souls) => Refresh();
+    private void OnGeniiChanged(int count) => Refresh();
 
     protected void Refresh()
     {
@@ -104,6 +104,6 @@ public abstract class AltarShopButton : MonoBehaviour
         bool owned = IsOwned;
         priceText.gameObject.SetActive(!owned || !string.IsNullOrEmpty(ownedLabel));
         priceText.text = owned ? ownedLabel : string.Format(priceFormat, Cost);
-        priceText.color = !owned && !Souls.CanAfford(Cost) ? unaffordableColor : priceColor;
+        priceText.color = !owned && !Inventory.CanAfford(Cost) ? unaffordableColor : priceColor;
     }
 }

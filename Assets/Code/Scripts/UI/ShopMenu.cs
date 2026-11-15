@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 /// window, not on the window itself, because an inactive object stops running Update).
 /// The window hides itself on Awake, so it stays hidden even in scenes without any <see cref="ShopAltar"/>.
 /// Altars only report when the player enters or leaves them; E opens the window while the player is at any altar,
-/// and E closes it again. The game is frozen (timeScale 0) while the window is open.
+/// and E or Escape closes it again (Escape through <see cref="EscapeCloseStack"/>). The game is frozen (timeScale 0) while the window is open.
 /// Uses the E key directly because the "Interact" action has a Hold interaction, which would delay the press.
 /// </summary>
 public class ShopMenu : MonoBehaviour
@@ -69,12 +69,15 @@ public class ShopMenu : MonoBehaviour
         previousTimeScale = Time.timeScale;
         Time.timeScale = 0f;
         window.SetActive(true);
+        // Escape now closes the shop instead of opening the pause menu (GameManager reads the key).
+        EscapeCloseStack.Push(this, Close);
     }
 
     public void Close()
     {
         if (!IsOpen) return;
         IsOpen = false;
+        EscapeCloseStack.Remove(this);
         Time.timeScale = previousTimeScale;
         // The window can already be destroyed when the scene unloads.
         if (window != null) window.SetActive(false);

@@ -106,7 +106,7 @@ public class DebugMenu : MonoBehaviour
         AddSection("Level");
         AddButton("Respawn Killed Enemies", RespawnKilledEnemies);
         AddButton("Forget Removed Objects", ForgetRemovedObjects);
-        AddButton("Add 1 Soul", AddSoul);
+        AddButton("Add 1 Genii", AddGenii);
 
         AddSection("Go To Level");
         for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
@@ -237,14 +237,14 @@ public class DebugMenu : MonoBehaviour
         Debug.Log("Debug menu: forgot all removed objects. They come back the next time a level loads.");
     }
 
-    private void AddSoul()
+    private void AddGenii()
     {
         // Looked up on click, because the player is recreated with every scene load.
-        SoulInventory inventory = FindAnyObjectByType<SoulInventory>();
+        GeniiInventory inventory = FindAnyObjectByType<GeniiInventory>();
 
         if (inventory == null)
         {
-            Debug.LogWarning("Debug menu: no SoulInventory in the scene, so no soul was added.");
+            Debug.LogWarning("Debug menu: no GeniiInventory in the scene, so no genii was added.");
             return;
         }
 
@@ -252,7 +252,7 @@ public class DebugMenu : MonoBehaviour
     }
 
     /// <summary>
-    /// Loads a scene from the Build Profiles list through the SceneLoader, so souls and progress carry over
+    /// Loads a scene from the Build Profiles list through the SceneLoader, so genii and progress carry over
     /// the same way as through a level exit. The player arrives at the scene's default spawn.
     /// </summary>
     private void GoToScene(string scenePath)

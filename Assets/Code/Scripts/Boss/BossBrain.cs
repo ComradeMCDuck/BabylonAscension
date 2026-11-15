@@ -422,8 +422,8 @@ public class BossBrain : MonoBehaviour
         if (movement != null) movement.StopHorizontalMomentum();
         SetState(BossState.Dead);
 
-        if (bossData.soulPrefab != null)
-            Instantiate(bossData.soulPrefab, transform.position, Quaternion.identity);
+        if (bossData.geniiPrefab != null)
+            Instantiate(bossData.geniiPrefab, transform.position, Quaternion.identity);
 
         Destroy(gameObject, bossData.deathRemoveDelay);
     }

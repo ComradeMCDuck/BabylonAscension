@@ -17220,7 +17220,7 @@ MonoBehaviour:
   boxColliders: 44
   meshColliders: 23
   triggerVolumes: 0
-  buildMilliseconds: 0.0784
+  buildMilliseconds: 0.4032
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9

@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// An arrow icon in the altar window. The first click buys the arrow with souls (price from its ArrowData);
+/// An arrow icon in the altar window. The first click buys the arrow with genii (price from its ArrowData);
 /// after that, clicking it makes the bow fire this arrow for free.
 /// Only the arrow the bow is firing is lit; all others are greyed out (all of them while on the basic arrow).
 /// </summary>
@@ -27,7 +27,7 @@ public class ArrowPickButton : AltarShopButton
         }
 
         var projectile = arrowPrefab.GetComponent<ArrowProjectile>();
-        if (projectile != null && projectile.Data != null) cost = projectile.Data.soulCost;
+        if (projectile != null && projectile.Data != null) cost = projectile.Data.geniiCost;
         else Debug.LogError($"{arrowPrefab.name} needs an ArrowProjectile with ArrowData for its price.", this);
     }
 

@@ -816,8 +816,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb7d8772b76a47c8988cf100a178f4a3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SoulInventory
-  souls: 0
+  m_EditorClassIdentifier: Assembly-CSharp::GeniiInventory
+  genii: 0
 --- !u!114 &8319859182551271507
 MonoBehaviour:
   m_ObjectHideFlags: 0
