@@ -530,6 +530,7 @@ GameObject:
   - component: {fileID: 7825818485458410642}
   - component: {fileID: 6318274059172648316}
   - component: {fileID: 4953655553050175690}
+  - component: {fileID: 7306152839461527301}
   m_Layer: 10
   m_Name: HumbabaEnemy
   m_TagString: Untagged
@@ -663,10 +664,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   eyeOffset: {x: 0, y: 0.5}
-  maxTrailLength: 10
-  trailMemoryTime: 10
-  platformSearchRange: 8
-  maxDropHeight: 8
   spriteRenderer: {fileID: 3351490166364712506}
   spriteFacesRight: 1
 --- !u!114 &2070423413871693275
@@ -856,6 +853,30 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   id: 
+--- !u!114 &7306152839461527301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f3a9c1e84b7452d9e0c5a7b21d4f836, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  width: 4
+  depth: 0
+  opacity: 0.6
+  material: {fileID: 0}
+  sortingOrder: -10
+  maxHeight: 6
+  minScale: 0.4
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  surfaceOffset: 0.02
+  depthOffset: 0
 --- !u!1 &5413771681801352755
 GameObject:
   m_ObjectHideFlags: 0

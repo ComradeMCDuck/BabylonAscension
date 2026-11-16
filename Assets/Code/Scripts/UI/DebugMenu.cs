@@ -153,6 +153,7 @@ public class DebugMenu : MonoBehaviour
         AddFloatRow("Wall Stick Time", () => d.wallStickTime, v => d.wallStickTime = v);
         AddFloatRow("Wall Slide Speed Loss", () => d.wallSlideSpeedLoss, v => d.wallSlideSpeedLoss = v);
         AddFloatRow("Wall Sliding Speed Max", () => d.wallSlidingSpeedMax, v => d.wallSlidingSpeedMax = v);
+        AddFloatRow("Wall Slide Time Max", () => d.wallSlideTimeMax, v => d.wallSlideTimeMax = v);
         AddBoolRow("Can Wall Climb", () => d.canWallClimb, v => d.canWallClimb = v);
         AddFloatRow("Wall Climb Speed", () => d.wallClimbSpeed, v => d.wallClimbSpeed = v);
         AddBoolRow("Can Wall Jump", () => d.canWallJump, v => d.canWallJump = v);

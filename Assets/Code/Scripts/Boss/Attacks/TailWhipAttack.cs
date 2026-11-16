@@ -40,7 +40,7 @@ public class TailWhipAttack : BossAttack<TailWhipData>
     {
         int facing = Boss.FacingDirection;
         SetLength(0f, facing);
-        hitbox.Activate(data.damage);
+        hitbox.Activate(data.damage, data.knockback, default);
 
         // Lash out fast (ease out), hold, then pull back.
         yield return Animate(data.extendTime, t => 1f - (1f - t) * (1f - t), facing);

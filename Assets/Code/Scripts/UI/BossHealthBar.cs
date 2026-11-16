@@ -42,8 +42,8 @@ public class BossHealthBar : MonoBehaviour
     {
         if (encounter == null || barRoot == null || fill == null)
         {
-            Debug.LogError($"{name}: BossHealthBar needs an Encounter, a Bar Root and a Fill assigned. Disabling.", this);
-            enabled = false;
+            Debug.LogWarning($"{name}: BossHealthBar needs an Encounter, a Bar Root and a Fill assigned. Disabling.", this);
+            gameObject.SetActive(false);
             return;
         }
 

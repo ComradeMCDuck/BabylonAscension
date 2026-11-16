@@ -45,7 +45,7 @@ public class SlashAttack : EnemyAttack
         float endAngle = aimAngle - halfArc * facing;
 
         SetAngle(startAngle);
-        hitbox.Activate(data.attackDamage);
+        hitbox.Activate(data.attackDamage, data.slashKnockback, default);
 
         float elapsed = 0f;
         while (elapsed < data.slashDuration)

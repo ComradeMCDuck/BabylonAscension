@@ -31,6 +31,7 @@ MonoBehaviour:
   patrolSpeedMultiplier: 0.4
   patrolWaitTime: 1
   loseSightTime: 2
+  turnDelay: 0
   canJump: 1
   jumpCheckDistance: 1
   jumpCooldown: 0.5
@@ -88,9 +89,11 @@ MonoBehaviour:
   wallStickTime: 0.05
   wallSlideSpeedLoss: 0.05
   wallSlidingSpeedMax: 2
+  wallSlideTimeMax: 1
   canWallClimb: 0
   wallClimbSpeed: 2
   canWallJump: 1
+  wallJumpsAllowed: 1
   wallClimbForce: {x: 12, y: 16}
   wallOffForce: {x: 8, y: 15}
   wallLeapForce: {x: 18, y: 17}
