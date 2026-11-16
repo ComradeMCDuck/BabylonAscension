@@ -45,8 +45,11 @@ public class BiteAttack : BossAttack<BiteData>
         if (headHitbox == null || Boss == null) return;
 
         FaceHead();
-        // While biting, Perform places the head itself.
-        if (restHeadAtStart && !IsRunning) SetHead(FromFeet(data.startOffset), FromFeet(data.startOffset));
+        // Only while biting (Active) does Perform place the head itself. In the windup the head must keep following
+        // the body, because the brain turns the boss toward the player right as the attack begins (e.g. after a
+        // charge stun with the player behind it); otherwise the head would wait on the old side until the bite.
+        if (restHeadAtStart && Phase != BossAttackPhase.Active)
+            SetHead(FromFeet(data.startOffset), FromFeet(data.startOffset));
     }
 
     /// <summary>
