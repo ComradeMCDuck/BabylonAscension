@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public class EnemyHealth : MonoBehaviour, IDamageable
+public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
 {
     [Header("References")]
     [SerializeField] private EntityData enemyData;
@@ -12,6 +12,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     [SerializeField] private float currentHealth;
 
     private bool isDead;
+    /// <summary>Raised when hurt by an attack (EnemyBehavior then chases the player). Hazard damage doesn't raise it.</summary>
     public event Action Damaged;
     private Color originalColor;
     private Coroutine damageIndication;
@@ -46,7 +47,12 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         }
     }
 
-    public void TakeDamage(float damage)
+    public void TakeDamage(float damage) => ApplyDamage(damage, true);
+
+    /// <summary>Spikes, fire and other level hazards: hurts like an attack, but doesn't alert the enemy.</summary>
+    public void TakeHazardDamage(float damage) => ApplyDamage(damage, false);
+
+    private void ApplyDamage(float damage, bool raiseDamaged)
     {
         if (isDead || damage <= 0f)
             return;
@@ -62,7 +68,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             damageIndication = StartCoroutine(DamageIndication());
         }
 
-        Damaged?.Invoke();
+        if (raiseDamaged) Damaged?.Invoke();
 
         Debug.Log(
             $"{name} took {damage} damage. " +

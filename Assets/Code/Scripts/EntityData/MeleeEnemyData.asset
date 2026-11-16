@@ -15,7 +15,7 @@ MonoBehaviour:
   entityID: 1
   maxHealth: 30
   damageIndicationDuration: 0.2
-  detectionRange: 10
+  detectionRange: 15
   moveSpeed: 4
   jumpSpeed: 1
   dashSpeed: 10
@@ -31,6 +31,7 @@ MonoBehaviour:
   patrolSpeedMultiplier: 0.35
   patrolWaitTime: 1
   loseSightTime: 3
+  turnDelay: 0
   canJump: 1
   jumpCheckDistance: 1
   jumpCooldown: 0.25
@@ -78,7 +79,7 @@ MonoBehaviour:
   lockFacingToRight: 1
   hasVariableJumpHeight: 1
   airJumpAllowed: 1
-  maxJumpHeight: 9
+  maxJumpHeight: 3.5
   minJumpHeight: 1
   timeToApex: 0.4
   onLadderJumpForce: 0.4
@@ -91,6 +92,7 @@ MonoBehaviour:
   canWallClimb: 0
   wallClimbSpeed: 2
   canWallJump: 0
+  wallJumpsAllowed: 1
   wallClimbForce: {x: 12, y: 16}
   wallOffForce: {x: 8, y: 15}
   wallLeapForce: {x: 18, y: 17}

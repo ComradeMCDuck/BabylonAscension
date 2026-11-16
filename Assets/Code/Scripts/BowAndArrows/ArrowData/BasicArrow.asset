@@ -13,14 +13,13 @@ MonoBehaviour:
   m_Name: BasicArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
   geniiCost: 1
-  minDamage: 5
-  maxDamage: 30
+  baseDamage: 30
   minArrowSpeed: 12
   maxArrowSpeed: 24
   minChargeGravity: 20
   maxChargeGravity: 5
   minKnockback: 4
-  maxKnockback: 24
+  maxKnockback: 12
   minRecoil: 0
   maxRecoil: 24
   bounces: 0

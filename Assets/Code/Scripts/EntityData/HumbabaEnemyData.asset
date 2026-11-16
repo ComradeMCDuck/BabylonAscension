@@ -15,7 +15,7 @@ MonoBehaviour:
   entityID: 1
   maxHealth: 100
   damageIndicationDuration: 0.2
-  detectionRange: 10
+  detectionRange: 15
   moveSpeed: 4
   jumpSpeed: 1
   dashSpeed: 10
@@ -23,7 +23,7 @@ MonoBehaviour:
   nextDashCooldown: 1
   lockZAxis: 1
   attackDamage: 20
-  attackRange: 1.5
+  attackRange: 2
   attackCooldown: 1
   attackSpeed: 10
   attackEffectPrefab: {fileID: 6685216219719590695, guid: 218d4f5b6e069154384a3f5445dce559, type: 3}
@@ -31,14 +31,15 @@ MonoBehaviour:
   patrolSpeedMultiplier: 0.35
   patrolWaitTime: 1
   loseSightTime: 3
+  turnDelay: 0.6
   canJump: 1
   jumpCheckDistance: 2
   jumpCooldown: 0.25
   attackWindup: 0.15
   projectileGravity: 10
   projectileLifetime: 1
-  slashOriginOffset: {x: 0.2, y: 0}
-  slashArcAngle: 140
+  slashOriginOffset: {x: 0.5, y: 0}
+  slashArcAngle: 80
   slashDuration: 0.25
   jumpAttackDamage: 20
   jumpAttackCooldown: 6
@@ -50,11 +51,11 @@ MonoBehaviour:
   jumpAttackMaxHeightDifference: 1.5
   chargeDamage: 40
   chargeCooldown: 8
-  chargeRange: 7
+  chargeRange: 10
   chargeMaxHeightDifference: 1
   chargeWindup: 1.2
   chargeSpeed: 14
-  chargeDistance: 24
+  chargeDistance: 36
   chargeStunDuration: 3
   chargeDamagesEnemies: 1
   flySpeed: 6
@@ -78,7 +79,7 @@ MonoBehaviour:
   lockFacingToRight: 1
   hasVariableJumpHeight: 1
   airJumpAllowed: 1
-  maxJumpHeight: 9
+  maxJumpHeight: 3.5
   minJumpHeight: 1
   timeToApex: 0.4
   onLadderJumpForce: 0.4
@@ -91,6 +92,7 @@ MonoBehaviour:
   canWallClimb: 0
   wallClimbSpeed: 2
   canWallJump: 0
+  wallJumpsAllowed: 1
   wallClimbForce: {x: 12, y: 16}
   wallOffForce: {x: 8, y: 15}
   wallLeapForce: {x: 18, y: 17}

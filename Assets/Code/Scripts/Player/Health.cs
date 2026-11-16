@@ -6,6 +6,16 @@ public interface IDamageable
     void TakeDamage(float damage);
 }
 
+/// <summary>
+/// Optional for IDamageables that react differently to level hazards (spikes, fire) than to attacks:
+/// an enemy hurt by a hazard shouldn't take it as the player hitting it and start chasing.
+/// Targets without it take hazard damage through TakeDamage.
+/// </summary>
+public interface IHazardDamageable
+{
+    void TakeHazardDamage(float damage);
+}
+
 public class Health : MonoBehaviour, IDamageable
 {
     [SerializeField] private EntityData entityData;

@@ -29,6 +29,10 @@ public class BossEncounter : MonoBehaviour
     public event Action FightStarted;
     public event Action Won;
 
+    /// <summary>The boss of this fight, e.g. for a health bar.</summary>
+    public BossBrain Boss => boss;
+    public bool IsFighting => state == EncounterState.Fighting;
+
     private void Awake()
     {
         if (startTrigger == null) startTrigger = GetComponent<Collider2D>();
