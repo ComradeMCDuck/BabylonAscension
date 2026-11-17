@@ -46,6 +46,8 @@ public class EntityData : ScriptableObject
     [Min(0f)] public float patrolWaitTime = 1f;
     [Tooltip("Seconds the enemy keeps chasing the player's last known position after losing sight of them.")]
     [Min(0f)] public float loseSightTime = 2f;
+    [Tooltip("Seconds a chasing or attacking enemy stands still before turning around (e.g. when the player jumps over it). 0 = turns instantly. Gives big enemies a window to be hit from behind.")]
+    [Min(0f)] public float turnDelay = 0f;
     [Tooltip("If true, the enemy jumps onto platforms, over walls and across gaps while chasing. Jump height comes from 'Controller - Jump'.")]
     public bool canJump = true;
     [Tooltip("How close (horizontally) a wall, gap or platform edge must be before the enemy jumps.")]

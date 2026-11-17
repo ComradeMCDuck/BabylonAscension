@@ -136,6 +136,10 @@ public class EnemyBehavior : MonoBehaviour
     private float jumpAttackGiveUpTime;
     private float nextJumpAttackCheckTime;
 
+    // Direction the enemy is turning toward (0 = not turning), and when the turn completes.
+    private int turnTarget;
+    private float turnEndTime;
+
     private int chargeDirection;
     private bool chargeRunStarted;
     private float chargeStartX;
@@ -143,7 +147,11 @@ public class EnemyBehavior : MonoBehaviour
 
     public EnemyState CurrentState => currentState;
     public int FacingDirection => facingDirection;
+    /// <summary>True while the enemy stands still before turning around (EntityData.turnDelay).</summary>
+    public bool IsTurning => turnTarget != 0;
     public event Action<EnemyState> StateChanged;
+    /// <summary>Raised when the enemy starts turning around with a delay. Hook a turn animation or sound here.</summary>
+    public event Action TurnStarted;
 
     private void Reset()
     {
@@ -402,6 +410,7 @@ public class EnemyBehavior : MonoBehaviour
         Bounds self = selfCollider.bounds;
         Bounds player = playerCollider.bounds;
         float deltaX = player.center.x - self.center.x;
+        if (MustTurnFirst(deltaX)) return false;
         if (Mathf.Abs(deltaX) > enemyData.chargeRange) return false;
         if (Mathf.Abs(player.min.y - Feet) > enemyData.chargeMaxHeightDifference) return false;
 
@@ -511,6 +520,7 @@ public class EnemyBehavior : MonoBehaviour
         Bounds self = selfCollider.bounds;
         Bounds player = playerCollider.bounds;
         float deltaX = player.center.x - self.center.x;
+        if (MustTurnFirst(deltaX)) return false;
         if (Mathf.Abs(deltaX) > enemyData.jumpAttackRange) return false;
         if (Mathf.Abs(player.min.y - Feet) > enemyData.jumpAttackMaxHeightDifference) return false;
 
@@ -627,6 +637,8 @@ public class EnemyBehavior : MonoBehaviour
         if (newState == EnemyState.Patrol) ResetPathing();
         // Attacks and other states take over mid-link; Chase plans again from wherever the enemy is afterwards.
         else if (newState != EnemyState.Chase) activeLink = default;
+        // A turn carries over between Chase and Attack (the player is still behind); anything else ends it.
+        if (newState != EnemyState.Chase && newState != EnemyState.Attack) turnTarget = 0;
         StateChanged?.Invoke(newState);
     }
 
@@ -777,7 +789,8 @@ public class EnemyBehavior : MonoBehaviour
     private void WalkOnRoute(float direction)
     {
         Move(direction, 1f);
-        if (enemyData.canJump && movement.IsOnGround() && IsJumpableWallAhead((int)direction)) Jump();
+        // Not while standing still to turn around.
+        if (enemyData.canJump && !IsTurning && movement.IsOnGround() && IsJumpableWallAhead((int)direction)) Jump();
     }
 
     /// <summary>
@@ -787,6 +800,13 @@ public class EnemyBehavior : MonoBehaviour
     private void StartLink(EnemyLinkPlanner.Step step)
     {
         int direction = step.To.x >= step.From.x ? 1 : -1;
+
+        // Arrived facing the other way: finish turning around (turnDelay) before taking the link.
+        if (!Face(direction))
+        {
+            Move(0f, 0f);
+            return;
+        }
 
         if (step.Traversal == EnemyLink.Traversal.Jump)
         {
@@ -993,7 +1013,8 @@ public class EnemyBehavior : MonoBehaviour
         // Jump across gaps only when the player isn't below; otherwise dropping down is the way to them.
         bool playerIsBelow = playerCollider != null && playerCollider.bounds.min.y < Feet - StepHeight;
 
-        if (canJumpNow && (IsJumpableWallAhead(direction) || (!playerIsBelow && IsGapAhead(direction))))
+        // Not while standing still to turn around.
+        if (canJumpNow && !IsTurning && (IsJumpableWallAhead(direction) || (!playerIsBelow && IsGapAhead(direction))))
             Jump();
     }
 
@@ -1058,26 +1079,69 @@ public class EnemyBehavior : MonoBehaviour
         // Turn toward the player only between attacks, so jumping over the enemy mid-attack doesn't flip it.
         if (attack != null && attack.IsAttacking) return;
 
-        Face(lastKnownPlayerPosition.x - transform.position.x);
+        // Still turning around (turnDelay): no attack until it faces the player.
+        if (!Face(lastKnownPlayerPosition.x - transform.position.x)) return;
         if (attack != null) attack.TryAttack(getLastKnownPlayerPosition, enemyData);
     }
 
     /// <summary>
     /// Feeds horizontal input to the movement controller. The controller multiplies it by EntityData.speed.
+    /// While the enemy is turning around (turnDelay) it stands still instead.
     /// </summary>
     private void Move(float direction, float speedMultiplier)
     {
-        movement.InputMovement(new Vector2(direction * speedMultiplier, 0f));
-        Face(direction);
+        bool facing = Face(direction);
+        float input = facing || Mathf.Approximately(direction, 0f) ? direction * speedMultiplier : 0f;
+        movement.InputMovement(new Vector2(input, 0f));
     }
 
-    private void Face(float direction)
+    /// <summary>
+    /// Faces direction, and returns whether the enemy faces that way now. Big enemies don't turn on the spot:
+    /// while chasing or attacking on the ground, turning around first waits turnDelay (during which Move stands
+    /// still and no attack starts). If the reason to turn goes away first (the player is back in front), the turn
+    /// is cancelled. Everything else (patrol, charges, leaps, links, flying) turns instantly.
+    /// </summary>
+    private bool Face(float direction)
     {
-        if (Mathf.Approximately(direction, 0f)) return;
+        if (Mathf.Approximately(direction, 0f)) return true;
 
-        facingDirection = direction > 0f ? 1 : -1;
+        int wanted = direction > 0f ? 1 : -1;
+        if (wanted == facingDirection)
+        {
+            turnTarget = 0;
+            return true;
+        }
+
+        if (UsesTurnDelay())
+        {
+            if (turnTarget != wanted)
+            {
+                turnTarget = wanted;
+                turnEndTime = Time.time + enemyData.turnDelay;
+                TurnStarted?.Invoke();
+            }
+
+            if (Time.time < turnEndTime) return false;
+        }
+
+        turnTarget = 0;
+        facingDirection = wanted;
         if (spriteRenderer != null) spriteRenderer.flipX = spriteFacesRight ? facingDirection < 0 : facingDirection > 0;
+        return true;
     }
+
+    /// <summary>
+    /// With a turn delay, special attacks (charge, jump attack) wait until the enemy has turned toward the player:
+    /// they would otherwise flip it around instantly.
+    /// </summary>
+    private bool MustTurnFirst(float deltaToPlayer) =>
+        enemyData.turnDelay > 0f && (IsTurning || (deltaToPlayer >= 0f ? 1 : -1) != facingDirection);
+
+    private bool UsesTurnDelay() =>
+        enemyData.turnDelay > 0f
+        && (currentState == EnemyState.Chase || currentState == EnemyState.Attack)
+        && currentGround != null
+        && activeLink.Link == null;
 
     /// <summary>
     /// The player is seen when they are inside the detection circle and at least one ray
