@@ -3,17 +3,18 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// First-run question in the main menu: may the game send anonymous gameplay events? Built in code with legacy UGUI
-/// (like DebugMenu), so no scene has to be edited. It appears only while analytics is configured
-/// (GameAnalytics.IsActive) and the player has not answered yet, and it is destroyed with the answer.
-/// The menu scene must have an EventSystem for the buttons to work (MainMenu has one).
+/// First-run question: may the game send anonymous gameplay events? Built in code with legacy UGUI (like DebugMenu),
+/// so no scene has to be edited. It appears on every scene load while analytics is configured (GameAnalytics.IsActive)
+/// and the player has not answered yet, and it is destroyed with the answer. Not only in the main menu: starting a level
+/// directly in the Editor would otherwise never ask, and every event would be dropped without a visible reason.
+/// The scene must have an EventSystem for the buttons to work (MainMenu and all levels have one).
 /// </summary>
 public static class AnalyticsConsentPrompt
 {
-    // Czech, one sentence, says the data are anonymous gameplay events.
-    private const string Question = "Smíme pro výuku game designu sbírat anonymní herní události (úmrtí, výstřely, dokončené úrovně), bez jakýchkoli osobních údajů?";
-    private const string YesLabel = "Ano";
-    private const string NoLabel = "Ne";
+    // English, one sentence, says the data are anonymous gameplay events.
+    private const string Question = "May we collect anonymous gameplay events (deaths, shots, completed levels) for game design research, without any personal information?";
+    private const string YesLabel = "Yes";
+    private const string NoLabel = "No";
 
     private const int SortingOrder = 1000;     // Above every menu canvas.
     private const float PanelWidth = 900f;
@@ -36,7 +37,7 @@ public static class AnalyticsConsentPrompt
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (mode != LoadSceneMode.Single || !GameAnalyticsHooks.IsMenuScene(scene.name)) return;
+        if (mode != LoadSceneMode.Single) return;
         if (!GameAnalytics.IsActive || GameAnalytics.ConsentAnswered) return;
         Build();
     }

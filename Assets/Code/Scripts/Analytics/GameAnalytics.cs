@@ -50,6 +50,8 @@ public class GameAnalytics : MonoBehaviour
         public bool logEvents = true;
         [Tooltip("Post to GA4's validation endpoint (/debug/mp/collect) and print its validation messages. Such events never reach reports or BigQuery; use it to check the payload, then turn it off.")]
         public bool validateOnly = false;
+        [Tooltip("Adds debug_mode=1 to every event, so GA4 shows them in DebugView. Turn off for real playtests.")]
+        public bool debugMode = false;
     }
 
     private class Pending
@@ -65,6 +67,8 @@ public class GameAnalytics : MonoBehaviour
     private readonly List<Pending> queue = new List<Pending>();
     private bool canSend;
     private bool sending;
+    // Dropped events are silent otherwise, which looks exactly like "analytics is broken".
+    private bool warnedNoConsent;
     private long sessionId;
     private long lastMicros;
     private int seq;
@@ -118,6 +122,18 @@ public class GameAnalytics : MonoBehaviour
         instance.canSend = allowedHere && configured;
         instance.sessionId = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         instance.lastEventTime = Time.realtimeSinceStartupAsDouble;
+        // Ids from earlier test builds were GUIDs, which a Web stream rejects. Drop them, so a valid id and a
+        // first_launch are created instead.
+        if (PlayerPrefs.HasKey(ClientIdKey) && !IsValidClientId(PlayerPrefs.GetString(ClientIdKey)))
+            PlayerPrefs.DeleteKey(ClientIdKey);
+        instance.EnsureInstallEvent();
+
+        // One line that says what will happen to events in this session, so a silent setup problem is visible.
+        string sending = instance.canSend
+            ? (config.validateOnly ? "to the GA4 validation endpoint only (validateOnly, nothing is recorded)" : "to GA4")
+            : (allowedHere ? "nowhere (measurementId or apiSecret missing)" : "nowhere, console only (Editor without sendInEditor)");
+        string consent = HasConsent ? "given" : ConsentAnswered ? "refused (events are dropped)" : "not answered yet (events are dropped until the player clicks Yes)";
+        Debug.Log($"GameAnalytics: on. Events go {sending}. Consent: {consent}.{(config.debugMode ? " debugMode is on (DebugView)." : "")}");
 #endif
     }
 
@@ -131,6 +147,36 @@ public class GameAnalytics : MonoBehaviour
             if (instance != null) instance.queue.Clear();
         }
         PlayerPrefs.Save();
+        if (granted && instance != null) instance.EnsureInstallEvent();
+    }
+
+    /// <summary>
+    /// Creates the anonymous id the first time analytics is allowed and logs a one-time first_launch event with device info
+    /// (the desktop counterpart of app_install on mobile; app_install and first_open are reserved GA4 names). Runs at start
+    /// and right after consent is granted, so the event is sent exactly once per id: a player who withdraws consent and
+    /// agrees again gets a new id and a new first_launch.
+    /// Deliberately no device name or unique device id: those can identify a person.
+    /// </summary>
+    private void EnsureInstallEvent()
+    {
+        if (PlayerPrefs.HasKey(ClientIdKey) || !HasConsent) return;
+        PlayerPrefs.SetString(ClientIdKey, NewClientId());
+        PlayerPrefs.Save();
+
+        Resolution resolution = Screen.currentResolution;
+        Enqueue("first_launch", new (string key, object value)[]
+        {
+            // The BigQuery export always says WEB (Web data stream), so the real platform is its own parameter.
+            ("platform", Application.platform.ToString()),
+            ("os", SystemInfo.operatingSystem),
+            ("language", Application.systemLanguage.ToString()),
+            // On desktop this most likely only tells reachable from not reachable, not Wi-Fi from cable.
+            ("connection", Application.internetReachability.ToString()),
+            ("screen", resolution.width + "x" + resolution.height),
+            ("gpu", SystemInfo.graphicsDeviceName),
+            ("ram_mb", SystemInfo.systemMemorySize),
+            ("cpu_cores", SystemInfo.processorCount),
+        });
     }
 
     /// <summary>
@@ -172,7 +218,16 @@ public class GameAnalytics : MonoBehaviour
 
     private void Enqueue(string eventName, (string key, object value)[] parameters)
     {
-        if (string.IsNullOrEmpty(eventName) || !HasConsent) return;
+        if (string.IsNullOrEmpty(eventName)) return;
+        if (!HasConsent)
+        {
+            if (!warnedNoConsent)
+            {
+                warnedNoConsent = true;
+                Debug.LogWarning($"GameAnalytics: '{eventName}' and all further events are dropped: the player has not agreed to analytics. Answer the consent prompt with \"Yes\".");
+            }
+            return;
+        }
 
         double now = Time.realtimeSinceStartupAsDouble;
         long engagementMs = (long)Math.Max(1.0, Math.Min(MaxEngagementMs, (now - lastEventTime) * 1000.0));
@@ -193,6 +248,7 @@ public class GameAnalytics : MonoBehaviour
         AppendParam(sb, "seq", seq, ref count);
         AppendParam(sb, "balance_version", BalanceLoader.Version, ref count);
         AppendParam(sb, "build", Application.version, ref count);
+        if (config.debugMode) AppendParam(sb, "debug_mode", 1, ref count);
         if (parameters != null)
             foreach ((string key, object value) in parameters) AppendParam(sb, key, value, ref count);
         sb.Append("}}");
@@ -287,12 +343,31 @@ public class GameAnalytics : MonoBehaviour
             string id = PlayerPrefs.GetString(ClientIdKey, "");
             if (string.IsNullOrEmpty(id))
             {
-                id = Guid.NewGuid().ToString();
+                id = NewClientId();
                 PlayerPrefs.SetString(ClientIdKey, id);
                 PlayerPrefs.Save();
             }
             return id;
         }
+    }
+
+    /// <summary>
+    /// Random anonymous id in the "number.number" format that GA4 requires for Web streams (the validator rejects other
+    /// formats, GUIDs included): a random 32-bit number, a dot, and the creation time in Unix seconds, like the _ga cookie.
+    /// The random part comes from a GUID, not UnityEngine.Random, so a seeded game RNG can never give two players the same id.
+    /// </summary>
+    private static string NewClientId()
+    {
+        uint random = BitConverter.ToUInt32(Guid.NewGuid().ToByteArray(), 0);
+        return random.ToString(CultureInfo.InvariantCulture) + "." + DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static bool IsValidClientId(string id)
+    {
+        int dot = id.IndexOf('.');
+        return dot > 0 && dot < id.Length - 1
+            && ulong.TryParse(id.Substring(0, dot), NumberStyles.None, CultureInfo.InvariantCulture, out _)
+            && ulong.TryParse(id.Substring(dot + 1), NumberStyles.None, CultureInfo.InvariantCulture, out _);
     }
 
     private static long NowMicros()

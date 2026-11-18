@@ -29,7 +29,7 @@ The package mirrors the repo layout. Copy `Assets/` and `docs/` into the repo ro
 | `Assets/Code/Scripts/Balance/BalanceRegistry.cs` | ScriptableObject listing every asset that JSON may override. Lives in `Assets/Resources/`. |
 | `Assets/Code/Scripts/Balance/BalanceLoader.cs` | Loads `StreamingAssets/Balance/<asset name>.json` before the first scene, hot-reloads on save, restores assets after Editor play mode, exposes `BalanceLoader.Version` (hash of applied JSON). |
 | `Assets/Code/Scripts/Balance/Editor/BalanceExporter.cs` | Menu `Tools/Balance/Export baseline JSON from assets`: writes the current numbers of every registered asset to JSON. |
-| `Assets/Code/Scripts/Analytics/GameAnalytics.cs` | Measurement Protocol client: queue, batches of 25, per-event timestamps, consent, retries, config from `StreamingAssets/analytics.json`. |
+| `Assets/Code/Scripts/Analytics/GameAnalytics.cs` | Measurement Protocol client: queue, batches of 25, per-event timestamps, consent, retries, config from `StreamingAssets/analytics.json`, one-time `first_launch` event with device info. |
 | `Assets/Code/Scripts/Analytics/GameAnalyticsHooks.cs` | Subscribes to existing game events and logs `level_start`, `player_death`, `boss_fight_start`, `boss_won`. |
 | `Assets/StreamingAssets/analytics.example.json` | Config template. The real `analytics.json` holds the API secret and must **not** be committed. |
 | `docs/ga4_babylon_queries.sql` | Example BigQuery queries (funnel, death heatmap, player path, balance comparison). |
@@ -84,6 +84,7 @@ that you review and fix, and say clearly what you could not verify.
 
    | Event | Parameters |
    |---|---|
+   | `first_launch` | `platform`, `os`, `language`, `connection`, `screen`, `gpu`, `ram_mb`, `cpu_cores` (sent once, when the anonymous id is created; implemented in `GameAnalytics.EnsureInstallEvent`; no device name or device id) |
    | `level_start` | `level`, `attempt` |
    | `level_complete` | `level`, `time_s`, `attempt` |
    | `player_death` | `level`, `x`, `y`, `time_s`, `attempt` |
@@ -94,6 +95,10 @@ that you review and fix, and say clearly what you could not verify.
 5. GA4 constraints to respect (from Google's Measurement Protocol reference): at most 25 events per request, 25 parameters per event, event and parameter names up to 40 characters,
    string values up to 100 characters, no parameter names starting with `_`, `firebase_`, `ga_`, `google_`, events older than 72 hours are rejected, and the endpoint
    answers 2xx even for a malformed payload, so wrong payloads fail silently. Booleans are sent as 1/0 because the reference does not say they are accepted.
+   Note on `first_launch`: `app_install` and `first_open` are probably reserved GA4 names, hence the custom name. In the debug endpoint also check that `first_launch`
+   and its parameters pass. `platform` in the BigQuery export will always be `WEB` (Web stream), which is why the real platform is an own parameter.
+   `connection` (`Application.internetReachability`) most likely only distinguishes reachable/not reachable on desktop; keep it, but do not expect Wi-Fi vs cable.
+   `client_id` must have the format `<number>.<number>` (e.g. `1234567890.1700000000`) for a Web stream; the debug endpoint rejects anything else (GUIDs included). `NewClientId()` generates it.
 6. **Verify the payload, do not trust it.** The collection endpoint does not tell you when something is wrong. Read Google's current "Validate events" guide for the Measurement
    Protocol and validate a sample payload (the `logEvents` setting prints the JSON that is sent). Check in particular that `timestamp_micros` at the **event** level is accepted
    (it is used so each event keeps its exact order), and that `seq` is there as a fallback.
@@ -103,11 +108,11 @@ that you review and fix, and say clearly what you could not verify.
 The teacher links the GA4 property to BigQuery (a Google Cloud project with the BigQuery API enabled, Editor role on the property, owner on the Cloud project,
 a payment method on the Cloud project, a European dataset location that cannot be changed later, streaming export for live demos). Then:
 
-1. Send a few test events from the Editor with `sendInEditor: true` and look at them in the GA4 Realtime report.
+1. Send a few test events from the Editor with `sendInEditor: true` and `debugMode: true` (adds `debug_mode=1`) and look at them in GA4 DebugView and the Realtime report. Turn `debugMode` off again afterwards.
 2. After the export has run, check in BigQuery that: events are there with the expected names and params; `event_timestamp` values are distinct and in the right order;
    numeric params land in `int_value` or `double_value` (the queries use `COALESCE` for this); `balance_version` is filled.
 3. Run the queries in `docs/ga4_babylon_queries.sql` (replace `PROJECT` and `PROPERTY_ID`, use Dry run first) and fix them against the real schema. They have not been run on real data.
-4. Turn `sendInEditor` off again so development sessions do not pollute the data.
+4. Turn `sendInEditor` and `debugMode` off again so development sessions do not pollute the data.
 
 ## Out of scope
 

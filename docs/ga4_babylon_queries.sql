@@ -4,9 +4,11 @@
 -- Replace PROJECT and PROPERTY_ID with your own: `PROJECT.analytics_PROPERTY_ID.events_*`
 -- Events sent by the game (see docs/HANDOFF_balance_analytics.md). Every event also carries:
 --   balance_version (string), build (string), seq (int, order within a session), session_id, engagement_time_msec
+--   first_launch     platform, os, language, connection, screen, gpu (strings), ram_mb, cpu_cores (numbers); once per anonymous id
 --   level_start      level (string), attempt (int)
 --   level_complete   level, time_s (number), attempt, target (string: destination scene; exits also lead back)
 --   player_death     level, x, y (numbers), time_s, attempt
+--   enemy_killed     level, type (string: enemy prefab name, e.g. MeleeEnemy), x, y, time_s, attempt   (bosses: see boss_won)
 --   arrow_fired      level, arrow (string), charge (0..1, 2 decimals)
 --   shop_purchase    level, kind (arrow|upgrade), item (string), cost (int, genii)
 --   boss_fight_start / boss_won   level, time_s, attempt

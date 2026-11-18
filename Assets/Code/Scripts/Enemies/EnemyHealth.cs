@@ -14,6 +14,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
     private bool isDead;
     /// <summary>Raised when hurt by an attack (EnemyBehavior then chases the player). Hazard damage doesn't raise it.</summary>
     public event Action Damaged;
+    /// <summary>
+    /// Raised when any enemy dies, with the enemy's root object (the one with EnemyBehavior), just before it is destroyed.
+    /// Static, so analytics hears every enemy, including ones the DebugMenu respawns. Scene subscribers must unsubscribe in OnDisable.
+    /// </summary>
+    public static event Action<GameObject> Killed;
     private Color originalColor;
     private Coroutine damageIndication;
 
@@ -117,6 +122,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
         if (enemyData != null && enemyData.geniiPrefab != null)
             Instantiate(enemyData.geniiPrefab, body.transform.position, Quaternion.identity);
 
+        Killed?.Invoke(body);
         Destroy(body);
     }
 }

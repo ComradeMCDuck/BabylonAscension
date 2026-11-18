@@ -4,12 +4,12 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Connects the game's existing events to GameAnalytics, so gameplay scripts never call analytics themselves.
-/// Logs: level_start, level_complete, player_death, arrow_fired, shop_purchase, boss_fight_start, boss_won
+/// Logs: level_start, level_complete, player_death, enemy_killed, arrow_fired, shop_purchase, boss_fight_start, boss_won
 /// (schema in docs/HANDOFF_balance_analytics.md; keep the names stable, students query them in BigQuery).
 ///
 /// Scene objects (Health, BossEncounter, BowCombat) are found and subscribed every time a scene loads. They are
 /// destroyed with their scene, so nothing has to be unsubscribed. The static events (LevelExit.Used,
-/// AltarShopButton.Purchased) are subscribed once at boot and live as long as the game does.
+/// AltarShopButton.Purchased, EnemyHealth.Killed) are subscribed once at boot and live as long as the game does.
 /// </summary>
 public static class GameAnalyticsHooks
 {
@@ -33,6 +33,8 @@ public static class GameAnalyticsHooks
         LevelExit.Used += OnLevelExitUsed;
         AltarShopButton.Purchased -= OnPurchased;
         AltarShopButton.Purchased += OnPurchased;
+        EnemyHealth.Killed -= OnEnemyKilled;
+        EnemyHealth.Killed += OnEnemyKilled;
     }
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -96,6 +98,30 @@ public static class GameAnalyticsHooks
     private static void OnPurchased(string kind, string item, int cost)
     {
         GameAnalytics.Log("shop_purchase", ("level", CurrentLevel()), ("kind", kind), ("item", item), ("cost", cost));
+    }
+
+    private static void OnEnemyKilled(GameObject enemy)
+    {
+        Vector3 position = enemy.transform.position;
+        GameAnalytics.Log("enemy_killed",
+            ("level", CurrentLevel()),
+            ("type", EnemyType(enemy.name)),
+            ("x", Round(position.x)),
+            ("y", Round(position.y)),
+            ("time_s", LevelTime()),
+            ("attempt", CurrentAttempt()));
+    }
+
+    /// <summary>
+    /// The prefab name of an enemy, so all copies group together in BigQuery: "MeleeEnemy (3)" and
+    /// "MeleeEnemy(Clone)" both become "MeleeEnemy".
+    /// </summary>
+    private static string EnemyType(string objectName)
+    {
+        string type = objectName.Replace("(Clone)", "");
+        int bracket = type.LastIndexOf(" (", System.StringComparison.Ordinal);
+        if (bracket > 0 && type.EndsWith(")")) type = type.Substring(0, bracket);
+        return type.Trim();
     }
 
     private static void OnBossFightStarted()
