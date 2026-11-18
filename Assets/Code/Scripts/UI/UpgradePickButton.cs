@@ -10,6 +10,8 @@ public class UpgradePickButton : AltarShopButton
     [SerializeField] private BowUpgrade upgrade;
 
     protected override int Cost => upgrade.GeniiCost;
+    protected override string ItemKind => "upgrade";
+    protected override string ItemName => upgrade != null ? upgrade.name : "";
     protected override bool IsOwned => Bow.Upgrades.Has(upgrade);
     protected override bool IsLit => IsOwned;
     protected override bool IsValid => upgrade != null;

@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,12 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Button))]
 public abstract class AltarShopButton : MonoBehaviour
 {
+    /// <summary>
+    /// Raised after an item was paid for and unlocked: kind ("arrow" or "upgrade"), item name, genii cost.
+    /// Static, so analytics can listen without finding the buttons. Scene subscribers must unsubscribe in OnDisable.
+    /// </summary>
+    public static event Action<string, string, int> Purchased;
+
     [Tooltip("Multiplied into the color of every image and text on the button while it's greyed out.")]
     [SerializeField] private Color greyedOutTint = new Color(0.35f, 0.35f, 0.35f, 1f);
 
@@ -32,6 +39,10 @@ public abstract class AltarShopButton : MonoBehaviour
     protected GeniiInventory Inventory { get; private set; }
 
     protected abstract int Cost { get; }
+    /// <summary>"arrow" or "upgrade", for the Purchased event.</summary>
+    protected abstract string ItemKind { get; }
+    /// <summary>Stable item name for the Purchased event (prefab or asset name, not the display name).</summary>
+    protected abstract string ItemName { get; }
     protected abstract bool IsOwned { get; }
     /// <summary>Full color when true, greyed out otherwise.</summary>
     protected abstract bool IsLit { get; }
@@ -82,8 +93,10 @@ public abstract class AltarShopButton : MonoBehaviour
     {
         if (!IsOwned)
         {
-            if (!Inventory.TrySpend(Cost)) return;
+            int cost = Cost;
+            if (!Inventory.TrySpend(cost)) return;
             Unlock();
+            Purchased?.Invoke(ItemKind, ItemName, cost);
         }
         Use();
         Refresh();

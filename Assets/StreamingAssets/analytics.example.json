@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "measurementId": "G-XXXXXXXXXX",
+  "apiSecret": "PUT-THE-MEASUREMENT-PROTOCOL-API-SECRET-HERE",
+  "euEndpoint": true,
+  "requireConsent": true,
+  "sendInEditor": false,
+  "logEvents": true,
+  "validateOnly": false
+}

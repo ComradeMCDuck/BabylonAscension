@@ -107,3 +107,7 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Analytics config holds the GA4 API secret (copy analytics.example.json to analytics.json locally)
+/Assets/StreamingAssets/analytics.json
+/Assets/StreamingAssets/analytics.json.meta

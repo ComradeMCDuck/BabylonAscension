@@ -86,6 +86,8 @@ public class BowCombat : MonoBehaviour
 
     /// <summary>Raised with the new arrow prefab whenever the fired arrow changes.</summary>
     public event Action<GameObject> ArrowChanged;
+    /// <summary>Raised after an arrow was launched: the arrow prefab and the charge (0..1). Used by analytics.</summary>
+    public event Action<GameObject, float> ArrowFired;
 
     public bool IsCharging => isCharging;
     public GameObject CurrentArrowPrefab => currentArrowPrefab;
@@ -388,6 +390,7 @@ public class BowCombat : MonoBehaviour
             damageMultiplier
         );
         animator?.SetTrigger("Shoot");
+        ArrowFired?.Invoke(currentArrowPrefab, charge);
 
         // Push the player opposite the shot direction; weaker while grounded, none while sliding.
         if (movementController != null && !movementController.IsSliding)
