@@ -53,7 +53,7 @@ public class BossChargeAttack : BossAttack<BossChargeData>
         float giveUpTime = Time.time + distance / data.chargeSpeed + StuckGraceTime;
 
         hitbox.transform.localPosition = new Vector3(hitboxLocalPosition.x * direction, hitboxLocalPosition.y, hitboxLocalPosition.z);
-        hitbox.Activate(data.damage);
+        hitbox.Activate(data.damage, data.knockback, default);
         ControlsMovement = true;
 
         while (true)

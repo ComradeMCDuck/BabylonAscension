@@ -31,6 +31,8 @@ public abstract class BossAttackData : ScriptableObject
 
     [Header("Damage")]
     [Min(0f)] public float damage = 20f;
+    [Tooltip("Sideways push the player gets when this attack's hitbox hits, away from the boss. 0 = no knockback. Not used by Blazing Roar, which has its own push settings.")]
+    [Min(0f)] public float knockback = 10f;
 
     protected virtual void OnValidate()
     {

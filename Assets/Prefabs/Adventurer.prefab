@@ -85,6 +85,16 @@ MonoBehaviour:
   basicArrowPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
   maxChargeTime: 1.2
   minDrawTime: 0.2
+  minDamageMultiplier: 0.2
+  maxDamageMultiplier: 1
+  damageCurveExponent: 2.5
+  fullDrawBonusMultiplier: 0.5
+  fullDrawBonusWindow: 1
+  fullDrawBonusEffect: {fileID: 0}
+  swayStartAngle: 0
+  swayAngleGrowth: 10
+  swayMaxAngle: 10
+  swayFrequency: 1.2
   spawnOffset: 0.15
   fireCooldown: 0.1
   groundedRecoilMultiplier: 0.45
@@ -520,6 +530,7 @@ GameObject:
   - component: {fileID: 4242424242424242424}
   - component: {fileID: 8319859182551271507}
   - component: {fileID: 1219021129968974367}
+  - component: {fileID: 7306152839461527301}
   m_Layer: 3
   m_Name: Adventurer
   m_TagString: Player
@@ -692,6 +703,8 @@ MonoBehaviour:
     CanWallClimb: 0
     WallClimbSpeed: 2
     CanWallJump: 0
+    WallJumpsAllowed: 1
+    WallJumpCounter: 0
     ClimbForce: {x: 12, y: 16}
     OffForce: {x: 8, y: 15}
     LeapForce: {x: 18, y: 17}
@@ -873,6 +886,30 @@ MonoBehaviour:
   drawHandBone: {fileID: 4398276664931996516}
   drawHandAngleOffset: 6
   releaseSpeed: 12
+--- !u!114 &7306152839461527301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8824978788996705367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f3a9c1e84b7452d9e0c5a7b21d4f836, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  width: 2
+  depth: 0
+  opacity: 0.5
+  material: {fileID: 0}
+  sortingOrder: -10
+  maxHeight: 6
+  minScale: 0.4
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  surfaceOffset: 0.02
+  depthOffset: 0
 --- !u!1001 &3492297143611126737
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -881,6 +918,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 7664295490018543239}
     m_Modifications:
+    - target: {fileID: -8839002958591078182, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8839002958591078182, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: -8839002958591078182, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -928,6 +973,14 @@ PrefabInstance:
     - target: {fileID: -8167434487998257601, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 127.947
+      objectReference: {fileID: 0}
+    - target: {fileID: -8089108032486474258, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8089108032486474258, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8089108032486474258, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -1006,13 +1059,37 @@ PrefabInstance:
       value: Hand_Front
       objectReference: {fileID: 0}
     - target: {fileID: -1284084619729718279, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -1284084619729718279, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -1284084619729718279, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: b18d0f7200353cc49992e13f1ac325d7, type: 2}
     - target: {fileID: -760116307658316348, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -760116307658316348, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -760116307658316348, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: b18d0f7200353cc49992e13f1ac325d7, type: 2}
+    - target: {fileID: 345725224739359462, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 345725224739359462, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 345725224739359462, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -1064,6 +1141,14 @@ PrefabInstance:
     - target: {fileID: 2412350510101065090, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0.0000001991648
+      objectReference: {fileID: 0}
+    - target: {fileID: 5838552553471336640, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5838552553471336640, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5838552553471336640, guid: dd5e27b35e76dcb40b8777501c24129b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

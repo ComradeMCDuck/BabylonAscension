@@ -67,6 +67,11 @@ namespace DYP
             public float WallStickTimer = 0.0f;
             public float WallSlideSpeedLoss = 0.05f;
             public float WallSlidingSpeedMax = 2;
+            // longest total wall slide before dropping off (0 = no limit)
+            public float WallSlideTimeMax = 2;
+            // seconds spent wall sliding since the last wall jump, landing, ladder or ledge
+            [HideInInspector]
+            public float WallSlideTimer = 0.0f;
 
             public bool CanWallClimb = false;
             public float WallClimbSpeed = 2;
@@ -301,6 +306,7 @@ namespace DYP
             m_Recoil.VerticalActive = false;
             m_WallInteraction.WallStickTimer = 0f;
             m_WallInteraction.WallJumpCounter = 0;
+            m_WallInteraction.WallSlideTimer = 0f;
             m_OnLadderState = new OnLadderState();
             m_ApplyGravity = true;
             IsCrouching = false;
@@ -911,6 +917,7 @@ namespace DYP
             m_WallInteraction.WallStickTime = m_EntityData.wallStickTime;
             m_WallInteraction.WallSlideSpeedLoss = m_EntityData.wallSlideSpeedLoss;
             m_WallInteraction.WallSlidingSpeedMax = m_EntityData.wallSlidingSpeedMax;
+            m_WallInteraction.WallSlideTimeMax = m_EntityData.wallSlideTimeMax;
             m_WallInteraction.CanWallClimb = m_EntityData.canWallClimb;
             m_WallInteraction.WallClimbSpeed = m_EntityData.wallClimbSpeed;
             m_WallInteraction.CanWallJump = m_EntityData.canWallJump;
@@ -1308,6 +1315,7 @@ namespace DYP
 
                             m_AirJumpCounter = 0;
                             m_WallInteraction.WallJumpCounter = 0;
+                            m_WallInteraction.WallSlideTimer = 0f;
                             OnResetJumpCounter.Invoke(MotorState.OnLedge);
 
                             // check if still sticking to wall
@@ -1338,7 +1346,16 @@ namespace DYP
 
                     // wall sliding logic (blocked for the rest of the airtime once the wall jumps are used up)
                     bool wallJumpSpent = m_WallInteraction.WallJumpCounter >= m_WallInteraction.WallJumpsAllowed;
-                    if (!isGrabbingLedge && m_WallInteraction.CanWallSlide && !wallJumpSpent)
+                    bool wallSlideTimeSpent = m_WallInteraction.WallSlideTimeMax > 0.0f
+                        && m_WallInteraction.WallSlideTimer >= m_WallInteraction.WallSlideTimeMax;
+
+                    // slide time ran out: drop off the wall (the state would otherwise stay WallSliding while touching it)
+                    if (wallSlideTimeSpent && IsState(MotorState.WallSliding))
+                    {
+                        changeState(MotorState.Falling);
+                    }
+
+                    if (!isGrabbingLedge && m_WallInteraction.CanWallSlide && !wallJumpSpent && !wallSlideTimeSpent)
                     {
                         // is OnGround, press against wall and jump
                         if (IsOnGround())
@@ -1369,6 +1386,7 @@ namespace DYP
                         {
                             changeState(MotorState.WallSliding);
 
+                            m_WallInteraction.WallSlideTimer += timeStep;
                             m_AirJumpCounter = 0;
                             OnResetJumpCounter.Invoke(MotorState.WallSliding);
 
@@ -1725,6 +1743,8 @@ namespace DYP
 
             m_Velocity = jumpVec;
             m_WallInteraction.WallJumpCounter++;
+            // each wall jump refills the slide time for the next wall
+            m_WallInteraction.WallSlideTimer = 0f;
         }
 
         /// <summary>
@@ -1890,6 +1910,7 @@ namespace DYP
 
             m_AirJumpCounter = 0;
             m_WallInteraction.WallJumpCounter = 0;
+            m_WallInteraction.WallSlideTimer = 0f;
             OnResetJumpCounter.Invoke(MotorState.OnLadder);
             m_ApplyGravity = false;
         }
@@ -1942,6 +1963,7 @@ namespace DYP
             {
                 m_AirJumpCounter = 0;
                 m_WallInteraction.WallJumpCounter = 0;
+                m_WallInteraction.WallSlideTimer = 0f;
                 OnResetJumpCounter.Invoke(MotorState.OnGround);
 
                 if (prevState != MotorState.Frozen)

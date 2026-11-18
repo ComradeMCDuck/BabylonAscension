@@ -408,6 +408,7 @@ GameObject:
   - component: {fileID: 4625639512983076096}
   - component: {fileID: 6318274059172648315}
   - component: {fileID: 1792380390205754269}
+  - component: {fileID: 7306152839461527301}
   m_Layer: 10
   m_Name: MeleeEnemy
   m_TagString: Untagged
@@ -1006,3 +1007,15 @@ Transform:
   - {fileID: 6260034779283220294}
   m_Father: {fileID: 6675077669277327910}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7306152839461527301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5381662566538865667}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f3a9c1e84b7452d9e0c5a7b21d4f836, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
