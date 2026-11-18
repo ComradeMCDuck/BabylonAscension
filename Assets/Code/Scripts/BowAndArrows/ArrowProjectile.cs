@@ -128,6 +128,17 @@ public class ArrowProjectile : MonoBehaviour
         activeHitLayers = hitLayers;
         firedByPlayer = true;
 
+        // A laser doesn't fly: it becomes a rectangle at the bow that hits everything inside it, through walls.
+        if (arrowData.IsLaser)
+        {
+            if (!TryGetComponent(out LaserBeam beam))
+                beam = gameObject.AddComponent<LaserBeam>();
+
+            int targets = (hitLayers.value & ~environmentLayers.value) | arrowTargetLayers.value;
+            beam.Fire(this, direction, shooter, damage, knockback, this.damageMultiplier, targets);
+            return;
+        }
+
         Begin(direction, shooter, lifetime);
     }
 
@@ -335,14 +346,14 @@ public class ArrowProjectile : MonoBehaviour
     }
 
     // The character a collider belongs to: everything under the Rigidbody2D the collider is attached to.
-    private static Transform GetCharacter(Collider2D other)
+    internal static Transform GetCharacter(Collider2D other)
     {
         return other.attachedRigidbody != null
             ? other.attachedRigidbody.transform
             : other.transform.root;
     }
 
-    private static IDamageable FindDamageable(Collider2D other)
+    internal static IDamageable FindDamageable(Collider2D other)
     {
         // Health can sit on a sibling child of the character (player and enemies both do this),
         // so search the whole character.
@@ -489,7 +500,7 @@ public class ArrowProjectile : MonoBehaviour
     /// A flying enemy has that controller switched off, so its flight takes the push instead.
     /// A boss decides itself how much of the push it takes (BossData.knockbackMultiplier).
     /// </summary>
-    private static void ApplyKnockback(Collider2D target, Vector2 impulse)
+    internal static void ApplyKnockback(Collider2D target, Vector2 impulse)
     {
         BossBrain boss = target.GetComponentInParent<BossBrain>();
         if (boss != null)

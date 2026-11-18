@@ -47,6 +47,18 @@ public class ArrowData : ScriptableObject
     [Tooltip("Degrees between the outermost arrows of a split. They are spread evenly around the mirrored direction.")]
     [Range(0f, 120f)] public float splitAngle = 30f;
 
+    [Header("Laser")]
+    [Tooltip("Above 0 makes this a laser arrow: instead of flying, it spawns a rectangle this long, starting where " +
+             "the shot left the bow and pointing along the aim. It goes through walls and damages every enemy inside it " +
+             "once, with the normal Base Damage, knockback and poison. Speed, gravity, bounces and splits aren't used.")]
+    [Min(0f)] public float laserLength = 0f;
+    [Tooltip("Width of the laser rectangle (its contact radius is half of this).")]
+    [Min(0.01f)] public float laserWidth = 0.6f;
+    [Tooltip("Seconds the rectangle stays. Enemies walking into it during this time are hit too, still once each.")]
+    [Min(0.02f)] public float laserDuration = 0.15f;
+    [Tooltip("Color of the placeholder beam drawn when the laser prefab has no beam sprite of its own.")]
+    public Color laserColor = new Color(1f, 0.3f, 0.2f, 0.85f);
+
     [Header("Explosion")]
     [Tooltip("Above 0 makes this an explosive arrow: it explodes on impact and uses the explosion values below " +
              "instead of the charge-based damage and knockback. Speed still scales with charge.")]
@@ -76,4 +88,5 @@ public class ArrowData : ScriptableObject
     public bool IsExplosive => explosionRadius > 0f;
     public bool IsPoisonous => poisonTime > 0f && poisonDamage > 0f;
     public bool Splits => splitBounces > 0;
+    public bool IsLaser => laserLength > 0f;
 }
