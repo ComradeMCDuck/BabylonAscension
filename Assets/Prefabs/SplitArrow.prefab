@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1643484921470733320}
   - component: {fileID: 6866620899458589148}
   m_Layer: 11
-  m_Name: BouncingArrow
+  m_Name: SplitArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

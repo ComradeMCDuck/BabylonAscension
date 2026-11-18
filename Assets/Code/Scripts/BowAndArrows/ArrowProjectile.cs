@@ -13,6 +13,9 @@ public class ArrowProjectile : MonoBehaviour
 {
     // Distance kept from a surface after bouncing, so the next sweep doesn't start inside it.
     private const float BounceSkin = 0.01f;
+    // A split copy must leave the wall at least this steeply (dot with the surface normal), or it would hit the
+    // same wall on the next step and split again right there.
+    private const float MinSplitLeaveDot = 0.1f;
 
     [Header("Lifetime")]
     [Tooltip("Seconds before the projectile is destroyed when launched by the bow. Enemy launches use EntityData.projectileLifetime.")]
@@ -45,6 +48,10 @@ public class ArrowProjectile : MonoBehaviour
     private float knockback;
     private int remainingBounces;
     private int remainingPenetrations;
+    // Hydra splits left. While above 0 the arrow pierces every enemy without using penetrations.
+    private int remainingSplits;
+    // Time.time at which the projectile is destroyed, so split copies get the rest of its lifetime, not a new one.
+    private float destroyTime;
     // Characters already hit by this projectile, so a penetrating shot can't hit the same one twice.
     private readonly HashSet<Transform> hitCharacters = new HashSet<Transform>();
     // Armor this projectile pierced, so it isn't hit again while passing through.
@@ -70,6 +77,7 @@ public class ArrowProjectile : MonoBehaviour
     public ArrowData Data => arrowData;
     public int RemainingBounces => remainingBounces;
     public int RemainingPenetrations => remainingPenetrations;
+    public int RemainingSplits => remainingSplits;
     public bool IsExplosive => arrowData != null && arrowData.IsExplosive;
 
     private void Awake()
@@ -116,6 +124,7 @@ public class ArrowProjectile : MonoBehaviour
         // Copy the count so the shared ArrowData asset is never modified.
         remainingBounces = Mathf.Max(0, arrowData.bounces);
         remainingPenetrations = Mathf.Max(0, arrowData.penetrations);
+        remainingSplits = Mathf.Max(0, arrowData.splitBounces);
         activeHitLayers = hitLayers;
         firedByPlayer = true;
 
@@ -135,6 +144,7 @@ public class ArrowProjectile : MonoBehaviour
         knockback = 0f;
         remainingBounces = arrowData != null ? Mathf.Max(0, arrowData.bounces) : 0;
         remainingPenetrations = arrowData != null ? Mathf.Max(0, arrowData.penetrations) : 0;
+        remainingSplits = arrowData != null ? Mathf.Max(0, arrowData.splitBounces) : 0;
         activeHitLayers = enemyShotHitLayers;
         firedByPlayer = false;
 
@@ -161,6 +171,7 @@ public class ArrowProjectile : MonoBehaviour
         knockback = 0f;
         remainingBounces = arrowData != null ? Mathf.Max(0, arrowData.bounces) : 0;
         remainingPenetrations = arrowData != null ? Mathf.Max(0, arrowData.penetrations) : 0;
+        remainingSplits = arrowData != null ? Mathf.Max(0, arrowData.splitBounces) : 0;
         activeHitLayers = enemyShotHitLayers;
         firedByPlayer = false;
 
@@ -204,7 +215,33 @@ public class ArrowProjectile : MonoBehaviour
         if (alignToDirection) transform.right = direction;
 
         launched = true;
+        destroyTime = Time.time + lifeSeconds;
         Destroy(gameObject, lifeSeconds);
+    }
+
+    /// <summary>
+    /// Turns a fresh copy of this projectile (made by Instantiate in Split) into a flying copy of the source.
+    /// Instantiate only copies serialized fields, so the flight state is copied here. The copy has the same splits
+    /// left, so each copy keeps splitting on its own. It doesn't copy which enemies the source hit, so it can
+    /// hit them again (Split clears that for the source too).
+    /// </summary>
+    private void BeginAsSplitCopy(ArrowProjectile source, Vector2 newDirection)
+    {
+        speed = source.speed;
+        gravity = source.gravity;
+        damage = source.damage;
+        damageMultiplier = source.damageMultiplier;
+        knockback = source.knockback;
+        remainingBounces = source.remainingBounces;
+        remainingPenetrations = source.remainingPenetrations;
+        remainingSplits = source.remainingSplits;
+        activeHitLayers = source.activeHitLayers;
+        firedByPlayer = source.firedByPlayer;
+
+        Begin(newDirection, source.owner, Mathf.Max(0.01f, source.destroyTime - Time.time));
+
+        ignoredArmor.UnionWith(source.ignoredArmor);
+        hitArrowTargets.UnionWith(source.hitArrowTargets);
     }
 
     private void FixedUpdate()
@@ -430,6 +467,10 @@ public class ArrowProjectile : MonoBehaviour
         if (target != null && arrowData != null && arrowData.IsPoisonous)
             PoisonEffect.Apply(target, arrowData.poisonDamage * damageMultiplier, arrowData.poisonTime, arrowData.poisonInterval);
 
+        // A splitting arrow pierces every enemy for free until its splits are used up.
+        if (remainingSplits > 0)
+            return false;
+
         // Penetrate: use one and keep flying.
         if (remainingPenetrations > 0)
         {
@@ -499,6 +540,14 @@ public class ArrowProjectile : MonoBehaviour
 
     private void HandleEnvironmentHit(RaycastHit2D hit)
     {
+        // Splits come first and don't use the normal bounces; those start once the splits run out.
+        if (remainingSplits > 0)
+        {
+            remainingSplits--;
+            Split(hit);
+            return;
+        }
+
         if (remainingBounces <= 0)
         {
             // Explode just off the surface, so the wall check doesn't start inside the wall that was hit.
@@ -526,9 +575,10 @@ public class ArrowProjectile : MonoBehaviour
             return true;
         }
 
-        if (remainingPenetrations > 0)
+        // Splits left pierce armor for free, the same as they pierce enemies.
+        if (remainingSplits > 0 || remainingPenetrations > 0)
         {
-            remainingPenetrations--;
+            if (remainingSplits <= 0) remainingPenetrations--;
             ignoredArmor.Add(armor);
             return false;
         }
@@ -557,6 +607,55 @@ public class ArrowProjectile : MonoBehaviour
 
         // Stop just off the surface; the rest of the flight continues next step.
         MoveTo(hit.centroid + hit.normal * BounceSkin);
+    }
+
+    /// <summary>
+    /// Hydra split: bounces off the wall like Deflect, then Split Count - 1 copies are made. All of them fly out
+    /// spread evenly over Split Angle around the mirrored direction. remainingSplits must already count this split.
+    /// </summary>
+    private void Split(RaycastHit2D hit)
+    {
+        Vector2 mirrored = Vector2.Reflect(direction, hit.normal).normalized;
+        int count = arrowData != null ? Mathf.Max(1, arrowData.splitCount) : 2;
+        float halfAngle = arrowData != null ? arrowData.splitAngle * 0.5f : 0f;
+
+        MoveTo(hit.centroid + hit.normal * BounceSkin);
+
+        // After a split every arrow may hit the enemies this one already hit (copies start with an empty list).
+        hitCharacters.Clear();
+
+        // This arrow takes the first direction; each copy gets one of the others.
+        for (int i = count - 1; i >= 0; i--)
+        {
+            float angle = count > 1 ? Mathf.Lerp(-halfAngle, halfAngle, i / (float)(count - 1)) : 0f;
+            Vector2 splitDirection = GetSplitDirection(mirrored, angle, hit.normal);
+
+            if (i == 0)
+            {
+                direction = splitDirection;
+                if (alignToDirection) transform.right = direction;
+                break;
+            }
+
+            GameObject copyObject = Instantiate(gameObject, transform.position, transform.rotation);
+            copyObject.GetComponent<ArrowProjectile>().BeginAsSplitCopy(this, splitDirection);
+        }
+    }
+
+    /// <summary>The mirrored direction turned by angle, kept pointing away from the wall.</summary>
+    private static Vector2 GetSplitDirection(Vector2 mirrored, float angle, Vector2 normal)
+    {
+        Vector2 turned = Quaternion.Euler(0f, 0f, angle) * mirrored;
+
+        // Turned into the wall (a grazing hit): mirror it back out.
+        if (Vector2.Dot(turned, normal) < MinSplitLeaveDot)
+            turned = Vector2.Reflect(turned, normal);
+
+        // Still almost along the wall: push it off so it leaves the surface.
+        if (Vector2.Dot(turned, normal) < MinSplitLeaveDot)
+            turned += normal * MinSplitLeaveDot;
+
+        return turned.normalized;
     }
 
     private void MoveTo(Vector2 position)

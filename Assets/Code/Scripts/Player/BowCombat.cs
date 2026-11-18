@@ -19,8 +19,13 @@ public class BowCombat : MonoBehaviour
 
 
     [Header("Arrows")]
-    [Tooltip("The arrow fired until another one is picked at an altar. Each prefab carries its own ArrowData.")]
+    [Tooltip("The arrow every normal shot fires. Each prefab carries its own ArrowData.")]
     [SerializeField] private GameObject basicArrowPrefab;
+
+    [Header("Special Arrow")]
+    [Tooltip("Arms the special arrow (the one picked at an altar): the next shot fires it and uses up its charge. " +
+             "Pressing it again disarms. Enemy kills recharge it (Kills To Charge in the arrow's ArrowData).")]
+    [SerializeField] private Key specialArrowKey = Key.Q;
 
     [Header("Charge")]
     [Tooltip("Seconds of holding needed to reach full charge.")]
@@ -67,6 +72,8 @@ public class BowCombat : MonoBehaviour
 
     // Shorter aim vectors than this give no usable direction; the last one is kept.
     private const float MinAimSqrDistance = 0.0001f;
+    // Kills needed while no special arrow (or one without ArrowData) is picked.
+    private const int DefaultKillsToCharge = 3;
 
     // Cached by AimAtCursor. Shots use these instead of a transform's rotation, because the
     // spawn point may sit on a mirrored or IK-driven bone whose +X isn't the aim.
@@ -79,16 +86,39 @@ public class BowCombat : MonoBehaviour
     private float holdTime;
     private float swayAngle;
     private bool isCharging;
+    // The arrow picked at an altar: the special arrow, or the basic arrow while none is picked.
     private GameObject currentArrowPrefab;
     private readonly BowUpgrades upgrades = new BowUpgrades();
     // Arrows bought at altars (plus the basic arrow). Switching to an owned arrow is free.
     private readonly HashSet<GameObject> ownedArrows = new HashSet<GameObject>();
 
-    /// <summary>Raised with the new arrow prefab whenever the fired arrow changes.</summary>
+    // The special charge is shared by all special arrows, so switching arrows at an altar doesn't refill it.
+    // A run starts charged.
+    private bool specialReady = true;
+    private int specialKills;
+    private bool specialArmed;
+
+    /// <summary>Raised with the new arrow prefab whenever the picked (special) arrow changes.</summary>
     public event Action<GameObject> ArrowChanged;
+    /// <summary>Raised when the special arrow is armed, disarmed, fired or gets a kill toward its charge.</summary>
+    public event Action SpecialArrowChanged;
 
     public bool IsCharging => isCharging;
+    /// <summary>The arrow picked at an altar. The basic arrow while no special arrow is picked.</summary>
     public GameObject CurrentArrowPrefab => currentArrowPrefab;
+    public GameObject BasicArrowPrefab => basicArrowPrefab;
+    /// <summary>True when an arrow other than the basic one is picked, so Q has something to arm.</summary>
+    public bool HasSpecialArrow => currentArrowPrefab != null && currentArrowPrefab != basicArrowPrefab;
+    /// <summary>The picked special arrow, or null while only the basic arrow is picked.</summary>
+    public GameObject SpecialArrowPrefab => HasSpecialArrow ? currentArrowPrefab : null;
+    /// <summary>True when the special arrow is charged and can be armed.</summary>
+    public bool IsSpecialReady => specialReady;
+    /// <summary>True when the next shot fires the special arrow.</summary>
+    public bool IsSpecialArmed => specialArmed;
+    /// <summary>Kills counted toward the next special charge (0 while charged).</summary>
+    public int SpecialKills => specialKills;
+    /// <summary>Kills the picked special arrow needs to recharge.</summary>
+    public int SpecialKillsNeeded => GetKillsToCharge(SpecialArrowPrefab);
     /// <summary>Permanent upgrades picked at altars. PlayerProgress carries them across scene loads and death.</summary>
     public BowUpgrades Upgrades => upgrades;
     /// <summary>Arrows bought at altars, plus the basic arrow.</summary>
@@ -157,7 +187,10 @@ public class BowCombat : MonoBehaviour
         if (prefab != null) ownedArrows.Add(prefab);
     }
 
-    /// <summary>Makes the bow fire the given arrow prefab, e.g. when the player picks one at an altar.</summary>
+    /// <summary>
+    /// Makes the given arrow the special arrow fired after pressing Q, e.g. when the player picks one at an altar.
+    /// Picking the basic arrow leaves the bow without a special arrow.
+    /// </summary>
     public void SetArrow(GameObject prefab)
     {
         if (prefab == null)
@@ -170,7 +203,75 @@ public class BowCombat : MonoBehaviour
             return;
 
         currentArrowPrefab = prefab;
+        if (!HasSpecialArrow) specialArmed = false;
+        // The new arrow may need fewer kills than are already counted.
+        CheckSpecialCharged();
+
         ArrowChanged?.Invoke(prefab);
+        SpecialArrowChanged?.Invoke();
+    }
+
+    /// <summary>Restores the special charge, e.g. from PlayerProgress after a scene load.</summary>
+    public void SetSpecialCharge(bool ready, int kills)
+    {
+        specialReady = ready;
+        specialKills = ready ? 0 : Mathf.Max(0, kills);
+        specialArmed = false;
+        CheckSpecialCharged();
+        SpecialArrowChanged?.Invoke();
+    }
+
+    /// <summary>Fully charges the special arrow without changing whether it is armed (DebugMenu uses it).</summary>
+    public void ChargeSpecial()
+    {
+        if (specialReady) return;
+
+        specialReady = true;
+        specialKills = 0;
+        SpecialArrowChanged?.Invoke();
+    }
+
+    private void OnEnable() => EnemyHealth.AnyKilled += OnEnemyKilled;
+
+    private void OnDisable()
+    {
+        EnemyHealth.AnyKilled -= OnEnemyKilled;
+        specialArmed = false;
+    }
+
+    private void OnEnemyKilled(EnemyHealth enemy)
+    {
+        if (specialReady) return;
+
+        specialKills++;
+        CheckSpecialCharged();
+        SpecialArrowChanged?.Invoke();
+    }
+
+    private void CheckSpecialCharged()
+    {
+        if (specialReady || specialKills < GetKillsToCharge(SpecialArrowPrefab)) return;
+
+        specialReady = true;
+        specialKills = 0;
+    }
+
+    private static int GetKillsToCharge(GameObject arrowPrefab)
+    {
+        ArrowProjectile projectile = arrowPrefab != null ? arrowPrefab.GetComponent<ArrowProjectile>() : null;
+        return projectile != null && projectile.Data != null
+            ? Mathf.Max(1, projectile.Data.killsToCharge)
+            : DefaultKillsToCharge;
+    }
+
+    /// <summary>Q: arms the special arrow if it is charged, or disarms it.</summary>
+    private void ToggleSpecialArmed()
+    {
+        bool armed = !specialArmed && HasSpecialArrow && specialReady;
+        if (armed == specialArmed) return;
+
+        specialArmed = armed;
+        SpecialArrowChanged?.Invoke();
     }
 
     private void Update()
@@ -189,6 +290,9 @@ public class BowCombat : MonoBehaviour
             return;
 
         AimAtCursor();
+
+        if (Keyboard.current != null && specialArrowKey != Key.None && Keyboard.current[specialArrowKey].wasPressedThisFrame)
+            ToggleSpecialArmed();
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
             StartCharging();
@@ -338,7 +442,11 @@ public class BowCombat : MonoBehaviour
             return;
         }
 
-        if (currentArrowPrefab == null)
+        // Normal shots always fire the basic arrow; the special one only when armed with Q.
+        bool firesSpecial = specialArmed && specialReady && HasSpecialArrow;
+        GameObject arrowPrefab = firesSpecial ? currentArrowPrefab : basicArrowPrefab;
+
+        if (arrowPrefab == null)
             return;
 
         nextShotTime = Time.time + fireCooldown;
@@ -349,7 +457,7 @@ public class BowCombat : MonoBehaviour
             arrowSpawn.position + direction * spawnOffset;
 
         GameObject arrowObject = Instantiate(
-            currentArrowPrefab,
+            arrowPrefab,
             spawnPosition,
             Quaternion.LookRotation(Vector3.forward, Vector3.up)
         );
@@ -388,6 +496,15 @@ public class BowCombat : MonoBehaviour
             damageMultiplier
         );
         animator?.SetTrigger("Shoot");
+
+        // Spent: kill enemies to charge it again.
+        if (firesSpecial)
+        {
+            specialArmed = false;
+            specialReady = false;
+            specialKills = 0;
+            SpecialArrowChanged?.Invoke();
+        }
 
         // Push the player opposite the shot direction; weaker while grounded, none while sliding.
         if (movementController != null && !movementController.IsSliding)

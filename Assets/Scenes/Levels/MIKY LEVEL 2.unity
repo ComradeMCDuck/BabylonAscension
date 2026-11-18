@@ -4335,6 +4335,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3465284152199857731, guid: 35e75f7289571db43b412ea9d5fc6adc, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3465284152199857731, guid: 35e75f7289571db43b412ea9d5fc6adc, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3620064961453894780, guid: 35e75f7289571db43b412ea9d5fc6adc, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -4556,6 +4564,22 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5485982622568818262, guid: 35e75f7289571db43b412ea9d5fc6adc, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5655165857906436443, guid: 35e75f7289571db43b412ea9d5fc6adc, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5655165857906436443, guid: 35e75f7289571db43b412ea9d5fc6adc, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5655165857906436443, guid: 35e75f7289571db43b412ea9d5fc6adc, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5655165857906436443, guid: 35e75f7289571db43b412ea9d5fc6adc, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
@@ -9402,7 +9426,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.7e-44, y: 0, z: 1e-45, w: 0}
+  m_BoundingSphereOverride: {x: 5.497558e+11, y: 6.7406024e+22, z: 4.35806e+27, w: 1.0829418e+24}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -32756,9 +32780,9 @@ Light:
   m_GameObject: {fileID: 598128307}
   m_Enabled: 1
   serializedVersion: 13
-  m_Type: 0
+  m_Type: 1
   m_Color: {r: 0.25342646, g: 0.40731055, b: 0.8018868, a: 1}
-  m_Intensity: 1687
+  m_Intensity: 0.2
   m_Range: 718.8
   m_SpotAngle: 179
   m_InnerSpotAngle: 107.92473
@@ -32803,7 +32827,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.7e-44, y: 0, z: 1e-45, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: NaN, w: NaN}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -63346,7 +63370,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.7e-44, y: 0, z: 1e-45, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 1e-45, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -77924,9 +77948,9 @@ Light:
   m_GameObject: {fileID: 1472045745}
   m_Enabled: 1
   serializedVersion: 13
-  m_Type: 0
+  m_Type: 1
   m_Color: {r: 0.5849056, g: 0.53827876, b: 0.43867922, a: 1}
-  m_Intensity: 1687
+  m_Intensity: 0.5
   m_Range: 718.8
   m_SpotAngle: 179
   m_InnerSpotAngle: 99.48132
@@ -77971,7 +77995,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.7e-44, y: 0, z: 1e-45, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: NaN, w: NaN}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -91863,7 +91887,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 134217730, y: 1.846813e+25, z: 7.3154135e+34, w: 2.368641e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -95302,7 +95326,7 @@ MonoBehaviour:
   boxColliders: 49
   meshColliders: 288
   triggerVolumes: 0
-  buildMilliseconds: 0.0819
+  buildMilliseconds: 0.0927
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9

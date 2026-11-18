@@ -14,7 +14,16 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
     private bool isDead;
     /// <summary>Raised when hurt by an attack (EnemyBehavior then chases the player). Hazard damage doesn't raise it.</summary>
     public event Action Damaged;
+    /// <summary>
+    /// Raised when any enemy dies (by any cause). Static so the bow can count kills for the special arrow
+    /// without finding every enemy. Subscribers must unsubscribe in OnDisable.
+    /// </summary>
+    public static event Action<EnemyHealth> AnyKilled;
     private Color originalColor;
+
+    // Statics survive play-mode restarts when domain reload is off.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() => AnyKilled = null;
     private Coroutine damageIndication;
 
     public float CurrentHealth => currentHealth;
@@ -113,6 +122,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
         GameObject body = enemy != null ? enemy.gameObject : gameObject;
 
         Debug.Log($"{body.name} died!");
+        AnyKilled?.Invoke(this);
 
         if (enemyData != null && enemyData.geniiPrefab != null)
             Instantiate(enemyData.geniiPrefab, body.transform.position, Quaternion.identity);

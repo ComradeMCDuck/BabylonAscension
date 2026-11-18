@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// What the player keeps between scenes: health, genii, bow upgrades and bought arrows. The player is part of each
+/// What the player keeps between scenes: health, genii, bow upgrades, bought arrows and the special arrow's charge. The player is part of each
 /// scene and is recreated on every load, so this static store carries the values across. GameManager captures
 /// them when a scene change starts and applies them to the new player in Start.
 /// After death only health is dropped, so the player comes back at full health but keeps genii and upgrades.
@@ -18,6 +18,8 @@ public static class PlayerProgress
     private static readonly List<BowUpgrade> upgrades = new List<BowUpgrade>();
     private static readonly List<GameObject> ownedArrows = new List<GameObject>();
     private static GameObject selectedArrow;
+    private static bool specialReady = true;
+    private static int specialKills;
 
     public static bool HasData => hasData;
 
@@ -33,6 +35,8 @@ public static class PlayerProgress
         upgrades.Clear();
         ownedArrows.Clear();
         selectedArrow = null;
+        specialReady = true;
+        specialKills = 0;
     }
 
     /// <summary>
@@ -58,6 +62,8 @@ public static class PlayerProgress
             ownedArrows.Clear();
             ownedArrows.AddRange(bow.OwnedArrows);
             selectedArrow = bow.CurrentArrowPrefab;
+            specialReady = bow.IsSpecialReady;
+            specialKills = bow.SpecialKills;
         }
     }
 
@@ -78,6 +84,7 @@ public static class PlayerProgress
             foreach (BowUpgrade upgrade in upgrades) bow.Upgrades.Add(upgrade);
             foreach (GameObject arrow in ownedArrows) bow.UnlockArrow(arrow);
             if (selectedArrow != null && bow.OwnsArrow(selectedArrow)) bow.SetArrow(selectedArrow);
+            bow.SetSpecialCharge(specialReady, specialKills);
         }
     }
 }

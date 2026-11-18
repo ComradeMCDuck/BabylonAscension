@@ -107,6 +107,8 @@ public class DebugMenu : MonoBehaviour
         AddButton("Respawn Killed Enemies", RespawnKilledEnemies);
         AddButton("Forget Removed Objects", ForgetRemovedObjects);
         AddButton("Add 1 Genii", AddGenii);
+        AddButton("Charge Special Arrow", ChargeSpecialArrow);
+        AddButton("Open Altar Menu", OpenAltarMenu);
 
         AddSection("Go To Level");
         for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
@@ -250,6 +252,44 @@ public class DebugMenu : MonoBehaviour
         }
 
         inventory.Add(1);
+    }
+
+    private void ChargeSpecialArrow()
+    {
+        // Looked up on click, because the player is recreated with every scene load.
+        BowCombat bow = FindAnyObjectByType<BowCombat>();
+
+        if (bow == null)
+        {
+            Debug.LogWarning("Debug menu: no BowCombat in the scene, so the special arrow wasn't charged.");
+            return;
+        }
+
+        bow.ChargeSpecial();
+    }
+
+    /// <summary>
+    /// Opens the scene's altar shop window without walking to an altar, to try arrows right away.
+    /// Closes the debug panel so it doesn't cover the window. E or Escape closes the shop as usual.
+    /// </summary>
+    private void OpenAltarMenu()
+    {
+        ShopMenu shop = ShopMenu.Instance;
+
+        if (shop == null)
+        {
+            Debug.LogWarning("Debug menu: this scene has no ShopMenu, so there is no altar menu to open.");
+            return;
+        }
+
+        if (Time.timeScale == 0f)
+        {
+            Debug.LogWarning("Debug menu: the game is paused, so the altar menu wasn't opened.");
+            return;
+        }
+
+        debugPanel.SetActive(false);
+        shop.Open();
     }
 
     /// <summary>
