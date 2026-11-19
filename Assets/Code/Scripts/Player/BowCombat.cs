@@ -100,8 +100,8 @@ public class BowCombat : MonoBehaviour
 
     /// <summary>Raised with the new arrow prefab whenever the picked (special) arrow changes.</summary>
     public event Action<GameObject> ArrowChanged;
-    /// <summary>Raised when the special arrow is armed, disarmed, fired or gets a kill toward its charge.</summary>
-    public event Action SpecialArrowChanged;
+    /// <summary>Raised after an arrow was launched: the arrow prefab and the charge (0..1). Used by analytics.</summary>
+    public event Action<GameObject, float> ArrowFired;
 
     public bool IsCharging => isCharging;
     /// <summary>The arrow picked at an altar. The basic arrow while no special arrow is picked.</summary>
@@ -496,6 +496,7 @@ public class BowCombat : MonoBehaviour
             damageMultiplier
         );
         animator?.SetTrigger("Shoot");
+        ArrowFired?.Invoke(currentArrowPrefab, charge);
 
         // Spent: kill enemies to charge it again.
         if (firesSpecial)

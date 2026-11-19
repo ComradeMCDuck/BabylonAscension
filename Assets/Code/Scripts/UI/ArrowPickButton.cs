@@ -13,6 +13,8 @@ public class ArrowPickButton : AltarShopButton
     private int cost;
 
     protected override int Cost => cost;
+    protected override string ItemKind => "arrow";
+    protected override string ItemName => arrowPrefab != null ? arrowPrefab.name : "";
     protected override bool IsOwned => Bow.OwnsArrow(arrowPrefab);
     protected override bool IsLit => Bow.CurrentArrowPrefab == arrowPrefab;
     protected override bool IsValid => arrowPrefab != null;

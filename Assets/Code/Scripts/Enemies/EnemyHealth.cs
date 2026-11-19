@@ -15,10 +15,10 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
     /// <summary>Raised when hurt by an attack (EnemyBehavior then chases the player). Hazard damage doesn't raise it.</summary>
     public event Action Damaged;
     /// <summary>
-    /// Raised when any enemy dies (by any cause). Static so the bow can count kills for the special arrow
-    /// without finding every enemy. Subscribers must unsubscribe in OnDisable.
+    /// Raised when any enemy dies, with the enemy's root object (the one with EnemyBehavior), just before it is destroyed.
+    /// Static, so analytics hears every enemy, including ones the DebugMenu respawns. Scene subscribers must unsubscribe in OnDisable.
     /// </summary>
-    public static event Action<EnemyHealth> AnyKilled;
+    public static event Action<GameObject> Killed;
     private Color originalColor;
 
     // Statics survive play-mode restarts when domain reload is off.
@@ -127,6 +127,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
         if (enemyData != null && enemyData.geniiPrefab != null)
             Instantiate(enemyData.geniiPrefab, body.transform.position, Quaternion.identity);
 
+        Killed?.Invoke(body);
         Destroy(body);
     }
 }
