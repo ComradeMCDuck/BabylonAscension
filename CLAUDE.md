@@ -33,11 +33,12 @@ Folders: `Core/` (GameManager, SceneLoader, MotionInterpolator, CameraTargetProx
 
 **Data (ScriptableObjects, tuned in the Inspector):**
 - `EntityData` holds every tunable number for a character: health, the controller's movement, jump, wall and recoil settings, enemy AI, and the per-attack sections (Slash, Jump Attack, Charge, Flight). Each field has a tooltip. Assets: `PlayerData`, `MeleeEnemyData`, `ShooterEnemyData`, `HumbabaEnemyData 1`, `KililiData`. Add new character tuning values here, with a `[Tooltip]`.
-- `ArrowData` covers per-arrow damage, speed, gravity, knockback and recoil, each as a min/max pair interpolated by charge. It also covers bounces, penetrations, explosion (`explosionRadius > 0`) and poison (`poisonTime > 0`). Assets in `ArrowData/`: Basic, Bouncing, Explosive, Penetration, Poison. Every arrow prefab has its own `ArrowData`.
+- `ArrowData` covers per-arrow damage, speed, gravity, knockback and recoil, each as a min/max pair interpolated by charge. It also covers bounces, penetrations (with `penetrationDamageMultiplier`), Hydra splits, explosion (`explosionRadius > 0`) and meteor shower (`meteorCount > 0`). Every arrow prefab has its own `ArrowData`.
 - Code must **never modify these shared assets at runtime**. Copy the values into fields first, as `ArrowProjectile` does with bounces. The exception is `DebugMenu`, which deliberately writes to `PlayerData` and then calls `NotifyChanged()`.
 
 **Player** (`Assets/Prefabs/Adventurer.prefab`, layer **"Triggers"**, tag "Player"):
 - `BowCombat` aims at the mouse on the XY plane. Holding the left mouse button charges the shot (it must be held at least `minDrawTime`). It spawns the selected arrow prefab, calls `ArrowProjectile.Launch(dir, charge, shooter)`, and applies recoil through `AddImpulse`.
+- Special arrows: bought at altars (`ArrowPickButton`), picked with keys 1–3 (`specialArrowSlots`: Meteor Shower, Piercing, Split), fired by holding the right mouse button. They share `maxSpecialCharges` (3); each basic-arrow hit on an enemy (`ArrowProjectile.HitTarget`) gives one back. Meteor Shower flies straight to the cursor and opens a `MeteorPortal` that drops `Meteor` explosive arrows. Piercing uses `penetrations` + `penetrationDamageMultiplier` (0.5).
 - `PlayerFacing` flips the body sprite toward the cursor and sets `AimFacingDirection`.
 - `Player/AdventurerAnimationController` connects the controller's events to the Animator.
 - `MotionInterpolator` smooths visual children between physics steps. Call `Snap()` after teleporting.
@@ -59,9 +60,9 @@ Folders: `Core/` (GameManager, SceneLoader, MotionInterpolator, CameraTargetProx
 
 **Combat plumbing:**
 - `IDamageable.TakeDamage(float)` (declared in `Health.cs`) is how anything takes damage. To find a target from a collider, try `GetComponentInParent`, and if that fails, try `GetComponentInChildren` under the attached Rigidbody2D.
-- `ArrowProjectile` is used by both the player and enemies. It has no Rigidbody or collider. Each FixedUpdate it moves itself with a circle cast along its path, so thin walls can't be skipped and kinematic bodies still get hit. It handles bounces (Environment layer), penetration, explosions with falloff and cover checks, poison, and knockback. Enemy shots use `enemyShotHitLayers` and calculate a ballistic launch angle.
+- `ArrowProjectile` is used by both the player and enemies. It has no Rigidbody or collider. Each FixedUpdate it moves itself with a circle cast along its path, so thin walls can't be skipped and kinematic bodies still get hit. It handles bounces (Environment layer), penetration, explosions with falloff and cover checks, and knockback. Enemy shots use `enemyShotHitLayers` and calculate a ballistic launch angle.
 - `DamageHitbox` is the melee hitbox. It checks overlaps every physics step instead of relying on trigger callbacks, because kinematic-vs-kinematic contacts send no trigger events. It damages each target at most once per `Activate`. Put it on the "Ignore Raycast" layer.
-- `PoisonEffect` is added to the target at runtime. It deals damage over time, and hitting the target again resets the timer instead of stacking.
+- `PoisonEffect` (currently unused; no arrow applies it) is added to the target at runtime. It deals damage over time, and hitting the target again resets the timer instead of stacking.
 
 **Other:**
 - `GameManager` (execution order -2000): Escape pauses (`timeScale = 0`). When the player dies, the screen fades out, the scene reloads (resetting enemies), and the screen fades back in. Gameplay scripts check `Time.timeScale == 0f` to ignore input while paused.

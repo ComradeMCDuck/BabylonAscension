@@ -10,28 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 96d82f6fee7ea00438c63cc98f43688e, type: 3}
-  m_Name: LaserArrow
+  m_Name: PiercingArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
+  arrowName: Piercing arrow
   geniiCost: 1
-  killsToCharge: 3
-  baseDamage: 60
-  minArrowSpeed: 12
-  maxArrowSpeed: 24
-  minChargeGravity: 20
-  maxChargeGravity: 5
-  minKnockback: 4
-  maxKnockback: 24
-  minRecoil: 0
+  baseDamage: 150
+  minArrowSpeed: 70
+  maxArrowSpeed: 90
+  minChargeGravity: 0
+  maxChargeGravity: 0
+  minKnockback: 2
+  maxKnockback: 6
+  minRecoil: 4
   maxRecoil: 24
   bounces: 0
-  penetrations: 0
+  penetrations: 99
+  penetrationDamageMultiplier: 0.5
   splitBounces: 0
   splitCount: 2
   splitAngle: 30
-  laserLength: 3
-  laserWidth: 0.6
-  laserDuration: 0.15
-  laserColor: {r: 1, g: 0.3, b: 0.2, a: 0.85}
+  meteorCount: 0
+  meteorPrefab: {fileID: 0}
+  meteorDuration: 1.5
+  portalWidth: 4
+  portalHeightOffset: 0
+  meteorAngleSpread: 8
+  portalEffect: {fileID: 0}
+  portalColor: {r: 0.6, g: 0.3, b: 1, a: 0.85}
   explosionRadius: 0
   explosionCenterDamage: 40
   explosionEdgeDamage: 5
@@ -39,6 +44,3 @@ MonoBehaviour:
   explosionEdgeKnockback: 3
   explosionEffect: {fileID: 0}
   explosionEffectDuration: 1
-  poisonTime: 0
-  poisonInterval: 0.5
-  poisonDamage: 2

@@ -10,18 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 96d82f6fee7ea00438c63cc98f43688e, type: 3}
-  m_Name: PoisonArrow
+  m_Name: MeteorShowerArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
-  minDamage: 5
-  maxDamage: 30
-  minArrowSpeed: 12
-  maxArrowSpeed: 24
-  minKnockback: 2
-  maxKnockback: 12
+  arrowName: Hail of fire arrow
+  geniiCost: 1
+  baseDamage: 0
+  minArrowSpeed: 30
+  maxArrowSpeed: 30
+  minChargeGravity: 0
+  maxChargeGravity: 0
+  minKnockback: 0
+  maxKnockback: 0
   minRecoil: 0
-  maxRecoil: 24
+  maxRecoil: 6
   bounces: 0
   penetrations: 0
+  penetrationDamageMultiplier: 1
+  splitBounces: 0
+  splitCount: 2
+  splitAngle: 30
+  meteorCount: 8
+  meteorPrefab: {fileID: 6124286472832785063, guid: 280c8fd56f03f2df9f80b7392287b4e5, type: 3}
+  meteorDuration: 1.5
+  portalWidth: 4
+  portalHeightOffset: 0
+  meteorAngleSpread: 8
+  portalEffect: {fileID: 0}
+  portalColor: {r: 0.6, g: 0.3, b: 1, a: 0.85}
   explosionRadius: 0
   explosionCenterDamage: 40
   explosionEdgeDamage: 5
@@ -29,6 +44,3 @@ MonoBehaviour:
   explosionEdgeKnockback: 3
   explosionEffect: {fileID: 0}
   explosionEffectDuration: 1
-  poisonTime: 3
-  poisonInterval: 1
-  poisonDamage: 2

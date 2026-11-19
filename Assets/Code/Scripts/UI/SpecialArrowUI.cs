@@ -2,25 +2,18 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// HUD text for the special arrow: which one is picked, whether it is charged or armed (Q), and the kills
-/// still needed to recharge it. Put it on a TMP text in the HUD Canvas.
+/// HUD text naming the picked special arrow and its number key (1-3). The charges are shown separately by
+/// <see cref="SpecialChargesUI"/>. Put it on a TMP text in the HUD Canvas.
 /// </summary>
 public class SpecialArrowUI : MonoBehaviour
 {
     [SerializeField] private TMP_Text label;
-    [Tooltip("Shown when the special arrow is charged. {0} = arrow name.")]
-    [SerializeField] private string readyFormat = "{0}: ready (Q)";
-    [Tooltip("Shown while the next shot fires the special arrow. {0} = arrow name.")]
-    [SerializeField] private string armedFormat = "{0}: ARMED";
-    [Tooltip("Shown while recharging. {0} = arrow name, {1} = kills counted, {2} = kills needed.")]
-    [SerializeField] private string chargingFormat = "{0}: {1}/{2} kills";
+    [Tooltip("Shown while a special arrow is picked. {0} = Arrow Name from its ArrowData, {1} = its number key.")]
+    [SerializeField] private string arrowFormat = "[{1}] {0}";
     [Tooltip("Shown while no special arrow is picked. Empty hides the text.")]
     [SerializeField] private string noArrowText = "";
-    [Tooltip("Text color while armed.")]
-    [SerializeField] private Color armedColor = new Color(1f, 0.8f, 0.2f);
 
     private BowCombat bow;
-    private Color normalColor;
 
     private void Awake()
     {
@@ -30,41 +23,44 @@ public class SpecialArrowUI : MonoBehaviour
         {
             Debug.LogError("SpecialArrowUI needs a TMP text and a BowCombat on the player.", this);
             enabled = false;
-            return;
         }
-        normalColor = label.color;
     }
 
     private void OnEnable()
     {
         if (bow == null) return;
-        bow.SpecialArrowChanged += Refresh;
+        bow.ArrowChanged += OnArrowChanged;
         Refresh();
     }
 
     private void OnDisable()
     {
-        if (bow != null) bow.SpecialArrowChanged -= Refresh;
+        if (bow != null) bow.ArrowChanged -= OnArrowChanged;
     }
+
+    private void OnArrowChanged(GameObject arrow) => Refresh();
 
     private void Refresh()
     {
         GameObject arrow = bow.SpecialArrowPrefab;
-        if (arrow == null)
+        label.text = arrow == null ? noArrowText : string.Format(arrowFormat, GetArrowName(arrow), GetSlotKey(arrow));
+    }
+
+    /// <summary>The Arrow Name from the arrow's ArrowData, or the prefab's name if that is empty.</summary>
+    private static string GetArrowName(GameObject arrow)
+    {
+        ArrowProjectile projectile = arrow.GetComponent<ArrowProjectile>();
+        string arrowName = projectile != null && projectile.Data != null ? projectile.Data.arrowName : null;
+        return string.IsNullOrWhiteSpace(arrowName) ? arrow.name : arrowName;
+    }
+
+    /// <summary>The number key that picks this arrow, or "-" if it isn't on one.</summary>
+    private string GetSlotKey(GameObject arrow)
+    {
+        for (int i = 0; i < bow.SpecialArrowSlots.Count; i++)
         {
-            label.text = noArrowText;
-            label.color = normalColor;
-            return;
+            if (bow.SpecialArrowSlots[i] == arrow) return (i + 1).ToString();
         }
-
-        string arrowName = arrow.name;
-        if (bow.IsSpecialArmed)
-            label.text = string.Format(armedFormat, arrowName);
-        else if (bow.IsSpecialReady)
-            label.text = string.Format(readyFormat, arrowName);
-        else
-            label.text = string.Format(chargingFormat, arrowName, bow.SpecialKills, bow.SpecialKillsNeeded);
-
-        label.color = bow.IsSpecialArmed ? armedColor : normalColor;
+        return "-";
     }
 }
