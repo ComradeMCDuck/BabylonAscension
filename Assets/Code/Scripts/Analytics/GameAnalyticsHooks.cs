@@ -134,7 +134,7 @@ public static class GameAnalyticsHooks
         GameAnalytics.Log("boss_won", ("level", CurrentLevel()), ("time_s", LevelTime()), ("attempt", CurrentAttempt()));
     }
 
-    /// <summary>True for scenes that are not levels, e.g. the main menu. Shared with the consent prompt.</summary>
+    /// <summary>True for scenes that are not levels, e.g. the main menu.</summary>
     public static bool IsMenuScene(string sceneName)
     {
         foreach (string menu in MenuScenes)

@@ -13,7 +13,8 @@ using UnityEngine.SceneManagement;
 /// Firebase Unity SDK does not support Analytics on desktop. The events are exported to BigQuery by GA4 itself.
 ///
 /// Use it from anywhere: GameAnalytics.Log("player_death", ("level", name), ("x", 12.5f)). It does nothing when
-/// the config file is missing, the player has not given consent, or the game runs in the Editor without sendInEditor.
+/// the config file is missing or disabled, or the game runs in the Editor without sendInEditor. The JSON config is the
+/// only switch; there is no in-game consent prompt.
 ///
 /// Config: StreamingAssets/analytics.json (NOT committed, it holds the API secret, see analytics.example.json).
 /// Not supported yet: WebGL (see BalanceLoader for the same reason; the POST itself would work, the config loading would not).
@@ -21,7 +22,6 @@ using UnityEngine.SceneManagement;
 public class GameAnalytics : MonoBehaviour
 {
     private const string ConfigFile = "analytics.json";
-    private const string ConsentKey = "analytics_consent";
     private const string ClientIdKey = "analytics_client_id";
     private const float FlushInterval = 10f;
     private const int FlushThreshold = 20;
@@ -42,8 +42,6 @@ public class GameAnalytics : MonoBehaviour
         public string apiSecret = "";
         [Tooltip("Use the EU collection endpoint.")]
         public bool euEndpoint = true;
-        [Tooltip("Events are dropped until the player says yes (GameAnalytics.SetConsent).")]
-        public bool requireConsent = true;
         [Tooltip("Editor play mode only prints the events, unless this is true.")]
         public bool sendInEditor = false;
         [Tooltip("Print every event to the console.")]
@@ -67,19 +65,11 @@ public class GameAnalytics : MonoBehaviour
     private readonly List<Pending> queue = new List<Pending>();
     private bool canSend;
     private bool sending;
-    // Dropped events are silent otherwise, which looks exactly like "analytics is broken".
-    private bool warnedNoConsent;
     private long sessionId;
     private long lastMicros;
     private int seq;
     private double lastEventTime;
     private float nextFlush;
-
-    /// <summary>True when the player has agreed (or the config does not require it).</summary>
-    public static bool HasConsent => config == null || !config.requireConsent || PlayerPrefs.GetInt(ConsentKey, 0) == 1;
-
-    /// <summary>True once the player has answered the consent question, either way. Show the prompt while this is false.</summary>
-    public static bool ConsentAnswered => PlayerPrefs.HasKey(ConsentKey);
 
     /// <summary>False when no config file was found or analytics is disabled in it.</summary>
     public static bool IsActive => instance != null;
@@ -132,34 +122,19 @@ public class GameAnalytics : MonoBehaviour
         string sending = instance.canSend
             ? (config.validateOnly ? "to the GA4 validation endpoint only (validateOnly, nothing is recorded)" : "to GA4")
             : (allowedHere ? "nowhere (measurementId or apiSecret missing)" : "nowhere, console only (Editor without sendInEditor)");
-        string consent = HasConsent ? "given" : ConsentAnswered ? "refused (events are dropped)" : "not answered yet (events are dropped until the player clicks Yes)";
-        Debug.Log($"GameAnalytics: on. Events go {sending}. Consent: {consent}.{(config.debugMode ? " debugMode is on (DebugView)." : "")}");
+        Debug.Log($"GameAnalytics: on. Events go {sending}.{(config.debugMode ? " debugMode is on (DebugView)." : "")}");
 #endif
     }
 
-    /// <summary>Remembers the player's answer. Saying no also deletes the queued events and the anonymous id.</summary>
-    public static void SetConsent(bool granted)
-    {
-        PlayerPrefs.SetInt(ConsentKey, granted ? 1 : 0);
-        if (!granted)
-        {
-            PlayerPrefs.DeleteKey(ClientIdKey);
-            if (instance != null) instance.queue.Clear();
-        }
-        PlayerPrefs.Save();
-        if (granted && instance != null) instance.EnsureInstallEvent();
-    }
-
     /// <summary>
-    /// Creates the anonymous id the first time analytics is allowed and logs a one-time first_launch event with device info
-    /// (the desktop counterpart of app_install on mobile; app_install and first_open are reserved GA4 names). Runs at start
-    /// and right after consent is granted, so the event is sent exactly once per id: a player who withdraws consent and
-    /// agrees again gets a new id and a new first_launch.
+    /// Creates the anonymous id on the first run and logs a one-time first_launch event with device info
+    /// (the desktop counterpart of app_install on mobile; app_install and first_open are reserved GA4 names). Runs at start,
+    /// so the event is sent exactly once per id.
     /// Deliberately no device name or unique device id: those can identify a person.
     /// </summary>
     private void EnsureInstallEvent()
     {
-        if (PlayerPrefs.HasKey(ClientIdKey) || !HasConsent) return;
+        if (PlayerPrefs.HasKey(ClientIdKey)) return;
         PlayerPrefs.SetString(ClientIdKey, NewClientId());
         PlayerPrefs.Save();
 
@@ -219,15 +194,6 @@ public class GameAnalytics : MonoBehaviour
     private void Enqueue(string eventName, (string key, object value)[] parameters)
     {
         if (string.IsNullOrEmpty(eventName)) return;
-        if (!HasConsent)
-        {
-            if (!warnedNoConsent)
-            {
-                warnedNoConsent = true;
-                Debug.LogWarning($"GameAnalytics: '{eventName}' and all further events are dropped: the player has not agreed to analytics. Answer the consent prompt with \"Yes\".");
-            }
-            return;
-        }
 
         double now = Time.realtimeSinceStartupAsDouble;
         long engagementMs = (long)Math.Max(1.0, Math.Min(MaxEngagementMs, (now - lastEventTime) * 1000.0));

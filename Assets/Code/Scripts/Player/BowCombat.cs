@@ -109,6 +109,8 @@ public class BowCombat : MonoBehaviour
 
     /// <summary>Raised with the new arrow prefab whenever the picked (special) arrow changes.</summary>
     public event Action<GameObject> ArrowChanged;
+    /// <summary>Raised when the picked special arrow or the special charges change.</summary>
+    public event Action SpecialArrowChanged;
     /// <summary>Raised after an arrow was launched: the arrow prefab and the charge (0..1). Used by analytics.</summary>
     public event Action<GameObject, float> ArrowFired;
 

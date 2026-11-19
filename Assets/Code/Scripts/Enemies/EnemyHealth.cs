@@ -19,6 +19,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
     /// Static, so analytics hears every enemy, including ones the DebugMenu respawns. Scene subscribers must unsubscribe in OnDisable.
     /// </summary>
     public static event Action<GameObject> Killed;
+    /// <summary>
+    /// Raised when any enemy dies (by any cause), with its EnemyHealth. Static so the bow can count kills for the
+    /// special arrow without finding every enemy. Subscribers must unsubscribe in OnDisable.
+    /// </summary>
+    public static event Action<EnemyHealth> AnyKilled;
     private Color originalColor;
 
     // Statics survive play-mode restarts when domain reload is off.
