@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SplitArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
   arrowName: Split arrow
-  geniiCost: 1
+  geniiCost: 5
   baseDamage: 20
   minArrowSpeed: 12
   maxArrowSpeed: 24

@@ -168,7 +168,7 @@ public class DamageHitbox : MonoBehaviour
 
             // No owner means a level hazard, not someone's attack.
             if (owner == null && target is IHazardDamageable hazardTarget) hazardTarget.TakeHazardDamage(currentDamage);
-            else target.TakeDamage(currentDamage);
+            else target.TakeDamage(currentDamage, owner != null ? DamageKind.Melee : DamageKind.Other);
 
             if (owner != null && currentKnockback > 0f) KnockBackPlayer(other);
         }

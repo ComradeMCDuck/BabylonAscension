@@ -31,6 +31,10 @@ public class BowCombat : MonoBehaviour
     [Tooltip("Hits on enemies with the basic arrow needed to get one special charge back.")]
     [SerializeField, Min(1)] private int basicHitsPerCharge = 1;
 
+    [Header("Upgrades")]
+    [Tooltip("How many bought altar upgrades can be active at once. The player switches them on and off at an altar.")]
+    [SerializeField, Min(0)] private int maxActiveUpgrades = 3;
+
     [Header("Charge")]
     [Tooltip("Seconds of holding needed to reach full charge.")]
     [SerializeField] private float maxChargeTime = 1.2f;
@@ -73,6 +77,8 @@ public class BowCombat : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float groundedRecoilMultiplier = 0.8f;
 
     private float nextShotTime;
+
+    private Health playerHealth;
 
     // Shorter aim vectors than this give no usable direction; the last one is kept.
     private const float MinAimSqrDistance = 0.0001f;
@@ -132,6 +138,8 @@ public class BowCombat : MonoBehaviour
     public IReadOnlyCollection<GameObject> OwnedArrows => ownedArrows;
     /// <summary>Max Charge Time with upgrades applied.</summary>
     public float MaxChargeTime => Mathf.Max(0f, upgrades.Apply(BowStat.MaxChargeTime, maxChargeTime));
+    /// <summary>Full Draw Bonus Window (the perfect shot window) with upgrades applied.</summary>
+    public float FullDrawBonusWindow => Mathf.Max(0f, upgrades.Apply(BowStat.FullDrawBonusWindow, fullDrawBonusWindow));
     public float Charge01 =>
         MaxChargeTime <= 0f
             ? 1f
@@ -140,9 +148,9 @@ public class BowCombat : MonoBehaviour
     public float HoldTime => isCharging ? holdTime : 0f;
     /// <summary>True while releasing would get the full-draw bonus.</summary>
     public bool IsFullDrawBonusActive =>
-        isCharging && holdTime >= MaxChargeTime && holdTime < MaxChargeTime + fullDrawBonusWindow;
+        isCharging && holdTime >= MaxChargeTime && holdTime < MaxChargeTime + FullDrawBonusWindow;
     /// <summary>True once the draw is held past the bonus window: the bonus is gone and the bow sways.</summary>
-    public bool IsOverdrawn => isCharging && holdTime >= MaxChargeTime + fullDrawBonusWindow;
+    public bool IsOverdrawn => isCharging && holdTime >= MaxChargeTime + FullDrawBonusWindow;
     /// <summary>Degrees the aim is currently turned by overdraw sway (0 when not swaying). UpperBodyAimRig turns the arms by it too.</summary>
     public float SwayAngle => swayAngle;
     /// <summary>Damage multiplier a shot released right now would get.</summary>
@@ -152,6 +160,12 @@ public class BowCombat : MonoBehaviour
     {
         if (movementController == null)
             movementController = GetComponentInParent<BasicMovementController2D>();
+
+        upgrades.MaxActive = maxActiveUpgrades;
+
+        // For the low-health damage upgrade. Health sits on another object of the player.
+        Transform character = movementController != null ? movementController.transform : transform;
+        playerHealth = character.GetComponentInChildren<Health>(true);
 
         if (aimCamera == null)
             aimCamera = Camera.main;
@@ -350,7 +364,7 @@ public class BowCombat : MonoBehaviour
         if (holdTime < MaxChargeTime)
             return Mathf.Lerp(minDamageMultiplier, maxDamageMultiplier, Mathf.Pow(Charge01, damageCurveExponent));
 
-        return holdTime < MaxChargeTime + fullDrawBonusWindow
+        return holdTime < MaxChargeTime + FullDrawBonusWindow
             ? maxDamageMultiplier + fullDrawBonusMultiplier
             : maxDamageMultiplier;
     }
@@ -367,7 +381,7 @@ public class BowCombat : MonoBehaviour
             return;
         }
 
-        float swayTime = holdTime - (MaxChargeTime + fullDrawBonusWindow);
+        float swayTime = holdTime - (MaxChargeTime + FullDrawBonusWindow);
         float size = Mathf.Min(swayMaxAngle, swayStartAngle + swayAngleGrowth * swayTime);
         swayAngle = size * Mathf.Sin(swayTime * swayFrequency * 2f * Mathf.PI);
     }
@@ -415,6 +429,20 @@ public class BowCombat : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Damage upgrades on top of the draw: the basic arrow damage upgrade (basic shots only), and the low-health
+    /// upgrade while the player is close to death (every shot).
+    /// </summary>
+    private float GetUpgradeDamageMultiplier(bool special)
+    {
+        float multiplier = special ? 1f : Mathf.Max(0f, upgrades.Apply(BowStat.BasicArrowDamage, 1f));
+
+        if (playerHealth != null && playerHealth.IsCloseToDeath)
+            multiplier *= Mathf.Max(0f, upgrades.Apply(BowStat.LowHealthDamage, 1f));
+
+        return multiplier;
+    }
+
     private void ReleaseShot()
     {
         if (!isCharging)
@@ -442,6 +470,7 @@ public class BowCombat : MonoBehaviour
         }
 
         GameObject arrowPrefab = firesSpecial ? currentArrowPrefab : basicArrowPrefab;
+        damageMultiplier *= GetUpgradeDamageMultiplier(firesSpecial);
 
         if (arrowPrefab == null)
             return;

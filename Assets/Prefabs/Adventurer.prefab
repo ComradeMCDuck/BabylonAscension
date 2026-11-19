@@ -88,7 +88,7 @@ MonoBehaviour:
   - {fileID: 6124286472832785063, guid: 72728eceb107f7de637490286d59a5b2, type: 3}
   - {fileID: 6124286472832785063, guid: 1b636f04b128911f2bc7e0c5aa970e8c, type: 3}
   maxSpecialCharges: 3
-  basicHitsPerCharge: 6
+  basicHitsPerCharge: 4
   maxChargeTime: 1.2
   minDrawTime: 0.2
   minDamageMultiplier: 0.2

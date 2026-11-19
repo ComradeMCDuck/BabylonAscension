@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PiercingArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
   arrowName: Piercing arrow
-  geniiCost: 1
+  geniiCost: 5
   baseDamage: 150
   minArrowSpeed: 70
   maxArrowSpeed: 90

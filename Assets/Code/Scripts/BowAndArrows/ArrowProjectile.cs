@@ -461,7 +461,7 @@ public class ArrowProjectile : MonoBehaviour
             {
                 float armorMultiplier = hitArmor != null && pair.Key == hitArmor.Character ? hitArmor.ExplosionDamageMultiplier : 1f;
                 target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff)
-                                  * armorMultiplier * damageMultiplier);
+                                  * armorMultiplier * damageMultiplier, DamageKind.Projectile);
                 HitTarget?.Invoke(this);
             }
 
@@ -508,7 +508,7 @@ public class ArrowProjectile : MonoBehaviour
 
         if (target != null)
         {
-            target.TakeDamage(damage);
+            target.TakeDamage(damage, DamageKind.Projectile);
             HitTarget?.Invoke(this);
         }
 

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MeteorShowerArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
   arrowName: Hail of fire arrow
-  geniiCost: 1
+  geniiCost: 5
   baseDamage: 0
   minArrowSpeed: 30
   maxArrowSpeed: 30
