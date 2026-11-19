@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DYP;
 using UnityEngine;
@@ -43,7 +44,7 @@ public class ArrowProjectile : MonoBehaviour
     private float speed;
     private float gravity;
     private float damage;
-    // The bow's charge multiplier, also applied to explosion and poison damage. 1 for enemy shots.
+    // The bow's charge multiplier, also applied to explosion damage. 1 for enemy shots.
     private float damageMultiplier = 1f;
     private float knockback;
     private int remainingBounces;
@@ -65,6 +66,15 @@ public class ArrowProjectile : MonoBehaviour
     private LayerMask activeHitLayers;
     private bool firedByPlayer;
     private bool launched;
+    // Meteor shower arrows fly to the aimed point: this is the distance still left to it.
+    private bool hasTargetPoint;
+    private float distanceToTarget;
+
+    /// <summary>
+    /// Raised each time this projectile damages something (a direct hit or an explosion), once per target.
+    /// BowCombat uses it to recharge the special arrows when a basic arrow hits. Split copies don't inherit listeners.
+    /// </summary>
+    public event Action<ArrowProjectile> HitTarget;
 
     // Reused buffers for explosions, to avoid allocating every time one goes off.
     private static readonly List<Collider2D> s_ExplosionOverlaps = new List<Collider2D>();
@@ -98,15 +108,17 @@ public class ArrowProjectile : MonoBehaviour
     /// <summary>
     /// Bow shot: speed, knockback and gravity scale with the charge (0..1) between ArrowData's min and max.
     /// Damage is ArrowData's base damage times damageMultiplier, which the bow works out from how long it was held;
-    /// explosion and poison damage get the same multiplier.
+    /// explosion damage gets the same multiplier.
     /// maxSpeedMultiplier scales ArrowData's max speed (bow upgrades), so a full charge gets the whole bonus.
+    /// targetPoint is where the player aimed; only meteor shower arrows use it (they open their portal there).
     /// </summary>
     public void Launch(
         Vector3 direction,
         float charge,
         GameObject shooter,
         float maxSpeedMultiplier = 1f,
-        float damageMultiplier = 1f)
+        float damageMultiplier = 1f,
+        Vector2? targetPoint = null)
     {
         if (arrowData == null)
         {
@@ -128,18 +140,14 @@ public class ArrowProjectile : MonoBehaviour
         activeHitLayers = hitLayers;
         firedByPlayer = true;
 
-        // A laser doesn't fly: it becomes a rectangle at the bow that hits everything inside it, through walls.
-        if (arrowData.IsLaser)
-        {
-            if (!TryGetComponent(out LaserBeam beam))
-                beam = gameObject.AddComponent<LaserBeam>();
-
-            int targets = (hitLayers.value & ~environmentLayers.value) | arrowTargetLayers.value;
-            beam.Fire(this, direction, shooter, damage, knockback, this.damageMultiplier, targets);
-            return;
-        }
-
         Begin(direction, shooter, lifetime);
+
+        // Measured along the flight line, so a sway-turned shot still opens the portal level with the cursor.
+        if (arrowData.IsMeteorShower && targetPoint.HasValue)
+        {
+            hasTargetPoint = true;
+            distanceToTarget = Mathf.Max(0f, Vector2.Dot(targetPoint.Value - (Vector2)transform.position, this.direction));
+        }
     }
 
     /// <summary>
@@ -266,6 +274,10 @@ public class ArrowProjectile : MonoBehaviour
         Vector2 position = transform.position;
         float step = speed * Time.fixedDeltaTime;
 
+        // A meteor shower arrow stops exactly on the aimed point.
+        bool reachesTarget = hasTargetPoint && step >= distanceToTarget;
+        if (reachesTarget) step = distanceToTarget;
+
         // Collect everything along this step (not just the first hit), so a penetrating
         // shot can pass through several targets and still find the wall behind them.
         ContactFilter2D filter = new ContactFilter2D();
@@ -303,6 +315,10 @@ public class ArrowProjectile : MonoBehaviour
                 return;
             }
 
+            // A meteor shower arrow flies over enemies to the aimed point; only walls stop it early.
+            if (hasTargetPoint)
+                continue;
+
             // Checked before hitCharacters: a deflected arrow may come back and hit the same enemy's unarmored side.
             EnemyArmor armor = hit.collider.GetComponent<EnemyArmor>();
             if (armor != null && armor.isActiveAndEnabled)
@@ -332,7 +348,28 @@ public class ArrowProjectile : MonoBehaviour
         }
 
         MoveTo(position + direction * step);
+
+        if (hasTargetPoint)
+        {
+            distanceToTarget -= step;
+            if (reachesTarget)
+            {
+                OpenMeteorPortal(transform.position);
+                return;
+            }
+        }
+
         ApplyGravity(Time.fixedDeltaTime * 0.5f);
+    }
+
+    /// <summary>Ends a meteor shower arrow's flight and opens its portal at the given point.</summary>
+    private void OpenMeteorPortal(Vector2 point)
+    {
+        // Destroy is deferred to the end of the frame; stop here so a second physics step can't open another portal.
+        launched = false;
+        hasTargetPoint = false;
+        MeteorPortal.Open(arrowData, new Vector3(point.x, point.y, transform.position.z), owner, GetComponent<SpriteRenderer>());
+        Destroy(gameObject);
     }
 
     private void ApplyGravity(float time)
@@ -424,7 +461,8 @@ public class ArrowProjectile : MonoBehaviour
             {
                 float armorMultiplier = hitArmor != null && pair.Key == hitArmor.Character ? hitArmor.ExplosionDamageMultiplier : 1f;
                 target.TakeDamage(Mathf.Lerp(arrowData.explosionCenterDamage, arrowData.explosionEdgeDamage, falloff)
-                                  * armorMultiplier * damageMultiplier);
+                                  * armorMultiplier * damageMultiplier, DamageKind.Projectile);
+                HitTarget?.Invoke(this);
             }
 
             float explosionKnockback = Mathf.Lerp(arrowData.explosionCenterKnockback, arrowData.explosionEdgeKnockback, falloff);
@@ -469,23 +507,23 @@ public class ArrowProjectile : MonoBehaviour
         IDamageable target = FindDamageable(other);
 
         if (target != null)
-            target.TakeDamage(damage);
+        {
+            target.TakeDamage(damage, DamageKind.Projectile);
+            HitTarget?.Invoke(this);
+        }
 
         if (knockback > 0f)
             ApplyKnockback(other, direction * knockback);
-
-        // Damage over time; the ticks only deal damage, the knockback above happens once on the hit.
-        if (target != null && arrowData != null && arrowData.IsPoisonous)
-            PoisonEffect.Apply(target, arrowData.poisonDamage * damageMultiplier, arrowData.poisonTime, arrowData.poisonInterval);
 
         // A splitting arrow pierces every enemy for free until its splits are used up.
         if (remainingSplits > 0)
             return false;
 
-        // Penetrate: use one and keep flying.
+        // Penetrate: use one and keep flying, weaker for the next enemy (Piercing arrow halves it).
         if (remainingPenetrations > 0)
         {
             remainingPenetrations--;
+            if (arrowData != null) damage *= arrowData.penetrationDamageMultiplier;
             return false;
         }
 
@@ -530,6 +568,12 @@ public class ArrowProjectile : MonoBehaviour
             return;
         }
 
+        if (hasTargetPoint)
+        {
+            OpenMeteorPortal(hit.centroid);
+            return;
+        }
+
         // Destroy is deferred to the end of the frame; stop here so a second physics step can't hit again.
         launched = false;
         Destroy(gameObject);
@@ -561,9 +605,11 @@ public class ArrowProjectile : MonoBehaviour
 
         if (remainingBounces <= 0)
         {
-            // Explode just off the surface, so the wall check doesn't start inside the wall that was hit.
+            // Explode (or open the portal) just off the surface, so nothing starts inside the wall that was hit.
             if (IsExplosive)
                 Explode(hit.centroid + hit.normal * BounceSkin);
+            else if (hasTargetPoint)
+                OpenMeteorPortal(hit.centroid + hit.normal * BounceSkin);
             else
                 Destroy(gameObject);
             return;

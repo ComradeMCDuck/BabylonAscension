@@ -15,6 +15,19 @@ public class EntityData : ScriptableObject
     public float maxHealth = 100f;
     public float damageIndicationDuration = 0.1f;
 
+    [Header("Player Upgrades (only used by the player)")]
+    [Tooltip("Health fraction (0..1) at or below which the player counts as close to death, for the low-health damage upgrade.")]
+    [Range(0f, 1f)] public float lowHealthThreshold = 0.25f;
+    [Tooltip("Second Chance upgrade: fraction (0..1) of max health restored instead of dying.")]
+    [Range(0f, 1f)] public float secondChanceHealFraction = 0.25f;
+    [Tooltip("Second Chance upgrade: seconds of invincibility after it saves the player. The sprite blinks white meanwhile.")]
+    [Min(0f)] public float secondChanceInvincibilityTime = 2f;
+    [Tooltip("Second Chance upgrade: seconds between two white blinks while invincible.")]
+    [Min(0.02f)] public float secondChanceBlinkInterval = 0.1f;
+    [Tooltip("Second Chance upgrade: seconds after it saved the player before it can save them again. " +
+             "Dying and respawning recharges it straight away.")]
+    [Min(0f)] public float secondChanceCooldown = 60f;
+
     [Header("Movement")]
     [Tooltip("Enemies: radius of the line-of-sight circle.")]
     public float detectionRange = 5f;

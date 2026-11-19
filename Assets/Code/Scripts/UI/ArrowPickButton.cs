@@ -1,9 +1,10 @@
 using UnityEngine;
 
 /// <summary>
-/// An arrow icon in the altar window. The first click buys the arrow with genii (price from its ArrowData);
-/// after that, clicking it makes this the bow's special arrow (armed with Q) for free.
-/// Only the picked special arrow is lit; all others are greyed out (all of them while none is picked).
+/// An arrow icon in the altar window. Clicking it buys the arrow with genii (price from its ArrowData) and makes it
+/// the bow's special arrow (fired with the right mouse button). After that, the player switches between bought
+/// arrows with the number keys (BowCombat's Special Arrow Slots); clicking an owned arrow picks it too.
+/// The button is greyed out until the arrow is bought.
 /// </summary>
 public class ArrowPickButton : AltarShopButton
 {
@@ -13,8 +14,10 @@ public class ArrowPickButton : AltarShopButton
     private int cost;
 
     protected override int Cost => cost;
+    protected override string ItemKind => "arrow";
+    protected override string ItemName => arrowPrefab != null ? arrowPrefab.name : "";
     protected override bool IsOwned => Bow.OwnsArrow(arrowPrefab);
-    protected override bool IsLit => Bow.CurrentArrowPrefab == arrowPrefab;
+    protected override bool IsLit => IsOwned;
     protected override bool IsValid => arrowPrefab != null;
 
     protected override void Awake()
@@ -34,12 +37,4 @@ public class ArrowPickButton : AltarShopButton
     protected override void Unlock() => Bow.UnlockArrow(arrowPrefab);
 
     protected override void Use() => Bow.SetArrow(arrowPrefab);
-
-    protected override void Subscribe(bool subscribe)
-    {
-        if (subscribe) Bow.ArrowChanged += OnArrowChanged;
-        else Bow.ArrowChanged -= OnArrowChanged;
-    }
-
-    private void OnArrowChanged(GameObject newArrow) => Refresh();
 }

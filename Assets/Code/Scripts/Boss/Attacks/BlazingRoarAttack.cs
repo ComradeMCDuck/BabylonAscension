@@ -194,7 +194,8 @@ public class BlazingRoarAttack : BossAttack<BlazingRoarData>
             // Health can sit on a sibling child of the character. (No ?? here: Unity objects don't null-check correctly with it.)
             IDamageable damageable = other.GetComponentInParent<IDamageable>();
             if (damageable == null) damageable = character.GetComponentInChildren<IDamageable>();
-            if (damageable != null) damageable.TakeDamage(data.damage);
+            // The roar's shockwave counts as melee for the player's resistance upgrades.
+            if (damageable != null) damageable.TakeDamage(data.damage, DamageKind.Melee);
 
             BasicMovementController2D targetMovement = other.GetComponentInParent<BasicMovementController2D>();
             if (targetMovement != null)

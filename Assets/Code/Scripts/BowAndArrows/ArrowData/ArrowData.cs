@@ -4,19 +4,18 @@ using UnityEngine.Serialization;
 [CreateAssetMenu(fileName = "ArrowData", menuName = "Scriptable Objects/ArrowData")]
 public class ArrowData : ScriptableObject
 {
+    [Header("Info")]
+    [Tooltip("Name shown to the player, e.g. on the HUD. Empty = the arrow prefab's name is shown instead.")]
+    public string arrowName = "";
+
     [Header("Shop")]
     [Tooltip("Genii needed to unlock this arrow at an altar. Once bought, switching back to it is free until death.")]
     [UnityEngine.Serialization.FormerlySerializedAs("soulCost")]
     [Min(0)] public int geniiCost = 1;
 
-    [Header("Special Arrow")]
-    [Tooltip("Enemy kills needed to recharge this arrow after it was fired as the special arrow (armed with Q). " +
-             "Not used by the basic arrow.")]
-    [Min(1)] public int killsToCharge = 3;
-
     [Header("Shot")]
     [Tooltip("Damage of a bow shot before the bow's charge multiplier (BowCombat's Damage Charge settings). " +
-             "Explosion and poison damage are multiplied by the same multiplier.")]
+             "Explosion damage is multiplied by the same multiplier.")]
     [FormerlySerializedAs("maxDamage")]
     [Min(0f)] public float baseDamage = 30f;
     [SerializeField] public float minArrowSpeed = 12f;
@@ -35,6 +34,9 @@ public class ArrowData : ScriptableObject
     [Tooltip("How many targets the arrow passes through. Each target hit uses one; the hit after reaching 0 stops the arrow. " +
              "Explosive arrows still explode on the first hit.")]
     [Min(0)] public int penetrations = 0;
+    [Tooltip("The arrow's damage is multiplied by this each time it passes through an enemy. " +
+             "0.5 = halved after every enemy. 1 = every enemy takes full damage.")]
+    [Range(0f, 1f)] public float penetrationDamageMultiplier = 1f;
 
     [Header("Split (Hydra)")]
     [Tooltip("Cloning bounces: hitting a wall with one of these left splits the arrow into two, and each copy keeps " +
@@ -47,17 +49,26 @@ public class ArrowData : ScriptableObject
     [Tooltip("Degrees between the outermost arrows of a split. They are spread evenly around the mirrored direction.")]
     [Range(0f, 120f)] public float splitAngle = 30f;
 
-    [Header("Laser")]
-    [Tooltip("Above 0 makes this a laser arrow: instead of flying, it spawns a rectangle this long, starting where " +
-             "the shot left the bow and pointing along the aim. It goes through walls and damages every enemy inside it " +
-             "once, with the normal Base Damage, knockback and poison. Speed, gravity, bounces and splits aren't used.")]
-    [Min(0f)] public float laserLength = 0f;
-    [Tooltip("Width of the laser rectangle (its contact radius is half of this).")]
-    [Min(0.01f)] public float laserWidth = 0.6f;
-    [Tooltip("Seconds the rectangle stays. Enemies walking into it during this time are hit too, still once each.")]
-    [Min(0.02f)] public float laserDuration = 0.15f;
-    [Tooltip("Color of the placeholder beam drawn when the laser prefab has no beam sprite of its own.")]
-    public Color laserColor = new Color(1f, 0.3f, 0.2f, 0.85f);
+    [Header("Meteor Shower")]
+    [Tooltip("Above 0 makes this a meteor shower arrow: it flies to the point the player aimed at (set the gravity " +
+             "above to 0 so it flies straight) and opens a portal there, which drops this many Meteor Prefab arrows. " +
+             "It passes through enemies on the way; a wall stops it early and opens the portal there.")]
+    [Min(0)] public int meteorCount = 0;
+    [Tooltip("Arrow prefab (with ArrowProjectile) dropped by the portal, normally an explosive arrow. It is " +
+             "launched at full charge with its own ArrowData, so set the low damage and big knockback there.")]
+    public GameObject meteorPrefab;
+    [Tooltip("Seconds over which the meteors are dropped, spread evenly.")]
+    [Min(0f)] public float meteorDuration = 1.5f;
+    [Tooltip("Width of the portal. Each meteor falls from a random point along it.")]
+    [Min(0f)] public float portalWidth = 4f;
+    [Tooltip("How far above the point the arrow reached the portal opens.")]
+    public float portalHeightOffset = 0f;
+    [Tooltip("Degrees a meteor can lean away from straight down, picked at random for each one.")]
+    [Range(0f, 45f)] public float meteorAngleSpread = 8f;
+    [Tooltip("Optional effect shown as the portal. Empty = a placeholder oval in Portal Color is drawn.")]
+    public GameObject portalEffect;
+    [Tooltip("Color of the placeholder portal.")]
+    public Color portalColor = new Color(0.6f, 0.3f, 1f, 0.85f);
 
     [Header("Explosion")]
     [Tooltip("Above 0 makes this an explosive arrow: it explodes on impact and uses the explosion values below " +
@@ -76,17 +87,7 @@ public class ArrowData : ScriptableObject
     [Tooltip("Seconds before the explosion effect is removed. 0 or less keeps it (use that if the effect removes itself).")]
     [SerializeField] public float explosionEffectDuration = 1f;
 
-    [Header("Poison")]
-    [Tooltip("Above 0 makes this a poisonous arrow: a hit target keeps taking Poison Damage every Poison Interval for this many seconds. " +
-             "The hit itself still does normal damage and knockback; poison ticks never knock back. Hitting a poisoned target again restarts the timer.")]
-    [Min(0f)] public float poisonTime = 0f;
-    [Tooltip("Seconds between two poison damage ticks.")]
-    [Min(0.05f)] public float poisonInterval = 0.5f;
-    [Tooltip("Damage dealt on each poison tick.")]
-    [Min(0f)] public float poisonDamage = 2f;
-
     public bool IsExplosive => explosionRadius > 0f;
-    public bool IsPoisonous => poisonTime > 0f && poisonDamage > 0f;
     public bool Splits => splitBounces > 0;
-    public bool IsLaser => laserLength > 0f;
+    public bool IsMeteorShower => meteorCount > 0 && meteorPrefab != null;
 }

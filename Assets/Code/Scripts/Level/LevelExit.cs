@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -26,6 +27,14 @@ public class LevelExit : MonoBehaviour
     private int playerCollidersInRange;
 
     public bool PlayerInRange => playerCollidersInRange > 0;
+    /// <summary>Name of the scene this exit leads to.</summary>
+    public string TargetScene => targetScene;
+
+    /// <summary>
+    /// Raised when an exit starts a scene change (before the fade-out and the load). Static, so analytics can listen
+    /// without finding every exit in the scene. Subscribers that live in a scene must unsubscribe in OnDisable.
+    /// </summary>
+    public static event Action<LevelExit> Used;
 
     private void Awake()
     {
@@ -55,7 +64,7 @@ public class LevelExit : MonoBehaviour
             Debug.LogError($"{name}: no SceneLoader in the scene (it belongs on the GameManager prefab).", this);
             return;
         }
-        SceneLoader.Instance.TryLoadScene(targetScene, targetSpawnId);
+        if (SceneLoader.Instance.TryLoadScene(targetScene, targetSpawnId)) Used?.Invoke(this);
     }
 
     private void OnTriggerEnter2D(Collider2D other)

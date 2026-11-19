@@ -107,7 +107,8 @@ public class DebugMenu : MonoBehaviour
         AddButton("Respawn Killed Enemies", RespawnKilledEnemies);
         AddButton("Forget Removed Objects", ForgetRemovedObjects);
         AddButton("Add 1 Genii", AddGenii);
-        AddButton("Charge Special Arrow", ChargeSpecialArrow);
+        AddButton("Refill Special Charges", ChargeSpecialArrow);
+        AddButton("Unlock Special Arrows", UnlockSpecialArrows);
         AddButton("Open Altar Menu", OpenAltarMenu);
 
         AddSection("Go To Level");
@@ -265,7 +266,30 @@ public class DebugMenu : MonoBehaviour
             return;
         }
 
-        bow.ChargeSpecial();
+        bow.RefillSpecialCharges();
+    }
+
+    /// <summary>Gives the player every special arrow on the bow's number keys for free, to try them without genii.</summary>
+    private void UnlockSpecialArrows()
+    {
+        // Looked up on click, because the player is recreated with every scene load.
+        BowCombat bow = FindAnyObjectByType<BowCombat>();
+
+        if (bow == null)
+        {
+            Debug.LogWarning("Debug menu: no BowCombat in the scene, so no arrows were unlocked.");
+            return;
+        }
+
+        GameObject first = null;
+        foreach (GameObject arrow in bow.SpecialArrowSlots)
+        {
+            if (arrow == null) continue;
+            bow.UnlockArrow(arrow);
+            if (first == null) first = arrow;
+        }
+
+        if (first != null && !bow.HasSpecialArrow) bow.SetArrow(first);
     }
 
     /// <summary>
