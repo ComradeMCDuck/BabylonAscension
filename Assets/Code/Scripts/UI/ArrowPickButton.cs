@@ -2,8 +2,8 @@ using UnityEngine;
 
 /// <summary>
 /// An arrow icon in the altar window. The first click buys the arrow with genii (price from its ArrowData);
-/// after that, clicking it makes the bow fire this arrow for free.
-/// Only the arrow the bow is firing is lit; all others are greyed out (all of them while on the basic arrow).
+/// after that, clicking it makes this the bow's special arrow (armed with Q) for free.
+/// Only the picked special arrow is lit; all others are greyed out (all of them while none is picked).
 /// </summary>
 public class ArrowPickButton : AltarShopButton
 {
