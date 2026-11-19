@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96d82f6fee7ea00438c63cc98f43688e, type: 3}
+  m_Name: MeteorArrow
+  m_EditorClassIdentifier: Assembly-CSharp::ArrowData
+  arrowName: Meteor arrow
+  geniiCost: 0
+  baseDamage: 0
+  minArrowSpeed: 18
+  maxArrowSpeed: 18
+  minChargeGravity: 15
+  maxChargeGravity: 15
+  minKnockback: 0
+  maxKnockback: 0
+  minRecoil: 0
+  maxRecoil: 0
+  bounces: 0
+  penetrations: 0
+  penetrationDamageMultiplier: 1
+  splitBounces: 0
+  splitCount: 2
+  splitAngle: 30
+  meteorCount: 0
+  meteorPrefab: {fileID: 0}
+  meteorDuration: 1.5
+  portalWidth: 8
+  portalHeightOffset: 0
+  meteorAngleSpread: 20
+  portalEffect: {fileID: 0}
+  portalColor: {r: 0.6, g: 0.3, b: 1, a: 0.85}
+  explosionRadius: 1.5
+  explosionCenterDamage: 8
+  explosionEdgeDamage: 3
+  explosionCenterKnockback: 35
+  explosionEdgeKnockback: 20
+  explosionEffect: {fileID: 5223890983387936039, guid: 36ccac9a724d41d4ea0acc06cdc3ddf7, type: 3}
+  explosionEffectDuration: 0.25

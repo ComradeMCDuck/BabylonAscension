@@ -14,6 +14,8 @@ Shader "TowerBend/Sprite-Lit"
         _LightWrap("3D Light Wrap (0 = Lambert, 1 = ignore facing)", Range(0, 1)) = 1
 
         [HideInInspector] _Color("Tint", Color) = (1,1,1,1)
+        // 0 = normal, 1 = solid white. Set per renderer by SpriteFlash (MaterialPropertyBlock).
+        [HideInInspector] _FlashAmount("Flash Amount", Range(0, 1)) = 0
         [HideInInspector] _RendererColor("RendererColor", Color) = (1,1,1,1)
         [HideInInspector] _AlphaTex("External Alpha", 2D) = "white" {}
         [HideInInspector] _EnableExternalAlpha("Enable External Alpha", Float) = 0
@@ -66,6 +68,7 @@ Shader "TowerBend/Sprite-Lit"
             CBUFFER_START(UnityPerMaterial)
                 half4 _Color;
                 half _LightWrap;
+                half _FlashAmount;
             CBUFFER_END
 
             #define TOWER_NEEDS_NORMAL
@@ -90,7 +93,10 @@ Shader "TowerBend/Sprite-Lit"
 
             half4 LitFragment(Varyings input) : SV_Target
             {
-                return CommonLitFragment(input, input.color);
+                half4 color = CommonLitFragment(input, input.color);
+                // White flash (SpriteFlash) after lighting, so it reads as solid white even in the dark.
+                color.rgb = lerp(color.rgb, half3(1, 1, 1), _FlashAmount);
+                return color;
             }
             ENDHLSL
         }
@@ -127,6 +133,7 @@ Shader "TowerBend/Sprite-Lit"
             CBUFFER_START( UnityPerMaterial )
                 half4 _Color;
                 half _LightWrap;
+                half _FlashAmount;
             CBUFFER_END
 
             Varyings NormalsRenderingVertex(Attributes input)
@@ -203,6 +210,7 @@ Shader "TowerBend/Sprite-Lit"
             CBUFFER_START(UnityPerMaterial)
                 half4 _Color;
                 half _LightWrap;
+                half _FlashAmount;
             CBUFFER_END
 
             #define TOWER_NEEDS_NORMAL
@@ -238,6 +246,8 @@ Shader "TowerBend/Sprite-Lit"
 
                 half4 color = input.color * SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv);
                 color.rgb *= TowerSpriteLighting(input.positionWS, input.normalWS, input.positionCS);
+                // White flash (SpriteFlash) after lighting, so it reads as solid white even in the dark.
+                color.rgb = lerp(color.rgb, half3(1, 1, 1), _FlashAmount);
                 return color;
             }
             ENDHLSL

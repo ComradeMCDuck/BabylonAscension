@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 637613e3b6764536a2ba117d0f9a3e89, type: 3}
+  m_Name: SecondChance
+  m_EditorClassIdentifier: Assembly-CSharp::BowUpgrade
+  displayName: Second Chance
+  description: Survive a killing blow with some health and a moment of invincibility. Recharges after 60 s or on respawn
+  icon: {fileID: 0}
+  geniiCost: 2
+  stat: 6
+  mode: 0
+  amount: 1

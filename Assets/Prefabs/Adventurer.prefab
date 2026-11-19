@@ -83,6 +83,12 @@ MonoBehaviour:
   movementController: {fileID: 0}
   animator: {fileID: 7487572580236149384}
   basicArrowPrefab: {fileID: 6124286472832785063, guid: 67d45b9cd88de9d4ca9b0636581260cd, type: 3}
+  specialArrowSlots:
+  - {fileID: 6124286472832785063, guid: 3e9adc6afd7d7d44492c5c88b42bdd6f, type: 3}
+  - {fileID: 6124286472832785063, guid: 72728eceb107f7de637490286d59a5b2, type: 3}
+  - {fileID: 6124286472832785063, guid: 1b636f04b128911f2bc7e0c5aa970e8c, type: 3}
+  maxSpecialCharges: 3
+  basicHitsPerCharge: 4
   maxChargeTime: 1.2
   minDrawTime: 0.2
   minDamageMultiplier: 0.2
@@ -700,6 +706,8 @@ MonoBehaviour:
     WallStickTimer: 0
     WallSlideSpeedLoss: 0.05
     WallSlidingSpeedMax: 2
+    WallSlideTimeMax: 2
+    WallSlideTimer: 0
     CanWallClimb: 0
     WallClimbSpeed: 2
     CanWallJump: 0

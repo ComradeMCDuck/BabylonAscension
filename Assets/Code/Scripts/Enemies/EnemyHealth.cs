@@ -125,9 +125,30 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
         AnyKilled?.Invoke(this);
 
         if (enemyData != null && enemyData.geniiPrefab != null)
-            Instantiate(enemyData.geniiPrefab, body.transform.position, Quaternion.identity);
+            DropGenii(body.transform.position);
 
         Killed?.Invoke(body);
         Destroy(body);
+    }
+
+    // Sideways distance between the two orbs of a double drop, so they don't sit on top of each other.
+    private const float DoubleDropSpacing = 0.8f;
+
+    /// <summary>One genii, or two side by side if the player's double genii upgrade rolls it.</summary>
+    private void DropGenii(Vector3 position)
+    {
+        // Looked up on death only (rare), because the player is recreated with every scene load.
+        BowCombat bow = FindAnyObjectByType<BowCombat>();
+        float doubleChance = bow != null ? bow.Upgrades.Apply(BowStat.DoubleGeniiChance, 0f) : 0f;
+
+        if (doubleChance > 0f && UnityEngine.Random.value < doubleChance)
+        {
+            Vector3 offset = Vector3.right * (DoubleDropSpacing * 0.5f);
+            Instantiate(enemyData.geniiPrefab, position - offset, Quaternion.identity);
+            Instantiate(enemyData.geniiPrefab, position + offset, Quaternion.identity);
+            return;
+        }
+
+        Instantiate(enemyData.geniiPrefab, position, Quaternion.identity);
     }
 }
