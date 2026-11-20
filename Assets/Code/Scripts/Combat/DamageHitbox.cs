@@ -40,6 +40,9 @@ public class DamageHitbox : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float damage = 1f;
 
+    [Tooltip("Active On Enable only: hits count as the player's doing, so a damaged enemy starts chasing (e.g. a falling rock or lantern fire the player shot down). Off = enemies ignore it, like spikes.")]
+    [SerializeField] private bool alertsEnemies;
+
     [Tooltip("Active On Enable only: sideways push on each hit, away from the center of this hitbox. 0 = no sideways push.")]
     [Min(0f)]
     [SerializeField] private float hazardKnockback;
@@ -98,11 +101,14 @@ public class DamageHitbox : MonoBehaviour
         if (player != null && (targetLayers.value & (1 << player.layer)) == 0)
             Debug.LogWarning($"{name}: Target Layers doesn't include the player's layer \"{LayerMask.LayerToName(player.layer)}\", so this hitbox can't damage the player.", this);
 
-        // The character this hitbox belongs to, so it never damages itself. A standalone hazard has no owner:
-        // falling back to transform.root would make it ignore everything under its level parent (e.g. enemies).
-        Rigidbody2D body = GetComponentInParent<Rigidbody2D>();
-        if (body != null) owner = body.transform;
-        else if (!activeOnEnable) owner = transform.root;
+        // The character this hitbox belongs to, so it never damages itself. A standalone hazard has no owner, even
+        // on a moving object with a Rigidbody2D (e.g. a FallingHazard): falling back to transform.root would make it
+        // ignore everything under its level parent (e.g. enemies), and an owner would turn its hits into attacks.
+        if (!activeOnEnable)
+        {
+            Rigidbody2D body = GetComponentInParent<Rigidbody2D>();
+            owner = body != null ? body.transform : transform.root;
+        }
     }
 
     private void OnEnable()
@@ -174,8 +180,9 @@ public class DamageHitbox : MonoBehaviour
             IDamageable target = FindDamageable(other);
             if (target == null || !CanHit(target)) continue;
 
-            // No owner means a level hazard, not someone's attack.
-            if (owner == null && target is IHazardDamageable hazardTarget) hazardTarget.TakeHazardDamage(currentDamage);
+            // No owner means a level hazard, not someone's attack. Hazards the player set off (Alerts Enemies) go
+            // through TakeDamage instead, so the enemy reacts as if the player hit it and starts chasing.
+            if (owner == null && !alertsEnemies && target is IHazardDamageable hazardTarget) hazardTarget.TakeHazardDamage(currentDamage);
             else target.TakeDamage(currentDamage, owner != null ? DamageKind.Melee : DamageKind.Other);
 
             if (owner != null && currentKnockback > 0f) KnockBackPlayer(other);
