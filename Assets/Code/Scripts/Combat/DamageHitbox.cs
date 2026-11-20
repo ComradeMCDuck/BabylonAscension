@@ -40,6 +40,14 @@ public class DamageHitbox : MonoBehaviour
     [Min(0f)]
     [SerializeField] private float damage = 1f;
 
+    [Tooltip("Active On Enable only: sideways push on each hit, away from the center of this hitbox. 0 = no sideways push.")]
+    [Min(0f)]
+    [SerializeField] private float hazardKnockback;
+
+    [Tooltip("Active On Enable only: upward push on each hit (e.g. bounce off spikes). The target's own Knockback Lift is added on top when it stands on the ground. 0 = no extra upward push.")]
+    [Min(0f)]
+    [SerializeField] private float hazardKnockbackUp;
+
     [Header("Debug")]
     [Tooltip("Shows the debug sprite while the hitbox is active.")]
     [SerializeField] private bool showDebugSprite = true;
@@ -113,7 +121,7 @@ public class DamageHitbox : MonoBehaviour
 
     /// <summary>
     /// Like Activate, but a hit also pushes the player sideways, away from the attacker, with the given knockback.
-    /// Only for attacks: a standalone hazard has no attacker to push away from, so it never knocks back.
+    /// Only for attacks: a standalone hazard has no attacker to push away from, so it uses hazardKnockback instead.
     /// </summary>
     public void Activate(float attackDamage, float knockback, LayerMask extraTargetLayers)
     {
@@ -171,7 +179,21 @@ public class DamageHitbox : MonoBehaviour
             else target.TakeDamage(currentDamage, owner != null ? DamageKind.Melee : DamageKind.Other);
 
             if (owner != null && currentKnockback > 0f) KnockBackPlayer(other);
+            else if (owner == null) KnockBackFromHazard(other);
         }
+    }
+
+    /// <summary>
+    /// Pushes anything a level hazard hits (player and enemies) away from the hazard's center and up.
+    /// Goes through ArrowProjectile.ApplyKnockback, which knows how to push walkers, flyers and the boss.
+    /// </summary>
+    private void KnockBackFromHazard(Collider2D other)
+    {
+        if (hazardKnockback <= 0f && hazardKnockbackUp <= 0f) return;
+
+        // Exactly above the center counts as right of it, so the push always has a direction.
+        float side = other.bounds.center.x >= hitbox.bounds.center.x ? 1f : -1f;
+        ArrowProjectile.ApplyKnockback(other, new Vector2(side * hazardKnockback, hazardKnockbackUp));
     }
 
     /// <summary>

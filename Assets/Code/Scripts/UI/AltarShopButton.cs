@@ -1,15 +1,17 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
 /// Shared logic for a buyable item button in the altar window (arrows, bow upgrades).
 /// Clicking an item the player doesn't own buys it with genii if they can afford it; clicking an owned item uses it.
 /// Every image and text on the button is greyed out unless the subclass says the item is lit.
+/// Hovering the button shows the item's description in the <see cref="ShopTooltip"/> pop-up.
 /// </summary>
 [RequireComponent(typeof(Button))]
-public abstract class AltarShopButton : MonoBehaviour
+public abstract class AltarShopButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     /// <summary>
     /// Raised after an item was paid for and unlocked: kind ("arrow" or "upgrade"), item name, genii cost.
@@ -53,6 +55,17 @@ public abstract class AltarShopButton : MonoBehaviour
     /// <summary>Subscribe to (or unsubscribe from) the events that change IsOwned or IsLit; call Refresh from them.</summary>
     protected virtual void Subscribe(bool subscribe) { }
     protected virtual bool IsValid => true;
+    /// <summary>Title of the hover pop-up (the item's display name).</summary>
+    protected virtual string TooltipTitle => "";
+    /// <summary>Text of the hover pop-up. Empty = no pop-up.</summary>
+    protected virtual string TooltipDescription => "";
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (IsValid) ShopTooltip.Show(this, TooltipTitle, TooltipDescription);
+    }
+
+    public void OnPointerExit(PointerEventData eventData) => ShopTooltip.Hide(this);
 
     protected virtual void Awake()
     {
@@ -83,6 +96,8 @@ public abstract class AltarShopButton : MonoBehaviour
 
     protected virtual void OnDisable()
     {
+        // The window can close while the mouse is still over this button, which sends no pointer exit.
+        ShopTooltip.Hide(this);
         if (Bow == null || Inventory == null || !IsValid) return;
         button.onClick.RemoveListener(OnClick);
         Inventory.Changed -= OnGeniiChanged;

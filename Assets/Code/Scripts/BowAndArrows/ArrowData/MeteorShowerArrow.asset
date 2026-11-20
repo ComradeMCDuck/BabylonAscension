@@ -13,6 +13,10 @@ MonoBehaviour:
   m_Name: MeteorShowerArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
   arrowName: Hail of fire arrow
+  description: 'Opens portal to another dimention and showers your enemies with hail of explosive arrows.
+
+
+    Shoot the arrow where you want the portal to spawn and explosive arrows will start falling down with high knockback.'
   geniiCost: 5
   baseDamage: 0
   minArrowSpeed: 30
