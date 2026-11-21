@@ -119,6 +119,50 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &251154606
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 251154607}
+  - component: {fileID: 251154608}
+  m_Layer: 0
+  m_Name: AudioManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &251154607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 251154606}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1403868645}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &251154608
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 251154606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e31fbb0a0ef39e4981688e7aa222290, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AudioManager
 --- !u!1 &411285765
 GameObject:
   m_ObjectHideFlags: 0
@@ -132,6 +176,7 @@ GameObject:
   - component: {fileID: 411285768}
   - component: {fileID: 411285767}
   - component: {fileID: 411285770}
+  - component: {fileID: 411285771}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -276,6 +321,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 403cea85aa781064482cb8da15a67aa5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SplineFollowOnClick
+  buttonClickSound:
+    Guid:
+      Data1: -587021771
+      Data2: 1086544652
+      Data3: 1741128849
+      Data4: 520935671
+    Path: event:/UIClick
+  buttonHoverSound:
+    Guid:
+      Data1: 1719291254
+      Data2: 1240919414
+      Data3: 1699517598
+      Data4: -202920303
+    Path: event:/UIHover
   triggerButton: {fileID: 411285767}
   virtCam: {fileID: 1743199121}
   trackingTarget: {fileID: 1498051993}
@@ -286,6 +345,51 @@ MonoBehaviour:
   rotationSmoothTime: 0.5
   anim: {fileID: 1743199123}
   dollyClipState: DollyMove
+--- !u!114 &411285771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 411285765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.EventTrigger
+  m_Delegates:
+  - eventID: 0
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 411285770}
+          m_TargetAssemblyTypeName: SplineFollowOnClick, Assembly-CSharp
+          m_MethodName: PlayHoverSound
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
+  - eventID: 4
+    callback:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 411285770}
+          m_TargetAssemblyTypeName: SplineFollowOnClick, Assembly-CSharp
+          m_MethodName: PlayClickSound
+          m_Mode: 1
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &436111450
 GameObject:
   m_ObjectHideFlags: 0
@@ -1079,6 +1183,71 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 71.663, y: 42.115, z: -1.607}
+--- !u!1001 &1403868644
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3583520741389456772, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      propertyPath: m_Name
+      value: GameManager
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 251154607}
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+--- !u!4 &1403868645 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3035681443252321365, guid: 9df24ad72676a684d85119b432d76bb9, type: 3}
+  m_PrefabInstance: {fileID: 1403868644}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1478183910
 GameObject:
   m_ObjectHideFlags: 0
@@ -1089,9 +1258,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1478183913}
   - component: {fileID: 1478183912}
-  - component: {fileID: 1478183911}
   - component: {fileID: 1478183914}
   - component: {fileID: 1478183915}
+  - component: {fileID: 1478183916}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1099,14 +1268,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1478183911
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1478183910}
-  m_Enabled: 1
 --- !u!20 &1478183912
 Camera:
   m_ObjectHideFlags: 0
@@ -1249,6 +1410,20 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &1478183916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478183910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86c6556701af9e04380698b89f691b6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioListener
+  nonRigidbodyVelocity: 0
+  attenuationObject: {fileID: 0}
 --- !u!1001 &1486136298
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1958,6 +2133,7 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1478183913}
+  - {fileID: 1403868644}
   - {fileID: 989173338}
   - {fileID: 1743199122}
   - {fileID: 1272907622}

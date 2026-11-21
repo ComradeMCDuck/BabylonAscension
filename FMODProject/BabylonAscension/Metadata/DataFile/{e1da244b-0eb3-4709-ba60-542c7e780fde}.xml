@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="DataFile" id="{e1da244b-0eb3-4709-ba60-542c7e780fde}">
+		<property name="assetPath">
+			<value>Monologue/VoiceLines/LT-0/5.wav.meta</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{136e1fe2-7337-4628-8492-72a31ef1440f}</destination>
+		</relationship>
+	</object>
+</objects>
