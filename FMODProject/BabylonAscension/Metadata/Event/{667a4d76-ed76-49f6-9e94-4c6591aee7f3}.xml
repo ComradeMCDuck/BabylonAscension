@@ -5,7 +5,7 @@
 			<value>UIHover</value>
 		</property>
 		<property name="outputFormat">
-			<value>2</value>
+			<value>1</value>
 		</property>
 		<relationship name="folder">
 			<destination>{95ac4ddf-e8a8-4804-a5a3-ca259c586f9e}</destination>
@@ -96,7 +96,6 @@
 	<object class="MixerBusEffectChain" id="{6605fc9e-3774-40a4-b012-6c00b47a8d83}">
 		<relationship name="effects">
 			<destination>{93478a7e-7d28-48e8-8f38-5a6bd48e0e5f}</destination>
-			<destination>{2002f27a-e194-4bbd-85a8-6f968d0c0cbe}</destination>
 		</relationship>
 	</object>
 	<object class="MixerBusPanner" id="{ec17a5a8-306e-4bc6-8b93-16be22101840}" />
@@ -107,5 +106,4 @@
 	</object>
 	<object class="MixerBusFader" id="{125fcf68-18cc-490f-954d-e27614239a78}" />
 	<object class="MixerBusFader" id="{93478a7e-7d28-48e8-8f38-5a6bd48e0e5f}" />
-	<object class="SpatialiserEffect" id="{2002f27a-e194-4bbd-85a8-6f968d0c0cbe}" />
 </objects>

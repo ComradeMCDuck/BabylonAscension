@@ -18,16 +18,19 @@ MonoBehaviour:
   - {fileID: 7681633587103436230}
   EditorEvents:
   - {fileID: 3622461454909297336}
+  - {fileID: 665736453663198257}
   EditorParameters: []
   MasterBanks:
   - {fileID: 63727604553829542}
   StringsBanks:
   - {fileID: 7589302072961095213}
   cacheVersion: 131861
-  cacheTime: 639308617773572622
+  cacheTime: 639308741715571508
   SerializableEventsDict:
   - key: event:/UIHover
     index: 0
+  - key: event:/UIClick
+    index: 1
 --- !u!114 &63727604553829542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -43,11 +46,38 @@ MonoBehaviour:
   Path: FMODProject/BabylonAscension/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 639308617773146380
+  lastModified: 639308730776739561
   FileSizes:
   - Name: Desktop
     Value: 1074
   Exists: 1
+--- !u!114 &665736453663198257
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ceb653cd98e289a4e8697a1af55201f2, type: 3}
+  m_Name: event:/UIClick
+  m_EditorClassIdentifier: FMODUnityEditor::FMODUnity.EditorEventRef
+  Path: event:/UIClick
+  Guid:
+    Data1: -587021771
+    Data2: 1086544652
+    Data3: 1741128849
+    Data4: 520935671
+  Banks:
+  - {fileID: 7681633587103436230}
+  IsStream: 0
+  Is3D: 0
+  IsOneShot: 1
+  Parameters: []
+  MinDistance: 1
+  MaxDistance: 20
+  Length: 0
 --- !u!114 &3622461454909297336
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,7 +99,7 @@ MonoBehaviour:
   Banks:
   - {fileID: 7681633587103436230}
   IsStream: 0
-  Is3D: 1
+  Is3D: 0
   IsOneShot: 1
   Parameters: []
   MinDistance: 1
@@ -90,10 +120,10 @@ MonoBehaviour:
   Path: FMODProject/BabylonAscension/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 639308617773171414
+  lastModified: 639308730776749564
   FileSizes:
   - Name: Desktop
-    Value: 814
+    Value: 862
   Exists: 1
 --- !u!114 &7681633587103436230
 MonoBehaviour:
@@ -110,8 +140,8 @@ MonoBehaviour:
   Path: FMODProject/BabylonAscension/Build/Desktop/SFX.bank
   Name: SFX
   StudioPath: bank:/SFX
-  lastModified: 639308617773572622
+  lastModified: 639308741715571508
   FileSizes:
   - Name: Desktop
-    Value: 3232
+    Value: 5792
   Exists: 1
