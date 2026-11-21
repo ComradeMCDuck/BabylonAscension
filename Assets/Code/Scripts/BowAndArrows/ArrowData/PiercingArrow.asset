@@ -13,6 +13,10 @@ MonoBehaviour:
   m_Name: PiercingArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
   arrowName: Piercing arrow
+  description: 'Precise arrow that wont be stopped even by armor.
+
+
+    each enemy the arrow passes through will decrease the arrows damage by 50%.'
   geniiCost: 5
   baseDamage: 150
   minArrowSpeed: 70

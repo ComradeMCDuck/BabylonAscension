@@ -22,7 +22,8 @@ MonoBehaviour:
   recovery: 0.5
   cooldown: 3
   damage: 30
-  startOffset: {x: 2, y: 6.07}
+  knockback: 10
+  startOffset: {x: 3, y: 6.5}
   endOffset: {x: 4.5, y: 0.4}
   aimAtPlayer: 1
   maxReach: 8

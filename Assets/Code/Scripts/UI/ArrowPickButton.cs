@@ -12,8 +12,12 @@ public class ArrowPickButton : AltarShopButton
     [SerializeField] private GameObject arrowPrefab;
 
     private int cost;
+    private ArrowData data;
 
     protected override int Cost => cost;
+    protected override string TooltipTitle =>
+        data != null && !string.IsNullOrWhiteSpace(data.arrowName) ? data.arrowName : ItemName;
+    protected override string TooltipDescription => data != null ? data.description : "";
     protected override string ItemKind => "arrow";
     protected override string ItemName => arrowPrefab != null ? arrowPrefab.name : "";
     protected override bool IsOwned => Bow.OwnsArrow(arrowPrefab);
@@ -30,7 +34,11 @@ public class ArrowPickButton : AltarShopButton
         }
 
         var projectile = arrowPrefab.GetComponent<ArrowProjectile>();
-        if (projectile != null && projectile.Data != null) cost = projectile.Data.geniiCost;
+        if (projectile != null && projectile.Data != null)
+        {
+            data = projectile.Data;
+            cost = data.geniiCost;
+        }
         else Debug.LogError($"{arrowPrefab.name} needs an ArrowProjectile with ArrowData for its price.", this);
     }
 

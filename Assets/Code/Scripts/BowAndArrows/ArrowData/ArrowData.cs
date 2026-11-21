@@ -7,6 +7,8 @@ public class ArrowData : ScriptableObject
     [Header("Info")]
     [Tooltip("Name shown to the player, e.g. on the HUD. Empty = the arrow prefab's name is shown instead.")]
     public string arrowName = "";
+    [Tooltip("Short description shown in the altar's pop-up when the mouse is over this arrow. Empty = no pop-up.")]
+    [TextArea] public string description = "";
 
     [Header("Shop")]
     [Tooltip("Genii needed to unlock this arrow at an altar. Once bought, switching back to it is free until death.")]
