@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="DataFile" id="{afac830a-4c2d-4d7b-879c-c5c12a4a78d1}">
+		<property name="assetPath">
+			<value>Sound/ui_select.wav.meta</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{136e1fe2-7337-4628-8492-72a31ef1440f}</destination>
+		</relationship>
+	</object>
+</objects>

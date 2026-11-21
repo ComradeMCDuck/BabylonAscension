@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="AudioFile" id="{2e6db9ca-d50e-4806-b7f3-9b16a9fd4dca}">
+		<property name="assetPath">
+			<value>Monologue/VoiceLines/LT-1/3.wav</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>6.9699999999999998</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{136e1fe2-7337-4628-8492-72a31ef1440f}</destination>
+		</relationship>
+	</object>
+</objects>

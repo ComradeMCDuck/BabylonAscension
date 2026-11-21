@@ -362,16 +362,16 @@ MonoBehaviour:
     HasValue: 0
   displaySortOrder: 0
   childIdentifiers:
-  - b7716510a1f36934c87976f3a81dbf3d
-  - de700ef3f37a49b58a57ae3addf01ad9
-  - 46fbfdf3fc43db0458918377fd40293e
-  - 0f8eb3f400726694eb47beb1a9f94ce8
-  - 52eb9df5db46521439908db3a29a1bbb
-  - fd7c55dab0fce234b8c25f6ffca523c1
-  - e7a046c753c3c3d4aacc91f6597f310d
   - 2c5177b11d81d824dbb064f9ac8527da
-  - c88d16e5272a4e241b0ef0ac2e53b73d
+  - de700ef3f37a49b58a57ae3addf01ad9
+  - fd7c55dab0fce234b8c25f6ffca523c1
+  - 0f8eb3f400726694eb47beb1a9f94ce8
+  - e7a046c753c3c3d4aacc91f6597f310d
+  - 52eb9df5db46521439908db3a29a1bbb
+  - b7716510a1f36934c87976f3a81dbf3d
+  - 46fbfdf3fc43db0458918377fd40293e
   - 2fea114e74ecf3c4f920e1d5cc1c4c40
+  - c88d16e5272a4e241b0ef0ac2e53b73d
   codecChannels:
     Value: []
     HasValue: 0
@@ -390,8 +390,8 @@ MonoBehaviour:
   switchSettingsMigration: 1
   HasSourceProject: 1
   HasPlatforms: 1
-  sourceProjectPath: 
-  sourceBankPath: 
+  sourceProjectPath: FMODProject/BabylonAscension/BabylonAscension.fspro
+  sourceBankPath: FMODProject/BabylonAscension/Build
   sourceBankPathUnformatted: 
   BankRefreshCooldown: 5
   ShowBankRefreshWindow: 1
@@ -413,8 +413,10 @@ MonoBehaviour:
   VirtualChannelSettings: []
   RealChannelSettings: []
   Plugins: []
-  MasterBanks: []
-  Banks: []
+  MasterBanks:
+  - Master
+  Banks:
+  - SFX
   BanksToLoad: []
   LiveUpdatePort: 9264
   EnableMemoryTracking: 0
@@ -427,21 +429,21 @@ MonoBehaviour:
   SharedLibraryUpdateStage: 0
   SharedLibraryTimeSinceStart: 0
   CurrentVersion: 131861
-  HideSetupWizard: 0
+  HideSetupWizard: 1
   LastEventReferenceScanVersion: 131861
   Platforms:
-  - {fileID: 4230206921537307378}
-  - {fileID: -3835107202576639126}
-  - {fileID: 6103520589626416242}
-  - {fileID: 651639475170338538}
-  - {fileID: 3426318935120523657}
-  - {fileID: -2870793870983758022}
-  - {fileID: 2417436770365211609}
   - {fileID: -7576181591943572953}
-  - {fileID: 7558522748576084876}
-  - {fileID: 6958389093473996527}
-  - {fileID: -1756294322015426805}
+  - {fileID: -3835107202576639126}
+  - {fileID: -2870793870983758022}
   - {fileID: -2118494777487537150}
+  - {fileID: -1756294322015426805}
+  - {fileID: 651639475170338538}
+  - {fileID: 2417436770365211609}
+  - {fileID: 3426318935120523657}
+  - {fileID: 4230206921537307378}
+  - {fileID: 6103520589626416242}
+  - {fileID: 6958389093473996527}
+  - {fileID: 7558522748576084876}
   MigratedPlatforms: 0a00000000000000150000000b00000009000000050000001200000008000000060000000c0000000200000001000000i
 --- !u!114 &651639475170338538
 MonoBehaviour:

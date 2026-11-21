@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: dc379bf05411a4543a429dffec4d88bd
+guid: 476fa2453611c1e41bd95736d34d47e8
 PluginImporter:
   externalObjects: {}
   serializedVersion: 3
@@ -13,9 +13,10 @@ PluginImporter:
   platformData:
     Any:
       enabled: 0
-      settings: {}
+      settings:
+        Exclude Editor: 1
     Editor:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: x86
         DefaultValueInitialized: true
