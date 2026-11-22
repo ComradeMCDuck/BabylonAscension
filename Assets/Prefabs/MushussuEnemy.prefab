@@ -1089,6 +1089,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4761527087450355294}
+  - component: {fileID: 4564391657805551500}
   m_Layer: 10
   m_Name: Appearance
   m_TagString: Untagged
@@ -1116,6 +1117,28 @@ Transform:
   - {fileID: 5995344622345703708}
   m_Father: {fileID: 6675077669277327910}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!95 &4564391657805551500
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5450602563081426843}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e3855ef6bb565dc4e959bc3caad1948e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6219311991849829879
 GameObject:
   m_ObjectHideFlags: 0
@@ -1320,6 +1343,7 @@ GameObject:
   - component: {fileID: 5899424087163154134}
   - component: {fileID: 8358090402545475144}
   - component: {fileID: 3889121227379520723}
+  - component: {fileID: 5603231824502190449}
   m_Layer: 2
   m_Name: BiteHead
   m_TagString: Untagged
@@ -1402,6 +1426,28 @@ MonoBehaviour:
   damage: 1
   showDebugSprite: 1
   debugSprite: {fileID: 1854347418955753298}
+--- !u!95 &5603231824502190449
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6836398761108451698}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: d9fd2ab3d2040a6438ff903d212d2e3c, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &7478289700165961238
 GameObject:
   m_ObjectHideFlags: 0
