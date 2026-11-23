@@ -802,7 +802,7 @@ MonoBehaviour:
   aimAtWindupEnd: 0
   animator: {fileID: 0}
   attackingParameter: IsAttacking
-  attackStateName: Attack
+  attackStateName: Humbaba_Attack
   slashPivot: {fileID: 2558556483688702417}
   hitbox: {fileID: 5021931792892402939}
 --- !u!114 &7825818485458410642
