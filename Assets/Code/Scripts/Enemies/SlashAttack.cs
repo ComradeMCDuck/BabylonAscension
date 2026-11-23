@@ -1,5 +1,8 @@
+using System;
+using UnityEngine.Serialization;
 using System.Collections;
 using UnityEngine;
+
 
 /// <summary>
 /// Melee basic attack: after the windup, a DamageHitbox is swung around an origin point toward the player,
@@ -15,7 +18,18 @@ public class SlashAttack : EnemyAttack
     [Tooltip("Hitbox on a child of the pivot, placed to the right of it.")]
     [SerializeField] private DamageHitbox hitbox;
 
+    [Tooltip("Animator for the enemy to handle slash animation.")]
+    [FormerlySerializedAs("animator")]
+    [SerializeField] private Animator slasherAnimator;
+
+    // ExposeAnimator is a reference used only for animation triggers.
+    // Remove obsolete exposeAnimator field.
+
     private EnemyBehavior enemy;
+public event Action OnSlashStarted;
+    public event Action OnSlashEnded;
+
+    public Animator Animator => slasherAnimator;
 
     private void Awake()
     {
@@ -33,6 +47,8 @@ public class SlashAttack : EnemyAttack
 
         // Use the way the enemy is facing (it doesn't turn during attacks), so the swing always matches the sprite.
         int facing = enemy != null ? enemy.FacingDirection : (targetPosition.x < transform.position.x ? -1 : 1);
+        OnSlashStarted?.Invoke();
+        if (slasherAnimator != null) slasherAnimator.SetTrigger("SlashStart");
         slashPivot.localPosition = new Vector3(data.slashOriginOffset.x * facing, data.slashOriginOffset.y, 0f);
 
         // Center the arc on the direction to the player and swing from above to below on the facing side.
@@ -59,6 +75,8 @@ public class SlashAttack : EnemyAttack
         }
 
         hitbox.Deactivate();
+        OnSlashEnded?.Invoke();
+        if (slasherAnimator != null) slasherAnimator.SetTrigger("SlashEnd");
     }
 
     private void SetAngle(float angle)
