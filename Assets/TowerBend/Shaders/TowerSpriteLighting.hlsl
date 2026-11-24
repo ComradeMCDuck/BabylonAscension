@@ -38,9 +38,13 @@ half3 TowerSpriteLighting(float3 positionWS, half3 normalWS, float4 positionCS)
     inputData.shadowCoord = TransformWorldToShadowCoord(positionWS);
 #endif
 
-    half4 shadowMask = inputData.shadowMask;
+    // Baked shadows. Sprites have no lightmap, so this is the light probes' occlusion
+    // (unity_ProbesOcclusion): how much each Mixed light is blocked by static geometry
+    // at the sprite's position. Used by the shadows of Mixed lights in Shadowmask mode.
+    half4 shadowMask = CalculateShadowMask(inputData);
 
-    // Ambient (Lighting window > Environment Lighting).
+    // Light probes (baked lights and bounced light) plus ambient. Without probes in the
+    // scene this is only the ambient from Lighting window > Environment Lighting.
     half3 lighting = SampleSH(normalWS);
 
     Light mainLight = GetMainLight(inputData.shadowCoord, positionWS, shadowMask);

@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -340092941212175364, guid: 69c0825bcc410184a8779b762939ef22, type: 3}
+  m_Sprite: {fileID: 2290205012450839202, guid: 738d78d4b16633a46beed22f000fa8ca, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -737,6 +737,8 @@ MonoBehaviour:
     WallStickTimer: 0
     WallSlideSpeedLoss: 0.05
     WallSlidingSpeedMax: 2
+    WallSlideTimeMax: 2
+    WallSlideTimer: 0
     CanWallClimb: 0
     WallClimbSpeed: 2
     CanWallJump: 1
@@ -797,12 +799,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c08603049edea24dbe6fd1734071fb9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlashAttack
-  aimAtWindupEnd: 0
-  animator: {fileID: 0}
-  attackingParameter: IsAttacking
-  attackStateName: Attack
+  aimAtWindupEnd: 1
+  animator: {fileID: 2915255685171726295}
+  attackingParameter: SlashStart
+  attackStateName: Humbaba_Attack
   slashPivot: {fileID: 2558556483688702417}
   hitbox: {fileID: 5021931792892402939}
+  slasherAnimator: {fileID: 0}
 --- !u!114 &7825818485458410642
 MonoBehaviour:
   m_ObjectHideFlags: 0
