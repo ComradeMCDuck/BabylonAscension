@@ -13,6 +13,10 @@ MonoBehaviour:
   m_Name: SplitArrow
   m_EditorClassIdentifier: Assembly-CSharp::ArrowData
   arrowName: Split arrow
+  description: 'shower your enemies with storm of arrows.
+
+
+    this arrow will split into 2 arrows each time it interacts with a wall for set amount of bounces.'
   geniiCost: 5
   baseDamage: 20
   minArrowSpeed: 12

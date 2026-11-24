@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb22299b1541e184bbaaba69206c4d2d, type: 3}
+  m_Name: LT-2
+  m_EditorClassIdentifier: Assembly-CSharp::MonologueLines
+  textLines:
+  - Another memory crept into the priestesses mind.
+  - While she was praying for the administrator they started seeing each other.
+  - She told her of accounting the gain and of the meaningless squabbles people fought over and of the little everyday things.
+  - And the priestess listened and the priestess laughed.
+  - While failing not to stare at the one she was falling for.
+  audioLines:
+  - {fileID: 8300000, guid: 1758a846546512d479c288610205a567, type: 3}
+  - {fileID: 8300000, guid: adff06d529e7c0d428f9a50dd737ea54, type: 3}
+  - {fileID: 8300000, guid: 2b5dece9fcc93cd4d8040655f30533d4, type: 3}
+  - {fileID: 8300000, guid: fbf3bafbba6ff9740b9f3c79419d778a, type: 3}
+  - {fileID: 8300000, guid: f000672745e498341a7c5aa6bc6655e9, type: 3}

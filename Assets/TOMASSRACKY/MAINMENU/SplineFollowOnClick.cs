@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Unity.Cinemachine;
 using System.Collections;
+using FMODUnity;
 
 /// <summary>
 /// Put this script on any GameObject (often the same as the UI Button).
@@ -11,6 +12,10 @@ using System.Collections;
 /// </summary>
 public class SplineFollowOnClick : MonoBehaviour
 {
+    [Header("Audio")]
+    [SerializeField] private EventReference buttonClickSound; // FMOD sound to play on button click
+    [SerializeField] private EventReference buttonHoverSound; // FMOD sound to play on button hover
+
     [Header("UI")]
     public Button triggerButton;          // The “Play” button
 
@@ -42,6 +47,15 @@ public class SplineFollowOnClick : MonoBehaviour
         // Wire up the button
         triggerButton.onClick.AddListener(OnButtonClicked);
     }
+    public void PlayHoverSound()
+    {
+        AudioManager.instance.PlayOneShot(buttonHoverSound, transform.position);
+    }
+
+    public void PlayClickSound()
+    {
+        AudioManager.instance.PlayOneShot(buttonClickSound, transform.position);
+    }
 
     public void CallOnButtonClicked()
     {
@@ -49,6 +63,7 @@ public class SplineFollowOnClick : MonoBehaviour
     }
     private void OnButtonClicked()
     {
+        AudioManager.instance.PlayOneShot(buttonClickSound, transform.position);
         // Resolve a target at runtime if it hasn’t been assigned yet
         if (trackingTarget == null)
         {

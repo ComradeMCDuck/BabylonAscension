@@ -24,6 +24,8 @@ public class UpgradePickButton : AltarShopButton
     protected override bool IsOwned => Bow.Upgrades.Has(upgrade);
     protected override bool IsLit => Bow.Upgrades.IsActive(upgrade);
     protected override bool IsValid => upgrade != null;
+    protected override string TooltipTitle => upgrade.DisplayName;
+    protected override string TooltipDescription => upgrade.Description;
 
     protected override void Awake()
     {
