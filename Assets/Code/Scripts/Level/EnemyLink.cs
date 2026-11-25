@@ -110,11 +110,17 @@ public class EnemyLink : MonoBehaviour
     /// It is launched as an impulse with no input afterwards (like the jump attack), so its horizontal speed only
     /// drops by airDeceleration in the air, plus one step of groundDeceleration while it is still touching the ground.
     /// </summary>
-    public Vector2 GetJumpVelocity(bool reverse, float gravity, float airDeceleration, float groundDeceleration, out float airTime)
+    public Vector2 GetJumpVelocity(bool reverse, float gravity, float airDeceleration, float groundDeceleration, out float airTime) =>
+        GetJumpVelocity(From(reverse), To(reverse), arcHeight, gravity, airDeceleration, groundDeceleration, out airTime);
+
+    /// <summary>
+    /// Launch velocity for an impulse jump from one point to another that peaks arcHeight above the higher one.
+    /// Shared with EnemyAmbush, so ambush leaps fly exactly like link jumps.
+    /// </summary>
+    public static Vector2 GetJumpVelocity(Vector2 from, Vector2 to, float arcHeight, float gravity, float airDeceleration,
+        float groundDeceleration, out float airTime)
     {
-        Vector2 from = From(reverse);
-        Vector2 to = To(reverse);
-        GetArc(from, to, out float riseSpeed, out airTime, gravity);
+        GetArc(from, to, arcHeight, out float riseSpeed, out airTime, gravity);
 
         float distance = Mathf.Abs(to.x - from.x);
         // Distance covered while slowing down: distance = v t - d t^2 / 2.
@@ -127,14 +133,20 @@ public class EnemyLink : MonoBehaviour
     }
 
     /// <summary>Rise speed and total air time of the arc from one point to the other that peaks arcHeight above the higher one.</summary>
-    private void GetArc(Vector2 from, Vector2 to, out float riseSpeed, out float airTime, float gravity)
+    private static void GetArc(Vector2 from, Vector2 to, float arcHeight, out float riseSpeed, out float airTime, float gravity)
     {
         float apex = Mathf.Max(from.y, to.y) + arcHeight;
         riseSpeed = Mathf.Sqrt(2f * gravity * (apex - from.y));
         airTime = riseSpeed / gravity + Mathf.Sqrt(2f * (apex - to.y) / gravity);
     }
 
-    private Vector2 Snap(Vector2 point, out Collider2D ground)
+    private Vector2 Snap(Vector2 point, out Collider2D ground) => SnapToGround(point, groundLayers, out ground);
+
+    /// <summary>
+    /// The point moved onto the ground below it (searched from slightly above), or unchanged if there is none.
+    /// An empty mask means "Environment".
+    /// </summary>
+    public static Vector2 SnapToGround(Vector2 point, LayerMask groundLayers, out Collider2D ground)
     {
         int mask = groundLayers.value != 0 ? groundLayers.value : LayerMask.GetMask("Environment");
         RaycastHit2D hit = Physics2D.Raycast(point + Vector2.up * GroundSearchUp, Vector2.down, GroundSearchUp + GroundSearchDown, mask);
@@ -167,11 +179,19 @@ public class EnemyLink : MonoBehaviour
     {
         bool jump = GetTraversal(from, to) == Traversal.Jump;
         Gizmos.color = jump ? new Color(1f, 0.5f, 0f) : Color.yellow;
+        DrawArcGizmo(from, to, jump, arcHeight);
+    }
 
+    /// <summary>
+    /// Draws the jump arc (jump = true) or the steered fall from one point to the other with Gizmos, in the current
+    /// Gizmos color, with an arrow head at the end. Also used by EnemyAmbush.
+    /// </summary>
+    public static void DrawArcGizmo(Vector2 from, Vector2 to, bool jump, float arcHeight)
+    {
         // Any gravity gives the same shape; 1 keeps the numbers simple.
         float riseSpeed = 0f;
         float airTime = Mathf.Sqrt(2f * Mathf.Max(from.y - to.y, 0.01f));
-        if (jump) GetArc(from, to, out riseSpeed, out airTime, 1f);
+        if (jump) GetArc(from, to, arcHeight, out riseSpeed, out airTime, 1f);
 
         Vector2 previous = from;
         Vector2 beforeLast = from;

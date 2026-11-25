@@ -22,6 +22,12 @@ public interface IDamageable
     /// takes it as normal damage through this default.
     /// </summary>
     void TakeDamage(float damage, DamageKind kind) => TakeDamage(damage);
+
+    /// <summary>
+    /// True while the target ignores all damage (e.g. an enemy leaping in from an ambush). Attackers check it to
+    /// also skip knockback and on-hit rewards, so hitting an invulnerable target does nothing at all.
+    /// </summary>
+    bool IsInvulnerable => false;
 }
 
 /// <summary>

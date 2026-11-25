@@ -14,6 +14,8 @@ using UnityEngine;
 /// Adding a ChargeAttack component makes it charge in a straight line instead, getting stunned if it runs into a wall.
 /// Adding an EnemyFlight component (Kilili) makes it take off when the player enters its attack range, fly around the
 /// player shooting from a distance, and fly back to where it took off and land once it has lost them.
+/// An EnemyAmbush can spawn the enemy and start it in the Ambush state (BeginAmbush): an invulnerable leap onto a
+/// landing point, after which it chases the player.
 /// </summary>
 [RequireComponent(typeof(BasicMovementController2D))]
 public class EnemyBehavior : MonoBehaviour
@@ -27,7 +29,8 @@ public class EnemyBehavior : MonoBehaviour
         Charge,
         Stunned,
         Flying,
-        FlyingHome
+        FlyingHome,
+        Ambush
     }
 
     // Extra distance the player has to move away before the enemy stops attacking, so it doesn't flicker between Chase and Attack.
@@ -145,7 +148,16 @@ public class EnemyBehavior : MonoBehaviour
     private float chargeStartX;
     private float chargeGiveUpTime;
 
+    // Ambush leap (see BeginAmbush): where it lands, how high it arcs, and its progress.
+    private Vector2 ambushLanding;
+    private float ambushArcHeight;
+    private bool ambushLaunched;
+    private bool ambushLeftGround;
+    private float ambushStartTime;
+
     public EnemyState CurrentState => currentState;
+    /// <summary>True while leaping in from an ambush: invulnerable, not attacking, not reacting to the player.</summary>
+    public bool IsAmbushing => currentState == EnemyState.Ambush;
     public int FacingDirection => facingDirection;
     /// <summary>True while the enemy stands still before turning around (EntityData.turnDelay).</summary>
     public bool IsTurning => turnTarget != 0;
@@ -240,7 +252,8 @@ public class EnemyBehavior : MonoBehaviour
         movement.HoldJump(true);
 
         // Patrol points are cached so they can be children of the enemy in the prefab.
-        if (patrolPointA != null && patrolPointB != null)
+        // An area set from code (SetPatrolArea, e.g. by an ambush) wins over the prefab's points.
+        if (!hasPatrolArea && patrolPointA != null && patrolPointB != null)
         {
             hasPatrolArea = true;
             patrolMinX = Mathf.Min(patrolPointA.position.x, patrolPointB.position.x);
@@ -308,7 +321,105 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.FlyingHome:
                 FlyHome();
                 break;
+            case EnemyState.Ambush:
+                RunAmbush();
+                break;
         }
+    }
+
+    /// <summary>
+    /// Starts an ambush leap (called by EnemyAmbush right after spawning the enemy): from where the enemy stands,
+    /// it jumps along the exact arc to landing (feet position), peaking arcHeight above the higher point, like an
+    /// EnemyLink jump. Until it lands it can't be damaged, doesn't attack and ignores the player; afterwards it
+    /// knows where the player is and chases them like a normal enemy.
+    /// </summary>
+    public void BeginAmbush(Vector2 landing, float arcHeight)
+    {
+        if (!enabled || enemyData == null) return;
+
+        ambushLanding = landing;
+        ambushArcHeight = Mathf.Max(arcHeight, 0f);
+        ambushLaunched = false;
+        ambushLeftGround = false;
+        ambushStartTime = Time.time;
+        hasRoute = false;
+
+        if (health != null) health.SetInvulnerable(true);
+        SetState(EnemyState.Ambush);
+    }
+
+    /// <summary>
+    /// Sets the patrol area (only X is used) for an enemy spawned at runtime, which has no patrol points in the scene.
+    /// Replaces the patrol points, also when called before Start.
+    /// </summary>
+    public void SetPatrolArea(float minX, float maxX)
+    {
+        hasPatrolArea = true;
+        patrolMinX = Mathf.Min(minX, maxX);
+        patrolMaxX = Mathf.Max(minX, maxX);
+    }
+
+    /// <summary>
+    /// Launches the leap on the first physics step (the controller isn't set up yet when BeginAmbush is called
+    /// straight after Instantiate), then flies with no input and ends on landing, or after LinkTimeout as a backup
+    /// so the enemy can't stay invulnerable forever.
+    /// </summary>
+    private void RunAmbush()
+    {
+        int direction = ambushLanding.x >= selfCollider.bounds.center.x ? 1 : -1;
+
+        if (!ambushLaunched)
+        {
+            ambushLaunched = true;
+            ambushStartTime = Time.time;
+
+            var feet = new Vector2(selfCollider.bounds.center.x, Feet);
+            // The motor's ground flag isn't set before its first step, so ask the physics directly. Standing on the
+            // ground costs one step of ground deceleration (see EnemyLink.GetJumpVelocity); in the air it doesn't.
+            bool grounded = GetGroundBelow(selfCollider.bounds, out _) != null;
+            float groundDeceleration = grounded ? enemyData.recoilGroundDeceleration : 0f;
+
+            Vector2 velocity = Gravity > 0f
+                ? EnemyLink.GetJumpVelocity(feet, ambushLanding, ambushArcHeight, Gravity, enemyData.recoilAirDeceleration, groundDeceleration, out _)
+                : Vector2.zero;
+
+            movement.StopHorizontalMomentum();
+            // The arc is aimed at an exact landing spot, so it ignores the recoil speed cap meant for bow recoil.
+            movement.AddImpulse(velocity, true);
+            nextJumpTime = Time.time + enemyData.jumpCooldown;
+
+            Move(0f, 0f);
+            Face(direction);
+            // Leaving the ground is only checked from the next step on: before its first step the motor reports
+            // "not on ground" even when the enemy stands on it, which would end the leap before it starts.
+            return;
+        }
+
+        // No input during the leap: input would steer the momentum toward the run speed.
+        Move(0f, 0f);
+        Face(direction);
+
+        if (currentGround == null) ambushLeftGround = true;
+
+        bool landed = currentGround != null && ambushLeftGround;
+        if (landed || Time.time - ambushStartTime > LinkTimeout) EndAmbush(landed);
+    }
+
+    private void EndAmbush(bool landed)
+    {
+        // Stop where the leap lands instead of sliding on.
+        if (landed) movement.StopHorizontalMomentum();
+        if (health != null) health.SetInvulnerable(false);
+
+        // The ambush is aimed at the player, so the enemy starts out knowing where they are.
+        if (playerCollider != null)
+        {
+            lastKnownPlayerPosition = playerCollider.bounds.center;
+            lastSeenTime = Time.time;
+            if (flight != null) flight.RememberPlayerPosition(lastKnownPlayerPosition);
+        }
+
+        SetState(EnemyState.Chase);
     }
 
     private void UpdateState(bool canSeePlayer)
@@ -361,6 +472,10 @@ public class EnemyBehavior : MonoBehaviour
             case EnemyState.FlyingHome:
                 // Turn back if the player shows up in attack range again, or gives themselves away by hitting it.
                 if (remembersPlayer && (!canSeePlayer || distanceToPlayer <= enemyData.attackRange)) SetState(EnemyState.Flying);
+                break;
+
+            case EnemyState.Ambush:
+                // Nothing interrupts the leap (no attacks, no take-off); RunAmbush switches to Chase on landing.
                 break;
         }
     }

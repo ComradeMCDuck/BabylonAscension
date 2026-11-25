@@ -319,6 +319,11 @@ public class ArrowProjectile : MonoBehaviour
             if (hasTargetPoint)
                 continue;
 
+            // Invulnerable (e.g. leaping in from an ambush): fly straight through it, armor included.
+            IDamageable passTarget = FindDamageable(hit.collider);
+            if (passTarget != null && passTarget.IsInvulnerable)
+                continue;
+
             // Checked before hitCharacters: a deflected arrow may come back and hit the same enemy's unarmored side.
             EnemyArmor armor = hit.collider.GetComponent<EnemyArmor>();
             if (armor != null && armor.isActiveAndEnabled)
@@ -457,6 +462,10 @@ public class ArrowProjectile : MonoBehaviour
             float falloff = Mathf.Clamp01(pair.Value.distance / explosionRadius);
 
             IDamageable target = FindDamageable(col);
+            // Invulnerable (e.g. leaping in from an ambush): no damage, no knockback, no special charge back.
+            if (target != null && target.IsInvulnerable)
+                continue;
+
             if (target != null)
             {
                 float armorMultiplier = hitArmor != null && pair.Key == hitArmor.Character ? hitArmor.ExplosionDamageMultiplier : 1f;
