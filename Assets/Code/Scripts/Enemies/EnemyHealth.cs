@@ -31,7 +31,13 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
     private static void ResetStatics() => AnyKilled = null;
     private Coroutine damageIndication;
 
+    private bool invulnerable;
+
     public float CurrentHealth => currentHealth;
+    /// <summary>While true, all damage (attacks and hazards) is ignored. Set by EnemyBehavior during an ambush leap.</summary>
+    public bool IsInvulnerable => invulnerable;
+
+    public void SetInvulnerable(bool value) => invulnerable = value;
     public float MaxHealth => enemyData != null
         ? enemyData.maxHealth
         : 100f;
@@ -68,7 +74,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable, IHazardDamageable
 
     private void ApplyDamage(float damage, bool raiseDamaged)
     {
-        if (isDead || damage <= 0f)
+        if (isDead || invulnerable || damage <= 0f)
             return;
 
         currentHealth = Mathf.Max(0f, currentHealth - damage);

@@ -457,6 +457,10 @@ public class ArrowProjectile : MonoBehaviour
             float falloff = Mathf.Clamp01(pair.Value.distance / explosionRadius);
 
             IDamageable target = FindDamageable(col);
+            // Invulnerable (e.g. leaping in from an ambush): no damage, no knockback, no special charge back.
+            if (target != null && target.IsInvulnerable)
+                continue;
+
             if (target != null)
             {
                 float armorMultiplier = hitArmor != null && pair.Key == hitArmor.Character ? hitArmor.ExplosionDamageMultiplier : 1f;
@@ -505,14 +509,16 @@ public class ArrowProjectile : MonoBehaviour
         hitCharacters.Add(GetCharacter(other));
 
         IDamageable target = FindDamageable(other);
+        // Invulnerable (e.g. leaping in from an ambush): the arrow still stops or pierces, but does nothing to it.
+        bool invulnerable = target != null && target.IsInvulnerable;
 
-        if (target != null)
+        if (target != null && !invulnerable)
         {
             target.TakeDamage(damage, DamageKind.Projectile);
             HitTarget?.Invoke(this);
         }
 
-        if (knockback > 0f)
+        if (knockback > 0f && !invulnerable)
             ApplyKnockback(other, direction * knockback);
 
         // A splitting arrow pierces every enemy for free until its splits are used up.
