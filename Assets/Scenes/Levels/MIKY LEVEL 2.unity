@@ -14185,7 +14185,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 6.07e-43, y: 6.07e-43, z: 6.8112686e+9, w: -3.2524752e-16}
+  m_BoundingSphereOverride: {x: 6.29e-43, y: 6.29e-43, z: 0, w: 1.2724034e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -30958,6 +30958,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 36a2a271479d05a46868577cdb391651, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: afb6d1f8cf8c81e4aaacb725ba7522cf, type: 2}
     - target: {fileID: 919132149155446097, guid: 36a2a271479d05a46868577cdb391651, type: 3}
       propertyPath: m_Name
       value: Door_Wall_V2 (1)
@@ -41018,7 +41022,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5591972360370871045, guid: c2189c774b85d9444862a3b4c7d640e0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -136
+      value: -12
       objectReference: {fileID: 0}
     - target: {fileID: 5591972360370871045, guid: c2189c774b85d9444862a3b4c7d640e0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -41030,7 +41034,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6540440014597437950, guid: c2189c774b85d9444862a3b4c7d640e0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -136
+      value: -12
       objectReference: {fileID: 0}
     - target: {fileID: 6540440014597437950, guid: c2189c774b85d9444862a3b4c7d640e0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -41548,7 +41552,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 6.56e-43, y: 6.56e-43, z: 2.7210927e-20, w: -3.2504423e-16}
+  m_BoundingSphereOverride: {x: 6.29e-43, y: 6.29e-43, z: 0, w: 1.2729438e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -59512,6 +59516,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 36a2a271479d05a46868577cdb391651, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: afb6d1f8cf8c81e4aaacb725ba7522cf, type: 2}
     - target: {fileID: 919132149155446097, guid: 36a2a271479d05a46868577cdb391651, type: 3}
       propertyPath: m_Name
       value: Door_Wall_V2
@@ -75836,7 +75844,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 6.56e-43, y: 6.56e-43, z: 1e-45, w: -3.2541015e-16}
+  m_BoundingSphereOverride: {x: 3.85e-43, y: 3.85e-43, z: 0, w: 1.26970125e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -84901,27 +84909,27 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1228714956682370643, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.000000214712
+      value: -0.0000001991648
       objectReference: {fileID: 0}
     - target: {fileID: 1481567072687764819, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.8443042
+      value: 0.84430444
       objectReference: {fileID: 0}
     - target: {fileID: 1481567072687764819, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0.5358643
+      value: -0.53586394
       objectReference: {fileID: 0}
     - target: {fileID: 3226435010583996932, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7041003
+      value: 0.7041012
       objectReference: {fileID: 0}
     - target: {fileID: 3226435010583996932, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.71010053
+      value: 0.71009964
       objectReference: {fileID: 0}
     - target: {fileID: 6433339575886944430, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -136
+      value: -12
       objectReference: {fileID: 0}
     - target: {fileID: 6433339575886944430, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalPosition.y
@@ -84961,11 +84969,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6582341777511437805, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.67792195
+      value: -0.6779228
       objectReference: {fileID: 0}
     - target: {fileID: 6582341777511437805, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.735134
+      value: 0.73513305
       objectReference: {fileID: 0}
     - target: {fileID: 8824978788996705367, guid: 4e02000dfd38452469726c943b859026, type: 3}
       propertyPath: m_Name
@@ -90771,7 +90779,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 4.7e-43, y: 4.7e-43, z: NaN, w: -3.2475963e-16}
+  m_BoundingSphereOverride: {x: 3.85e-43, y: 3.85e-43, z: 0, w: 1.2695661e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -104519,7 +104527,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 6.07e-43, y: 6.07e-43, z: NaN, w: -3.2467832e-16}
+  m_BoundingSphereOverride: {x: 5.83e-43, y: 5.83e-43, z: 0, w: 1.2688906e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -107705,7 +107713,7 @@ MonoBehaviour:
   boxColliders: 64
   meshColliders: 320
   triggerVolumes: 0
-  buildMilliseconds: 0.2726
+  buildMilliseconds: 0.2172
 --- !u!114 &1766833098
 MonoBehaviour:
   m_ObjectHideFlags: 9
