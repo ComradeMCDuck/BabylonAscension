@@ -252,7 +252,8 @@ public class EnemyBehavior : MonoBehaviour
         movement.HoldJump(true);
 
         // Patrol points are cached so they can be children of the enemy in the prefab.
-        if (patrolPointA != null && patrolPointB != null)
+        // An area set from code (SetPatrolArea, e.g. by an ambush) wins over the prefab's points.
+        if (!hasPatrolArea && patrolPointA != null && patrolPointB != null)
         {
             hasPatrolArea = true;
             patrolMinX = Mathf.Min(patrolPointA.position.x, patrolPointB.position.x);
@@ -345,6 +346,17 @@ public class EnemyBehavior : MonoBehaviour
 
         if (health != null) health.SetInvulnerable(true);
         SetState(EnemyState.Ambush);
+    }
+
+    /// <summary>
+    /// Sets the patrol area (only X is used) for an enemy spawned at runtime, which has no patrol points in the scene.
+    /// Replaces the patrol points, also when called before Start.
+    /// </summary>
+    public void SetPatrolArea(float minX, float maxX)
+    {
+        hasPatrolArea = true;
+        patrolMinX = Mathf.Min(minX, maxX);
+        patrolMaxX = Mathf.Max(minX, maxX);
     }
 
     /// <summary>

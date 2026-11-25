@@ -319,6 +319,11 @@ public class ArrowProjectile : MonoBehaviour
             if (hasTargetPoint)
                 continue;
 
+            // Invulnerable (e.g. leaping in from an ambush): fly straight through it, armor included.
+            IDamageable passTarget = FindDamageable(hit.collider);
+            if (passTarget != null && passTarget.IsInvulnerable)
+                continue;
+
             // Checked before hitCharacters: a deflected arrow may come back and hit the same enemy's unarmored side.
             EnemyArmor armor = hit.collider.GetComponent<EnemyArmor>();
             if (armor != null && armor.isActiveAndEnabled)
@@ -509,16 +514,14 @@ public class ArrowProjectile : MonoBehaviour
         hitCharacters.Add(GetCharacter(other));
 
         IDamageable target = FindDamageable(other);
-        // Invulnerable (e.g. leaping in from an ambush): the arrow still stops or pierces, but does nothing to it.
-        bool invulnerable = target != null && target.IsInvulnerable;
 
-        if (target != null && !invulnerable)
+        if (target != null)
         {
             target.TakeDamage(damage, DamageKind.Projectile);
             HitTarget?.Invoke(this);
         }
 
-        if (knockback > 0f && !invulnerable)
+        if (knockback > 0f)
             ApplyKnockback(other, direction * knockback);
 
         // A splitting arrow pierces every enemy for free until its splits are used up.

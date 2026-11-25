@@ -24,7 +24,14 @@ public class EnemyAmbush : MonoBehaviour
         public Transform end;
         [Tooltip("Seconds after the trigger before this enemy spawns, to stagger the ambush.")]
         [Min(0f)] public float delay;
+        [Tooltip("Patrol between these two points (only X is used) once it loses the player. " +
+                 "Leave both empty to patrol the landing platform around End (Default Patrol Half Width).")]
+        public Transform patrolPointA;
+        public Transform patrolPointB;
     }
+
+    // Automatic patrol areas stay this far from the landing platform's edges, so the enemy doesn't walk off.
+    private const float PatrolEdgeMargin = 0.5f;
 
     [Tooltip("The enemies of this ambush, each with its own spawn and landing waypoint.")]
     [SerializeField] private AmbushEnemy[] enemies = Array.Empty<AmbushEnemy>();
@@ -32,6 +39,9 @@ public class EnemyAmbush : MonoBehaviour
     [SerializeField, Min(0f)] private float arcHeight = 1.5f;
     [Tooltip("Snap Start to the ground below it. Turn off to have enemies drop in from a point in the air.")]
     [SerializeField] private bool snapStartToGround = true;
+    [Tooltip("For enemies without patrol points: how far to each side of End they patrol, kept on the landing platform. " +
+             "0 = stand guard at End.")]
+    [SerializeField, Min(0f)] private float defaultPatrolHalfWidth = 3f;
     [Tooltip("Layers the waypoints snap to. Defaults to \"Environment\" if left empty.")]
     [SerializeField] private LayerMask groundLayers;
     [Tooltip("Spawned enemies are parented under this object. Empty = scene root.")]
@@ -86,12 +96,37 @@ public class EnemyAmbush : MonoBehaviour
     private void Spawn(AmbushEnemy entry)
     {
         Vector2 start = GetStart(entry);
-        Vector2 end = EnemyLink.SnapToGround(entry.end.position, groundLayers, out _);
+        Vector2 end = EnemyLink.SnapToGround(entry.end.position, groundLayers, out Collider2D endGround);
 
         EnemyBehavior enemy = Instantiate(entry.prefab, start, Quaternion.identity, spawnParent);
         PlaceFeetAt(enemy, start);
+        GetPatrolArea(entry, end, endGround, out float minX, out float maxX);
+        enemy.SetPatrolArea(minX, maxX);
         enemy.BeginAmbush(end, arcHeight);
         EnemySpawned?.Invoke(enemy);
+    }
+
+    /// <summary>
+    /// The entry's patrol points if both are set. Otherwise Default Patrol Half Width to each side of the landing
+    /// point, clamped to the landing platform's collider bounds (minus PatrolEdgeMargin) so it stays on it.
+    /// </summary>
+    private void GetPatrolArea(AmbushEnemy entry, Vector2 end, Collider2D endGround, out float minX, out float maxX)
+    {
+        if (entry.patrolPointA != null && entry.patrolPointB != null)
+        {
+            minX = Mathf.Min(entry.patrolPointA.position.x, entry.patrolPointB.position.x);
+            maxX = Mathf.Max(entry.patrolPointA.position.x, entry.patrolPointB.position.x);
+            return;
+        }
+
+        minX = end.x - defaultPatrolHalfWidth;
+        maxX = end.x + defaultPatrolHalfWidth;
+
+        if (endGround == null) return;
+        Bounds platform = endGround.bounds;
+        // A platform narrower than two margins: just keep the landing point.
+        minX = Mathf.Min(Mathf.Max(minX, platform.min.x + PatrolEdgeMargin), end.x);
+        maxX = Mathf.Max(Mathf.Min(maxX, platform.max.x - PatrolEdgeMargin), end.x);
     }
 
     /// <summary>
@@ -142,6 +177,14 @@ public class EnemyAmbush : MonoBehaviour
 
             Gizmos.color = new Color(1f, 0.25f, 0.25f);
             EnemyLink.DrawArcGizmo(start, end, true, arcHeight);
+
+            // Patrol area after the ambush, drawn just above the landing point (cyan, like EnemyBehavior's).
+            GetPatrolArea(entry, end, endGround, out float minX, out float maxX);
+            Gizmos.color = Color.cyan;
+            float y = end.y + 0.1f;
+            Gizmos.DrawLine(new Vector2(minX, y), new Vector2(maxX, y));
+            Gizmos.DrawLine(new Vector2(minX, y - 0.15f), new Vector2(minX, y + 0.15f));
+            Gizmos.DrawLine(new Vector2(maxX, y - 0.15f), new Vector2(maxX, y + 0.15f));
         }
     }
 }
