@@ -6,12 +6,14 @@
 --   balance_version (string), build (string), seq (int, order within a session), session_id, engagement_time_msec
 --   first_launch     platform, os, language, connection, screen, gpu (strings), ram_mb, cpu_cores (numbers); once per anonymous id
 --   level_start      level (string), attempt (int)
---   level_complete   level, time_s (number), attempt, target (string: destination scene; exits also lead back)
---   player_death     level, x, y (numbers), time_s, attempt
+--   level_complete   level, time_s (number), attempt, target (string: destination scene; exits also lead back), active_upgrades
+--   player_death     level, x, y (numbers), time_s, attempt, active_upgrades
 --   enemy_killed     level, type (string: enemy prefab name, e.g. MeleeEnemy), x, y, time_s, attempt   (bosses: see boss_won)
 --   arrow_fired      level, arrow (string), charge (0..1, 2 decimals)
 --   shop_purchase    level, kind (arrow|upgrade), item (string), cost (int, genii)
---   boss_fight_start / boss_won   level, time_s, attempt
+--   boss_fight_start / boss_won   level, time_s, attempt, active_upgrades
+--   upgrade_toggled  level, item (upgrade asset name), result (activated|deactivated|slots_full), active_count (int), active_upgrades
+--   active_upgrades = sorted comma-separated active upgrade names, e.g. "QuickDraw,Vitality" ("" = none)
 -- balance_version is BalanceLoader.Version, so every row knows which JSON balance it was played with.
 --
 -- Daily tables are events_YYYYMMDD. For a live demo in class (streaming export enabled) query

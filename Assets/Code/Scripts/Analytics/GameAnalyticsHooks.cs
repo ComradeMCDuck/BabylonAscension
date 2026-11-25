@@ -4,12 +4,13 @@ using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Connects the game's existing events to GameAnalytics, so gameplay scripts never call analytics themselves.
-/// Logs: level_start, level_complete, player_death, enemy_killed, arrow_fired, shop_purchase, boss_fight_start, boss_won
+/// Logs: level_start, level_complete, player_death, enemy_killed, arrow_fired, shop_purchase, upgrade_toggled,
+/// boss_fight_start, boss_won
 /// (schema in docs/HANDOFF_balance_analytics.md; keep the names stable, students query them in BigQuery).
 ///
 /// Scene objects (Health, BossEncounter, BowCombat) are found and subscribed every time a scene loads. They are
 /// destroyed with their scene, so nothing has to be unsubscribed. The static events (LevelExit.Used,
-/// AltarShopButton.Purchased, EnemyHealth.Killed) are subscribed once at boot and live as long as the game does.
+/// AltarShopButton.Purchased, UpgradePickButton.Toggled, EnemyHealth.Killed) are subscribed once at boot and live as long as the game does.
 /// </summary>
 public static class GameAnalyticsHooks
 {
@@ -22,17 +23,24 @@ public static class GameAnalyticsHooks
     // How many times each level was entered in this run. A reload after a death counts as a new attempt.
     private static readonly Dictionary<string, int> attempts = new Dictionary<string, int>();
 
+    // The player's bow in the current scene, for the active_upgrades parameter. Null in menus.
+    private static BowCombat bow;
+    private static readonly List<string> upgradeNames = new List<string>();
+
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Boot()
     {
         // With "Enter Play Mode > Reload Domain" off this runs again on every play, so clear and resubscribe.
         attempts.Clear();
+        bow = null;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
         LevelExit.Used -= OnLevelExitUsed;
         LevelExit.Used += OnLevelExitUsed;
         AltarShopButton.Purchased -= OnPurchased;
         AltarShopButton.Purchased += OnPurchased;
+        UpgradePickButton.Toggled -= OnUpgradeToggled;
+        UpgradePickButton.Toggled += OnUpgradeToggled;
         EnemyHealth.Killed -= OnEnemyKilled;
         EnemyHealth.Killed += OnEnemyKilled;
     }
@@ -40,6 +48,7 @@ public static class GameAnalyticsHooks
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (mode != LoadSceneMode.Single) return;
+        bow = null;
 
         if (IsMenuScene(scene.name))
         {
@@ -62,8 +71,11 @@ public static class GameAnalyticsHooks
             encounter.Won += OnBossWon;
         }
 
-        foreach (BowCombat bow in Object.FindObjectsByType<BowCombat>())
-            bow.ArrowFired += OnArrowFired;
+        foreach (BowCombat sceneBow in Object.FindObjectsByType<BowCombat>())
+        {
+            sceneBow.ArrowFired += OnArrowFired;
+            bow = sceneBow; // Only the player has a BowCombat.
+        }
     }
 
     private static void OnPlayerDied(Health health)
@@ -74,7 +86,8 @@ public static class GameAnalyticsHooks
             ("x", Round(position.x)),
             ("y", Round(position.y)),
             ("time_s", LevelTime()),
-            ("attempt", CurrentAttempt()));
+            ("attempt", CurrentAttempt()),
+            ("active_upgrades", ActiveUpgrades()));
     }
 
     private static void OnLevelExitUsed(LevelExit exit)
@@ -84,7 +97,8 @@ public static class GameAnalyticsHooks
             ("level", CurrentLevel()),
             ("time_s", LevelTime()),
             ("attempt", CurrentAttempt()),
-            ("target", exit.TargetScene));
+            ("target", exit.TargetScene),
+            ("active_upgrades", ActiveUpgrades()));
     }
 
     private static void OnArrowFired(GameObject arrowPrefab, float charge)
@@ -98,6 +112,30 @@ public static class GameAnalyticsHooks
     private static void OnPurchased(string kind, string item, int cost)
     {
         GameAnalytics.Log("shop_purchase", ("level", CurrentLevel()), ("kind", kind), ("item", item), ("cost", cost));
+    }
+
+    private static void OnUpgradeToggled(string item, string result, int activeCount)
+    {
+        GameAnalytics.Log("upgrade_toggled",
+            ("level", CurrentLevel()),
+            ("item", item),
+            ("result", result),
+            ("active_count", activeCount),
+            ("active_upgrades", ActiveUpgrades()));
+    }
+
+    /// <summary>
+    /// The active upgrades' asset names, sorted and comma-separated (e.g. "QuickDraw,Vitality"), or "" for none.
+    /// Sorted so the same loadout is always the same string and groups together in BigQuery.
+    /// </summary>
+    private static string ActiveUpgrades()
+    {
+        if (bow == null) return "";
+        upgradeNames.Clear();
+        foreach (BowUpgrade upgrade in bow.Upgrades.Active)
+            if (upgrade != null) upgradeNames.Add(upgrade.name);
+        upgradeNames.Sort(System.StringComparer.Ordinal);
+        return string.Join(",", upgradeNames);
     }
 
     private static void OnEnemyKilled(GameObject enemy)
@@ -126,12 +164,14 @@ public static class GameAnalyticsHooks
 
     private static void OnBossFightStarted()
     {
-        GameAnalytics.Log("boss_fight_start", ("level", CurrentLevel()), ("time_s", LevelTime()), ("attempt", CurrentAttempt()));
+        GameAnalytics.Log("boss_fight_start", ("level", CurrentLevel()), ("time_s", LevelTime()), ("attempt", CurrentAttempt()),
+            ("active_upgrades", ActiveUpgrades()));
     }
 
     private static void OnBossWon()
     {
-        GameAnalytics.Log("boss_won", ("level", CurrentLevel()), ("time_s", LevelTime()), ("attempt", CurrentAttempt()));
+        GameAnalytics.Log("boss_won", ("level", CurrentLevel()), ("time_s", LevelTime()), ("attempt", CurrentAttempt()),
+            ("active_upgrades", ActiveUpgrades()));
     }
 
     /// <summary>True for scenes that are not levels, e.g. the main menu.</summary>

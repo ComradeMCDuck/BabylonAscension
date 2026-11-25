@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 
@@ -9,6 +10,17 @@ using UnityEngine;
 /// </summary>
 public class UpgradePickButton : AltarShopButton
 {
+    /// <summary>
+    /// Raised after a click on an owned upgrade (also right after buying it): the upgrade asset name, the result
+    /// ("activated", "deactivated" or "slots_full") and how many upgrades are active afterwards.
+    /// Static, so analytics can listen without finding the buttons. Scene subscribers must unsubscribe in OnDisable.
+    /// </summary>
+    public static event Action<string, string, int> Toggled;
+
+    public const string ResultActivated = "activated";
+    public const string ResultDeactivated = "deactivated";
+    public const string ResultSlotsFull = "slots_full";
+
     [Tooltip("The upgrade given to the player when this button is clicked. It also sets the price.")]
     [SerializeField] private BowUpgrade upgrade;
 
@@ -47,8 +59,13 @@ public class UpgradePickButton : AltarShopButton
     protected override void Use()
     {
         bool activate = !Bow.Upgrades.IsActive(upgrade);
+        string result = activate ? ResultActivated : ResultDeactivated;
         if (!Bow.Upgrades.SetActive(upgrade, activate))
+        {
+            result = ResultSlotsFull;
             Debug.Log($"All {Bow.Upgrades.MaxActive} upgrade slots are in use; deactivate one to activate {upgrade.DisplayName}.");
+        }
+        Toggled?.Invoke(upgrade.name, result, Bow.Upgrades.ActiveCount);
     }
 
     protected override void Subscribe(bool subscribe)

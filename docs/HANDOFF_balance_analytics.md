@@ -86,11 +86,15 @@ that you review and fix, and say clearly what you could not verify.
    |---|---|
    | `first_launch` | `platform`, `os`, `language`, `connection`, `screen`, `gpu`, `ram_mb`, `cpu_cores` (sent once, when the anonymous id is created; implemented in `GameAnalytics.EnsureInstallEvent`; no device name or device id) |
    | `level_start` | `level`, `attempt` |
-   | `level_complete` | `level`, `time_s`, `attempt` |
-   | `player_death` | `level`, `x`, `y`, `time_s`, `attempt` |
+   | `level_complete` | `level`, `time_s`, `attempt`, `target`, `active_upgrades` |
+   | `player_death` | `level`, `x`, `y`, `time_s`, `attempt`, `active_upgrades` |
    | `arrow_fired` | `level`, `arrow`, `charge` |
    | `shop_purchase` | `level`, `kind`, `item`, `cost` |
-   | `boss_fight_start`, `boss_won` | `level`, `time_s`, `attempt` |
+   | `upgrade_toggled` | `level`, `item` (upgrade asset name), `result` (`activated`, `deactivated`, `slots_full`), `active_count`, `active_upgrades` (sent on every click of an owned upgrade, also right after buying it) |
+   | `boss_fight_start`, `boss_won` | `level`, `time_s`, `attempt`, `active_upgrades` |
+   | `enemy_killed` | `level`, `type`, `x`, `y`, `time_s`, `attempt` |
+
+   `active_upgrades` is the sorted, comma-separated list of active upgrade asset names (e.g. `QuickDraw,Vitality`), empty when none are active.
 
 5. GA4 constraints to respect (from Google's Measurement Protocol reference): at most 25 events per request, 25 parameters per event, event and parameter names up to 40 characters,
    string values up to 100 characters, no parameter names starting with `_`, `firebase_`, `ga_`, `google_`, events older than 72 hours are rejected, and the endpoint
