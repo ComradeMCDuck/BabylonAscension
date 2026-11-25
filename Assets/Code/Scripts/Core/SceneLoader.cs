@@ -112,8 +112,11 @@ public class SceneLoader : MonoBehaviour
     /// <summary>Loads a scene by name and puts the player at its default spawn. For UI buttons.</summary>
     public void LoadScene(string sceneName) => TryLoadScene(sceneName, null);
 
-    /// <summary>Reloads the current scene. The player appears where they entered the level.</summary>
-    public void ReloadScene() => TryLoadScene(gameObject.scene.path, ArrivalSpawnId);
+    /// <summary>
+    /// Restarts the current level, as after dying: the player appears where they entered it, and what they
+    /// removed during this visit comes back (DontRespawn).
+    /// </summary>
+    public void ReloadScene() => TryLoadScene(gameObject.scene.path, ArrivalSpawnId, true);
 
     /// <summary>Loads the scene after this one in the Build Profiles scene list.</summary>
     public void LoadNextScene()
@@ -131,7 +134,7 @@ public class SceneLoader : MonoBehaviour
     public void LoadMainMenu()
     {
         // Cleared after TryLoadScene, because its TransitionStarted makes GameManager capture the progress.
-        if (TryLoadScene(mainMenuScene, null))
+        if (TryLoadScene(mainMenuScene, null, true))
         {
             PlayerProgress.Clear();
             LevelMemory.Clear();
@@ -151,8 +154,13 @@ public class SceneLoader : MonoBehaviour
     /// Fades out and loads <paramref name="scene"/> (a name or an asset path from the Build Profiles list).
     /// <paramref name="spawnId"/> names the <see cref="SpawnPoint"/> to arrive at; null = the default spawn.
     /// Returns false, and does nothing, if a transition is already running or the scene can't be loaded.
+    /// This counts as leaving the level alive, so what the player removed in it stays removed (DontRespawn),
+    /// even when <paramref name="scene"/> is the current one (a door to another spot in the same level).
     /// </summary>
-    public bool TryLoadScene(string scene, string spawnId)
+    public bool TryLoadScene(string scene, string spawnId) => TryLoadScene(scene, spawnId, false);
+
+    /// <param name="dropRemovals">True for a death, a restart or the main menu: this visit's removals are dropped instead of kept.</param>
+    private bool TryLoadScene(string scene, string spawnId, bool dropRemovals)
     {
         if (!isActiveAndEnabled || IsTransitioning) return false;
         if (string.IsNullOrEmpty(scene) || !Application.CanStreamedLevelBeLoaded(scene))
@@ -168,22 +176,23 @@ public class SceneLoader : MonoBehaviour
         IsTransitioning = true;
         Time.timeScale = 0f;
         TransitionStarted?.Invoke();
-        routine = StartCoroutine(FadeOutAndLoad(scene, spawnId));
+        routine = StartCoroutine(FadeOutAndLoad(scene, spawnId, dropRemovals));
         return true;
     }
 
     // ---- Transition ----
 
-    private IEnumerator FadeOutAndLoad(string scene, string spawnId)
+    private IEnumerator FadeOutAndLoad(string scene, string spawnId, bool dropRemovals)
     {
         yield return FadeTo(1f);
         if (blackScreenDuration > 0f)
             yield return new WaitForSecondsRealtime(blackScreenDuration);
 
-        // Reaching a later level keeps what the player removed in this one (DontRespawn). Dying (a reload) or
-        // going back to an earlier level drops it, so this level is full again on the next visit.
-        if (IsLaterInBuildList(scene)) LevelMemory.Commit();
-        else LevelMemory.DiscardPending();
+        // Leaving the level alive, by any exit, keeps what the player removed in it (DontRespawn), so routes that
+        // loop back (a secret door to an earlier level) don't refill it. Dying drops it, so the level is full again.
+        // Objects set to "When Reaching Later Level" are only kept when moving forward in the build list.
+        if (dropRemovals) LevelMemory.DiscardPending();
+        else LevelMemory.Commit(IsLaterInBuildList(scene));
 
         ArrivalSpawnId = string.IsNullOrEmpty(spawnId) ? null : spawnId;
         loadIssued = true;

@@ -5,10 +5,10 @@ using UnityEngine.Events;
 /// <summary>
 /// Put this on an enemy, a puzzle piece, a door or a pickup that should stay gone once the player has dealt with
 /// it. Scene loads (death, level exits) rebuild the level from the scene file, so without this everything comes back.
-/// When the object is destroyed or switched off during play it is noted in <see cref="LevelMemory"/>. The note
-/// becomes permanent when the player reaches a later level in the Build Profiles scene list; dying or going back
-/// to an earlier level drops it, so everything is back. Once permanent, the object switches itself off on every later load of the scene, before
-/// any of its other scripts wake up.
+/// When the object is destroyed or switched off during play it is noted in <see cref="LevelMemory"/>. Persistence
+/// says when the note becomes permanent: by default once the player leaves the level alive by any exit (forward,
+/// back, a secret door), so dying brings it back. Once permanent, the object switches itself off on every later
+/// load of the scene, before any of its other scripts wake up.
 /// For things that don't disappear (a chest that stays open), call <see cref="Remember"/> from an event, turn
 /// Remove On Load off and use On Loaded Remembered to put the object in its finished state.
 /// </summary>
@@ -19,6 +19,8 @@ public class DontRespawn : MonoBehaviour
 {
     [Tooltip("Remember this object by itself when it is destroyed or deactivated during play (an enemy dying, a lamp switched off by an ArrowTarget). Off = only when something calls Remember(), e.g. from a UnityEvent.")]
     [SerializeField] private bool rememberWhenRemoved = true;
+    [Tooltip("When the removal becomes permanent.\nWhen Leaving Alive: the player leaves the level by any exit (forward, back, secret door); dying brings it back. Good for enemies.\nImmediately: at once, even if the player dies. Good for opened shortcuts, solved puzzles, keys.\nWhen Reaching Later Level: only when going on to a later level in the Build Profiles scene list; dying or going back brings it back.")]
+    [SerializeField] private RemovalPersistence persistence = RemovalPersistence.WhenLeavingAlive;
     [Tooltip("When the level loads and this object is remembered, deactivate it. Turn off to keep it and only run On Loaded Remembered.")]
     [SerializeField] private bool removeOnLoad = true;
     [Tooltip("Called when the level loads and this object is remembered, e.g. to open the door this puzzle opened. Runs before any other script's Awake, so keep it to simple things like GameObject.SetActive.")]
@@ -30,8 +32,10 @@ public class DontRespawn : MonoBehaviour
 
     private string key;
 
-    /// <summary>True once the removal is permanent (the player left the level after it), so it won't come back.</summary>
+    /// <summary>True once the removal is permanent (see <see cref="Persistence"/>), so it won't come back.</summary>
     public bool IsRemembered => HasId && LevelMemory.Contains(Key);
+    /// <summary>When a removal of this object becomes permanent.</summary>
+    public RemovalPersistence Persistence => persistence;
 
     private bool HasId => !string.IsNullOrEmpty(id);
     // The scene path is part of the key, because a copied scene file carries the same ids.
@@ -53,12 +57,12 @@ public class DontRespawn : MonoBehaviour
     }
 
     /// <summary>
-    /// Marks this object as done. It is removed on later loads once the player reaches a later level.
+    /// Marks this object as done. It is removed on later loads once the removal is permanent (see Persistence).
     /// For UnityEvents and code.
     /// </summary>
     public void Remember()
     {
-        if (HasId) LevelMemory.Remember(Key);
+        if (HasId) LevelMemory.Remember(Key, persistence);
     }
 
     /// <summary>Undoes <see cref="Remember"/>, so the object is back on the next load.</summary>
