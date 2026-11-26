@@ -214,6 +214,9 @@ MonoBehaviour:
   rehitInterval: 0.5
   activeOnEnable: 0
   damage: 1
+  alertsEnemies: 0
+  hazardKnockback: 0
+  hazardKnockbackUp: 0
   showDebugSprite: 1
   debugSprite: {fileID: 2746067973201767142}
 --- !u!1 &2710669626181752983
@@ -803,8 +806,11 @@ MonoBehaviour:
   animator: {fileID: 2915255685171726295}
   attackingParameter: SlashStart
   attackStateName: Humbaba_Attack
-  slashPivot: {fileID: 2558556483688702417}
   hitbox: {fileID: 5021931792892402939}
+  slashStart: {x: -0.1, y: 0.06}
+  slashEnd: {x: 2.5, y: 1.5}
+  slashCurvature: -0.94
+  rotateAlongPath: 1
   slasherAnimator: {fileID: 0}
 --- !u!114 &7825818485458410642
 MonoBehaviour:
@@ -851,6 +857,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DontRespawn
   rememberWhenRemoved: 1
+  persistence: 0
   removeOnLoad: 1
   onLoadedRemembered:
     m_PersistentCalls:
@@ -1103,6 +1110,9 @@ MonoBehaviour:
   rehitInterval: 0.5
   activeOnEnable: 0
   damage: 1
+  alertsEnemies: 0
+  hazardKnockback: 0
+  hazardKnockbackUp: 0
   showDebugSprite: 1
   debugSprite: {fileID: 2389234578771282184}
 --- !u!1 &7671933259282294577

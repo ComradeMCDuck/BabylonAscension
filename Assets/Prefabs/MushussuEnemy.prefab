@@ -99,6 +99,9 @@ MonoBehaviour:
   rehitInterval: 0.5
   activeOnEnable: 0
   damage: 1
+  alertsEnemies: 0
+  hazardKnockback: 0
+  hazardKnockbackUp: 0
   showDebugSprite: 1
   debugSprite: {fileID: 2746067973201767142}
 --- !u!1 &3482308967710775093
@@ -955,8 +958,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BossSlashAttack
   data: {fileID: 11400000, guid: 3b5c7740de7a95e45b05b872e4500fee, type: 2}
-  slashPivot: {fileID: 2558556483688702417}
   hitbox: {fileID: 5021931792892402939}
+  slashStart: {x: 1.28, y: 0.78}
+  slashEnd: {x: 4.26, y: 3.11}
+  slashCurvature: -1.39
+  rotateAlongPath: 1
 --- !u!114 &6112248519513511930
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1492,6 +1498,9 @@ MonoBehaviour:
   rehitInterval: 0.5
   activeOnEnable: 0
   damage: 1
+  alertsEnemies: 0
+  hazardKnockback: 0
+  hazardKnockbackUp: 0
   showDebugSprite: 1
   debugSprite: {fileID: 2389234578771282184}
 --- !u!1 &6836398761108451698
@@ -1584,6 +1593,9 @@ MonoBehaviour:
   rehitInterval: 0.5
   activeOnEnable: 0
   damage: 1
+  alertsEnemies: 0
+  hazardKnockback: 0
+  hazardKnockbackUp: 0
   showDebugSprite: 1
   debugSprite: {fileID: 1854347418955753298}
 --- !u!1 &7671933259282294577
@@ -1901,5 +1913,8 @@ MonoBehaviour:
   rehitInterval: 0.5
   activeOnEnable: 0
   damage: 1
+  alertsEnemies: 0
+  hazardKnockback: 0
+  hazardKnockbackUp: 0
   showDebugSprite: 1
   debugSprite: {fileID: 7866992302930292094}

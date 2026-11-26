@@ -4519,7 +4519,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'hale of fire arrows
+  m_text: 'hail of fire arrows
 
 '
   m_isRightToLeft: 0
