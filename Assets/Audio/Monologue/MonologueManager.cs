@@ -21,38 +21,52 @@ public class MonologueManager : MonoBehaviour
 
     void Start()
     {
-        if (MonologueSave.currentIndex > 0)
+        if (MonologueSave.playing == true)
         {
             currentLines = MonologueSave.currentLines;
             index = MonologueSave.currentIndex;
-            StartMonologue(MonologueSave.currentLines);
+            StartMonologue(MonologueSave.currentLines, MonologueSave.playAtPosition);
         }
     }
 
-    public void StartMonologue(MonologueLines newLines)
+    public void StartMonologue(MonologueLines newLines, float positionToPlayAt = 0)
     {
+        MonologueSave.playing = true;
         currentLines = newLines;
         MonologueSave.currentLines = currentLines;
         monologuePlaying = true;
-        //textDisplayed.SetActive(true);
-        NextMonologueLine();
+        textDisplayed.gameObject.SetActive(true);
+        NextMonologueLine(positionToPlayAt);
     }
 
-    void NextMonologueLine()
+    void NextMonologueLine(float positionToPlayAt = 0)
     {
         textDisplayed.text = currentLines.textLines[index];
         audioSource.clip = currentLines.audioLines[index];
-        audioSource.Play();
+        if (positionToPlayAt != 0 && positionToPlayAt < audioSource.clip.length)
+        {
+            audioSource.time = positionToPlayAt;
+            audioSource.Play();
+        } else 
+        {
+            audioSource.Play();
+        }
+        
 
         StartCoroutine(WaitForVoiceToEnd());
     }
 
     IEnumerator WaitForVoiceToEnd()
     {
+        
         while (audioSource.isPlaying == true)
         {
+            MonologueSave.playAtPosition += Time.deltaTime;
             yield return null;
         }
+       
+
+        MonologueSave.playAtPosition = 0.0f;
 
         if (currentLines.textLines.Length > index + 1)
         {
@@ -70,9 +84,11 @@ public class MonologueManager : MonoBehaviour
     {
         MonologueSave.currentLines = null;
         MonologueSave.currentIndex = 0;
+        MonologueSave.playing = false;
+
         monologuePlaying = false;
         textDisplayed.text = "";
         index = 0;
-        //textDisplayed.SetActive(false);
+        textDisplayed.gameObject.SetActive(false);
     }
 }
