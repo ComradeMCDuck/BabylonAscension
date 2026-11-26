@@ -55,7 +55,7 @@ MonoBehaviour:
   showGenerated: 0
   showCuts: 0
   showDimensions: 1
-  shapeHandles: 1
+  shapeHandles: 0
   shapeEditSelection: 0
   snapToGrid: 1
   curveTolerance: 0.1

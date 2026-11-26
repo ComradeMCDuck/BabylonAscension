@@ -379,6 +379,8 @@ MonoBehaviour:
     WallStickTimer: 0
     WallSlideSpeedLoss: 0.05
     WallSlidingSpeedMax: 2
+    WallSlideTimeMax: 2
+    WallSlideTimer: 0
     CanWallClimb: 0
     WallClimbSpeed: 2
     CanWallJump: 1
@@ -473,6 +475,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DontRespawn
   rememberWhenRemoved: 1
+  persistence: 0
   removeOnLoad: 1
   onLoadedRemembered:
     m_PersistentCalls:

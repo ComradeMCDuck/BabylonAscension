@@ -25,7 +25,7 @@ MonoBehaviour:
   StringsBanks:
   - {fileID: 7589302072961095213}
   cacheVersion: 131861
-  cacheTime: 639311461214522988
+  cacheTime: 639309487637289191
   SerializableEventsDict:
   - key: event:/UIHover
     index: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
   Path: FMODProject/BabylonAscension/Build/Desktop/Master.bank
   Name: Master
   StudioPath: bank:/Master
-  lastModified: 639311461214422791
+  lastModified: 639309487637289191
   FileSizes:
   - Name: Desktop
     Value: 1074
@@ -120,7 +120,7 @@ MonoBehaviour:
   Path: FMODProject/BabylonAscension/Build/Desktop/Master.strings.bank
   Name: Master.strings
   StudioPath: bank:/Master.strings
-  lastModified: 639311461214472823
+  lastModified: 639309487637289191
   FileSizes:
   - Name: Desktop
     Value: 862
@@ -140,7 +140,7 @@ MonoBehaviour:
   Path: FMODProject/BabylonAscension/Build/Desktop/SFX.bank
   Name: SFX
   StudioPath: bank:/SFX
-  lastModified: 639311461214522988
+  lastModified: 639309487637289191
   FileSizes:
   - Name: Desktop
     Value: 5792
