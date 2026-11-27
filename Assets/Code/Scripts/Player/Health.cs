@@ -230,11 +230,6 @@ public class Health : MonoBehaviour, IDamageable
         currentHealth = Mathf.Max(1f, MaxHealth * entityData.secondChanceHealFraction);
         invincibleUntil = Time.time + entityData.secondChanceInvincibilityTime;
 
-        // Flash every sprite of the character, not only the one the red damage flash uses.
-        BasicMovementController2D character = GetComponentInParent<BasicMovementController2D>();
-        GameObject root = character != null ? character.gameObject : gameObject;
-        SpriteFlash.For(root).Blink(entityData.secondChanceInvincibilityTime, entityData.secondChanceBlinkInterval);
-
         SecondChanceUsed?.Invoke(this);
         return true;
     }
