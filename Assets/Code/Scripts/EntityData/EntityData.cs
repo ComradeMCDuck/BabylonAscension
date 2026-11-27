@@ -74,11 +74,7 @@ public class EntityData : ScriptableObject
     [Min(0.1f)] public float projectileLifetime = 5f;
 
     [Header("Slash Attack (enemies with a SlashAttack component)")]
-    [Tooltip("Point the hitbox swings around, relative to the enemy's position when facing right. Mirrored when facing left. Damage is attackDamage.")]
-    public Vector2 slashOriginOffset = new Vector2(0.2f, 0.3f);
-    [Tooltip("Total angle (degrees) the hitbox sweeps through, centered on the direction to the player. It swings from top to bottom.")]
-    [Range(0f, 360f)] public float slashArcAngle = 140f;
-    [Tooltip("Seconds the swing takes. The hitbox is active for this long.")]
+    [Tooltip("Seconds the swing takes. The hitbox is active for this long. Damage is attackDamage. The swing's path is set on the SlashAttack component.")]
     [Min(0.01f)] public float slashDuration = 0.25f;
     [Tooltip("Sideways push the player gets when the slash hits, away from this enemy. The player's own Knockback Lift and Stun Time apply on top. 0 = no knockback.")]
     [Min(0f)] public float slashKnockback = 8f;

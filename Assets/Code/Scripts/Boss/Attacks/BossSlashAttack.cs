@@ -2,48 +2,45 @@ using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// Close range basic attack: a DamageHitbox swings around a pivot toward the player, from top to bottom, like the
-/// melee enemies' SlashAttack. Each swing damages the player at most once.
-/// Setup: Boss -> SlashPivot (empty child) -> SlashHitbox (child with a Collider2D and DamageHitbox). Place the
-/// hitbox to the right of the pivot (its distance from the pivot is the reach); this script moves and rotates the pivot.
+/// Close range basic attack: a DamageHitbox is moved along a curved path in front of the boss, from slashStart to
+/// slashEnd, bowing out by slashCurvature, like the melee enemies' SlashAttack. Each swing damages the player at
+/// most once. The path (see SlashPath) is set relative to the boss's feet (bottom center of its collider) as if
+/// facing right and mirrored when it faces left; select the boss to see it as gizmos. The swing doesn't aim.
+/// Setup: a child of the boss with a Collider2D and DamageHitbox. This script sets its position and rotation
+/// during the swing, so where it sits in the prefab doesn't matter. Keep it out of the Visual Root.
+/// The path is set here; damage, knockback and swing duration live in BossSlashData.
 /// </summary>
 public class BossSlashAttack : BossAttack<BossSlashData>
 {
-    [Tooltip("Empty child the hitbox rotates around. Moved to the data's Origin Offset when the slash starts.")]
-    [SerializeField] private Transform slashPivot;
-    [Tooltip("Hitbox on a child of the pivot, placed to the right of it.")]
+    [Tooltip("Hitbox on a child of the boss. Moved along the slash path during the swing.")]
     [SerializeField] private DamageHitbox hitbox;
+
+    [Header("Slash Path (select the boss to see it)")]
+    [Tooltip("Where the hitbox's center starts the swing, relative to the boss's feet when facing right. Mirrored when facing left.")]
+    [SerializeField] private Vector2 slashStart = new Vector2(1.9f, 5f);
+    [Tooltip("Where the hitbox's center ends the swing, relative to the boss's feet when facing right. Mirrored when facing left.")]
+    [SerializeField] private Vector2 slashEnd = new Vector2(3f, 0.3f);
+    [Tooltip("How far the middle of the swing bows out from the straight line between Start and End, in units. Positive bows away from the boss (for a top-to-bottom swing in front of it), negative toward it. 0 = straight line.")]
+    [SerializeField] private float slashCurvature = 1.5f;
+    [Tooltip("Turns the hitbox to follow the direction of the swing. Off keeps it unrotated.")]
+    [SerializeField] private bool rotateAlongPath = true;
 
     protected override void Awake()
     {
         base.Awake();
 
-        if (slashPivot == null || hitbox == null)
+        if (hitbox == null)
         {
-            Debug.LogError($"{name}: BossSlashAttack needs a Slash Pivot and a Hitbox assigned. Disabling.", this);
+            Debug.LogError($"{name}: BossSlashAttack needs a Hitbox assigned. Disabling.", this);
             enabled = false;
-        }
-        else if (!hitbox.transform.IsChildOf(slashPivot))
-        {
-            Debug.LogWarning($"{name}: The slash hitbox should be a child of the slash pivot, otherwise it won't swing.", this);
         }
     }
 
     protected override IEnumerator Perform(BossTargetInfo target)
     {
         int facing = Boss.FacingDirection;
-        slashPivot.position = FromFeet(data.originOffset);
 
-        // Center the arc on where the player was when the windup started, swinging from above to below.
-        Vector2 toTarget = target.PlayerCenter - (Vector2)slashPivot.position;
-        float aimAngle = toTarget.sqrMagnitude > 0.0001f
-            ? Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg
-            : (facing > 0 ? 0f : 180f);
-        float halfArc = data.arcAngle * 0.5f;
-        float startAngle = aimAngle + halfArc * facing;
-        float endAngle = aimAngle - halfArc * facing;
-
-        SetAngle(startAngle);
+        PlaceHitbox(facing, 0f);
         hitbox.Activate(data.damage, data.knockback, default);
 
         float elapsed = 0f;
@@ -53,26 +50,24 @@ public class BossSlashAttack : BossAttack<BossSlashData>
             elapsed += Time.fixedDeltaTime;
 
             float t = Mathf.Clamp01(elapsed / data.swingDuration);
-            SetAngle(Mathf.Lerp(startAngle, endAngle, Mathf.SmoothStep(0f, 1f, t)));
+            PlaceHitbox(facing, Mathf.SmoothStep(0f, 1f, t));
             hitbox.CheckHits();
         }
     }
+
+    // Measured from the boss's feet every step, so the swing stays with the boss if it gets pushed.
+    private void PlaceHitbox(int facing, float t) =>
+        SlashPath.PlaceHitbox(hitbox.transform, Boss.FeetCenter, slashStart, slashEnd, slashCurvature, rotateAlongPath, facing, t);
 
     protected override void Cleanup()
     {
         if (hitbox != null) hitbox.Deactivate();
     }
 
-    private void SetAngle(float angle)
-    {
-        slashPivot.rotation = Quaternion.Euler(0f, 0f, angle);
-    }
-
+    /// <summary>Draws the slash path. Uses the boss's current facing in play mode, facing right otherwise.</summary>
     private void OnDrawGizmosSelected()
     {
-        if (data == null || !TryGetGizmoFrame(out Vector2 feet, out int facing)) return;
-
-        Gizmos.color = new Color(1f, 0.4f, 0f);
-        Gizmos.DrawWireSphere(FromFeet(data.originOffset, feet, facing), 0.12f);
+        if (!TryGetGizmoFrame(out Vector2 feet, out int facing)) return;
+        SlashPath.DrawGizmos(feet, slashStart, slashEnd, slashCurvature, rotateAlongPath, facing, hitbox);
     }
 }

@@ -1,32 +1,40 @@
 using System;
-using UnityEngine.Serialization;
 using System.Collections;
 using UnityEngine;
-
+using UnityEngine.Serialization;
 
 /// <summary>
-/// Melee basic attack: after the windup, a DamageHitbox is swung around an origin point toward the player,
-/// from top to bottom, then disabled. Each swing damages the player at most once.
-/// Setup: Enemy -> SlashPivot (empty child) -> SlashHitbox (child with a BoxCollider2D and DamageHitbox).
-/// Place the hitbox to the right of the pivot (its distance from the pivot is the reach); the pivot's position
-/// and rotation are set by this script. Settings live in EntityData ("Slash Attack").
+/// Melee basic attack: after the windup, a DamageHitbox is moved along a curved path in front of the enemy, from
+/// slashStart to slashEnd, bowing out by slashCurvature, then disabled. Each swing damages the player at most once.
+/// The path (see SlashPath) is set relative to the enemy as if facing right and mirrored when it faces left;
+/// select the enemy to see it as gizmos. The swing doesn't aim: it always follows this path.
+/// Setup: a child of the enemy with a Collider2D and DamageHitbox. This script sets its position and rotation
+/// during the swing, so where it sits in the prefab doesn't matter. The path is set here (it depends on the
+/// prefab's size and sprite); damage, duration and knockback live in EntityData ("Slash Attack").
 /// </summary>
 public class SlashAttack : EnemyAttack
 {
-    [Tooltip("Empty child the hitbox rotates around. Moved to EntityData.slashOriginOffset when the slash starts.")]
-    [SerializeField] private Transform slashPivot;
-    [Tooltip("Hitbox on a child of the pivot, placed to the right of it.")]
+    [Tooltip("Hitbox on a child of the enemy. Moved along the slash path during the swing.")]
     [SerializeField] private DamageHitbox hitbox;
 
+    [Header("Slash Path (select the enemy to see it)")]
+    [Tooltip("Where the hitbox's center starts the swing, relative to the enemy's position when facing right. Mirrored when facing left.")]
+    [SerializeField] private Vector2 slashStart = new Vector2(0.9f, 1.9f);
+    [Tooltip("Where the hitbox's center ends the swing, relative to the enemy's position when facing right. Mirrored when facing left.")]
+    [SerializeField] private Vector2 slashEnd = new Vector2(0.9f, -0.5f);
+    [Tooltip("How far the middle of the swing bows out from the straight line between Start and End, in units. Positive bows away from the enemy (for a top-to-bottom swing in front of it), negative toward it. 0 = straight line.")]
+    [SerializeField] private float slashCurvature = 1f;
+    [Tooltip("Turns the hitbox to follow the direction of the swing. Off keeps it unrotated.")]
+    [SerializeField] private bool rotateAlongPath = true;
+
+    [Header("Animation")]
     [Tooltip("Animator for the enemy to handle slash animation.")]
     [FormerlySerializedAs("animator")]
     [SerializeField] private Animator slasherAnimator;
 
-    // ExposeAnimator is a reference used only for animation triggers.
-    // Remove obsolete exposeAnimator field.
-
     private EnemyBehavior enemy;
-public event Action OnSlashStarted;
+
+    public event Action OnSlashStarted;
     public event Action OnSlashEnded;
 
     public Animator Animator => slasherAnimator;
@@ -35,32 +43,20 @@ public event Action OnSlashStarted;
     {
         enemy = GetComponent<EnemyBehavior>();
 
-        if (slashPivot == null || hitbox == null)
-            Debug.LogError($"{name}: SlashAttack needs a Slash Pivot and a Hitbox assigned.", this);
-        else if (!hitbox.transform.IsChildOf(slashPivot))
-            Debug.LogWarning($"{name}: The slash hitbox should be a child of the slash pivot, otherwise it won't swing.", this);
+        if (hitbox == null)
+            Debug.LogError($"{name}: SlashAttack needs a Hitbox assigned.", this);
     }
 
     protected override IEnumerator PerformAttackRoutine(Vector2 targetPosition, EntityData data)
     {
-        if (slashPivot == null || hitbox == null) yield break;
+        if (hitbox == null) yield break;
 
         // Use the way the enemy is facing (it doesn't turn during attacks), so the swing always matches the sprite.
         int facing = enemy != null ? enemy.FacingDirection : (targetPosition.x < transform.position.x ? -1 : 1);
         OnSlashStarted?.Invoke();
         if (slasherAnimator != null) slasherAnimator.SetTrigger("SlashStart");
-        slashPivot.localPosition = new Vector3(data.slashOriginOffset.x * facing, data.slashOriginOffset.y, 0f);
 
-        // Center the arc on the direction to the player and swing from above to below on the facing side.
-        Vector2 toTarget = targetPosition - (Vector2)slashPivot.position;
-        float aimAngle = toTarget.sqrMagnitude > 0.0001f
-            ? Mathf.Atan2(toTarget.y, toTarget.x) * Mathf.Rad2Deg
-            : (facing > 0 ? 0f : 180f);
-        float halfArc = data.slashArcAngle * 0.5f;
-        float startAngle = aimAngle + halfArc * facing;
-        float endAngle = aimAngle - halfArc * facing;
-
-        SetAngle(startAngle);
+        PlaceHitbox(facing, 0f);
         hitbox.Activate(data.attackDamage, data.slashKnockback, default);
 
         float elapsed = 0f;
@@ -70,7 +66,7 @@ public event Action OnSlashStarted;
             elapsed += Time.fixedDeltaTime;
 
             float t = Mathf.Clamp01(elapsed / data.slashDuration);
-            SetAngle(Mathf.Lerp(startAngle, endAngle, Mathf.SmoothStep(0f, 1f, t)));
+            PlaceHitbox(facing, Mathf.SmoothStep(0f, 1f, t));
             hitbox.CheckHits();
         }
 
@@ -79,14 +75,20 @@ public event Action OnSlashStarted;
         if (slasherAnimator != null) slasherAnimator.SetTrigger("SlashEnd");
     }
 
-    private void SetAngle(float angle)
-    {
-        slashPivot.rotation = Quaternion.Euler(0f, 0f, angle);
-    }
+    private void PlaceHitbox(int facing, float t) =>
+        SlashPath.PlaceHitbox(hitbox.transform, transform.position, slashStart, slashEnd, slashCurvature, rotateAlongPath, facing, t);
 
     protected override void OnDisable()
     {
         base.OnDisable();
         if (hitbox != null) hitbox.Deactivate();
+    }
+
+    /// <summary>Draws the slash path. Uses the enemy's current facing in play mode, facing right otherwise.</summary>
+    private void OnDrawGizmosSelected()
+    {
+        EnemyBehavior owner = enemy != null ? enemy : GetComponent<EnemyBehavior>();
+        int facing = Application.isPlaying && owner != null && owner.FacingDirection < 0 ? -1 : 1;
+        SlashPath.DrawGizmos(transform.position, slashStart, slashEnd, slashCurvature, rotateAlongPath, facing, hitbox);
     }
 }
