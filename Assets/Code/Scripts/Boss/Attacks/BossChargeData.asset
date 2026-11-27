@@ -15,15 +15,15 @@ MonoBehaviour:
   minRange: 6
   maxRange: 30
   maxHeightDifference: 1
-  weight: 1
+  weight: 0.5
   insideWeight: 0
   requiresGround: 1
   windup: 0.7
   recovery: 0.5
   cooldown: 6
   damage: 40
+  knockback: 10
   chargeSpeed: 14
-  chargeDistance: 50
-  overshoot: 3
-  wallStunDuration: 2.5
+  wallStunDuration: 3.5
+  maxChargeTime: 4
   minRunwayLength: 2

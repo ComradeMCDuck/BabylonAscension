@@ -809,7 +809,7 @@ MonoBehaviour:
   hitbox: {fileID: 5021931792892402939}
   slashStart: {x: -0.1, y: 0.06}
   slashEnd: {x: 2.5, y: 1.5}
-  slashCurvature: -0.94
+  slashCurvature: -1
   rotateAlongPath: 1
   slasherAnimator: {fileID: 0}
 --- !u!114 &7825818485458410642

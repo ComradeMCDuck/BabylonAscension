@@ -15,13 +15,14 @@ MonoBehaviour:
   minRange: 0
   maxRange: 30
   maxHeightDifference: 30
-  weight: 0.5
+  weight: 1
   insideWeight: 5
   requiresGround: 1
   windup: 0.8
   recovery: 0.6
   cooldown: 9
   damage: 20
+  knockback: 10
   roarOriginOffset: {x: 0, y: 1}
   roarRadius: 8
   roarExpandTime: 0.35

@@ -22,8 +22,6 @@ public class EntityData : ScriptableObject
     [Range(0f, 1f)] public float secondChanceHealFraction = 0.25f;
     [Tooltip("Second Chance upgrade: seconds of invincibility after it saves the player. The sprite blinks white meanwhile.")]
     [Min(0f)] public float secondChanceInvincibilityTime = 2f;
-    [Tooltip("Second Chance upgrade: seconds between two white blinks while invincible.")]
-    [Min(0.02f)] public float secondChanceBlinkInterval = 0.1f;
     [Tooltip("Second Chance upgrade: seconds after it saved the player before it can save them again. " +
              "Dying and respawning recharges it straight away.")]
     [Min(0f)] public float secondChanceCooldown = 60f;
