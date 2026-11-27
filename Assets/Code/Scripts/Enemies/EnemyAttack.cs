@@ -6,9 +6,11 @@ using UnityEngine;
 /// Base class for enemy attacks. Handles the windup and cooldown from EntityData;
 /// subclasses only decide what actually happens (spawn a projectile, swing a hitbox, ...).
 /// EnemyBehavior finds this component on the same GameObject and calls TryAttack.
-/// With an Animator assigned, the attack waits for the animation: it sets the attacking bool, waits until the Animator
-/// is playing the attack state (e.g. after a looping fly cycle with exit time ends), and only then starts the windup,
-/// so EntityData.attackWindup is the anticipation measured from the first frame of the attack animation.
+/// With an Animator assigned, the attack waits for the animation: it sets the attacking bool and waits until the Animator
+/// is playing the attack state (e.g. after a looping fly cycle with exit time ends). By default the windup comes first,
+/// so the animation and the attack itself (e.g. the slash hitbox) start together after EntityData.attackWindup.
+/// With windupBeforeAnimation off, the animation starts first and the windup is measured from its first frame,
+/// for attacks that must land on a particular frame of the animation (e.g. releasing an arrow).
 /// </summary>
 public abstract class EnemyAttack : MonoBehaviour
 {
@@ -17,8 +19,8 @@ public abstract class EnemyAttack : MonoBehaviour
     private const float MaxAnimationWait = 2f;
 
     [Header("Aiming")]
-    [Tooltip("Aim at the player's last known position at the end of the windup instead of when the attack starts. " +
-             "Use it when the attack waits a long time (animation plus windup), so it doesn't fire at where the player used to be.")]
+    [Tooltip("Aim at the player's last known position right before the attack lands (after the windup and the wait for the animation) " +
+             "instead of when the attack starts. Use it when the attack waits a long time, so it doesn't fire at where the player used to be.")]
     [SerializeField] private bool aimAtWindupEnd;
 
     [Header("Animation (optional)")]
@@ -26,8 +28,12 @@ public abstract class EnemyAttack : MonoBehaviour
     [SerializeField] private Animator animator;
     [Tooltip("Bool parameter set while the enemy wants to attack. Cleared once the attack state starts, so the attack plays once.")]
     [SerializeField] private string attackingParameter = "IsAttacking";
-    [Tooltip("Name of the Animator state that plays the attack. The windup starts when the Animator enters it.")]
+    [Tooltip("Name of the Animator state that plays the attack. The attack (or, with Windup Before Animation off, the windup) starts when the Animator enters it.")]
     [SerializeField] private string attackStateName = "Attack";
+    [Tooltip("On: the enemy waits out the windup first, then the attack animation and the attack itself start together. " +
+             "Off: the animation starts first and the windup is counted from its first frame. Use it when the attack has to " +
+             "happen on a particular frame of the animation (e.g. a bow release).")]
+    [SerializeField] private bool windupBeforeAnimation = true;
 
     private float nextAttackTime;
     private bool animatorChecked;
@@ -61,6 +67,8 @@ public abstract class EnemyAttack : MonoBehaviour
         Vector2 targetPosition = getTargetPosition();
         AttackStarted?.Invoke();
 
+        if (windupBeforeAnimation) yield return Windup(data);
+
         if (HasValidAnimator())
         {
             animator.SetBool(attackingParameterHash, true);
@@ -68,12 +76,17 @@ public abstract class EnemyAttack : MonoBehaviour
             animator.SetBool(attackingParameterHash, false);
         }
 
-        if (data.attackWindup > 0f) yield return new WaitForSeconds(data.attackWindup);
+        if (!windupBeforeAnimation) yield return Windup(data);
         if (aimAtWindupEnd) targetPosition = getTargetPosition();
 
         yield return StartCoroutine(PerformAttackRoutine(targetPosition, data));
         nextAttackTime = Time.time + data.attackCooldown;
         IsAttacking = false;
+    }
+
+    private static IEnumerator Windup(EntityData data)
+    {
+        if (data.attackWindup > 0f) yield return new WaitForSeconds(data.attackWindup);
     }
 
     /// <summary>

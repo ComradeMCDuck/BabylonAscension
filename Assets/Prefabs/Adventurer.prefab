@@ -650,7 +650,7 @@ MonoBehaviour:
   <Collider>k__BackingField: {fileID: 3634321015866276926}
   m_CollisionLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 576
   m_HorizontalRayCount: 6
   m_VerticalRayCount: 4
 --- !u!114 &1712470358665181117
